@@ -13,6 +13,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.DamageSource;
@@ -26,23 +27,25 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.common.util.Constants;
 
 import java.util.Collections;
-import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.client.gui.screen.MuseumDummyScreen;
 import denimred.simplemuseum.common.init.MuseumDataSerializers;
+import denimred.simplemuseum.common.util.CheckedResource;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
+import software.bernie.geckolib3.core.builder.AnimationBuilder;
 import software.bernie.geckolib3.core.controller.AnimationController;
 import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
 import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 import software.bernie.geckolib3.resource.GeckoLibCache;
+
+import static net.minecraftforge.common.util.Constants.NBT.TAG_STRING;
 
 public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
     public static final ResourceLocation DEFAULT_MODEL_LOCATION =
@@ -51,6 +54,7 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
             new ResourceLocation(SimpleMuseum.MOD_ID, "textures/entity/museum_dummy.png");
     public static final ResourceLocation DEFAULT_ANIMATIONS_LOCATION =
             new ResourceLocation(SimpleMuseum.MOD_ID, "animations/museum_dummy.json");
+    public static final String DEFAULT_SELECTED_ANIMATION = "";
     public static final DataParameter<ResourceLocation> MODEL_LOCATION =
             EntityDataManager.createKey(
                     MuseumDummyEntity.class, MuseumDataSerializers.getResourceLocation());
@@ -60,25 +64,45 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
     public static final DataParameter<ResourceLocation> ANIMATIONS_LOCATION =
             EntityDataManager.createKey(
                     MuseumDummyEntity.class, MuseumDataSerializers.getResourceLocation());
+    public static final DataParameter<String> SELECTED_ANIMATION =
+            EntityDataManager.createKey(
+                    MuseumDummyEntity.class, DataSerializers.STRING);
     public static final String MODEL_NBT = "Model";
     public static final String TEXTURE_NBT = "Texture";
     public static final String ANIMATIONS_NBT = "Animations";
+    public static final String SELECTED_ANIMATION_NBT = "SelectedAnimation";
     public static final String INVISIBLE_NBT = "Invisible";
     private final AnimationFactory factory = new AnimationFactory(this);
-    private final CheckedResource model =
-            new CheckedResource(
+    private final CheckedResource<ResourceLocation> model =
+            new CheckedResource<>(
                     DEFAULT_MODEL_LOCATION,
                     loc -> GeckoLibCache.getInstance().getGeoModels().get(loc) != null);
-    private final CheckedResource texture =
-            new CheckedResource(
+    private final CheckedResource<ResourceLocation> texture =
+            new CheckedResource<>(
                     DEFAULT_TEXTURE_LOCATION,
                     loc ->
                             new SimpleTexture(loc)
                                     .loadTexture(Minecraft.getInstance().getResourceManager()));
-    private final CheckedResource animations =
-            new CheckedResource(
+    private final CheckedResource<ResourceLocation> animations =
+            new CheckedResource<>(
                     DEFAULT_ANIMATIONS_LOCATION,
                     loc -> GeckoLibCache.getInstance().getAnimations().get(loc) != null);
+    private final CheckedResource<String> selectedAnimation =
+            new CheckedResource<>(
+                    DEFAULT_SELECTED_ANIMATION,
+                    anim -> {
+                        if (anim.isEmpty()) {
+                            return true;
+                        } else {
+                            final ResourceLocation animsLoc = animations.getDirect();
+                            return animations.check(animsLoc)
+                                    && GeckoLibCache.getInstance()
+                                                    .getAnimations()
+                                                    .get(animsLoc)
+                                                    .getAnimation(anim)
+                                            != null;
+                        }
+                    });
 
     public MuseumDummyEntity(EntityType<? extends LivingEntity> type, World worldIn) {
         super(type, worldIn);
@@ -99,6 +123,7 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
         dataManager.register(MODEL_LOCATION, DEFAULT_MODEL_LOCATION);
         dataManager.register(TEXTURE_LOCATION, DEFAULT_TEXTURE_LOCATION);
         dataManager.register(ANIMATIONS_LOCATION, DEFAULT_ANIMATIONS_LOCATION);
+        dataManager.register(SELECTED_ANIMATION, DEFAULT_SELECTED_ANIMATION);
     }
 
     @Override
@@ -118,6 +143,10 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
         if (!animationsLocation.equals(DEFAULT_ANIMATIONS_LOCATION)) {
             modTag.putString(ANIMATIONS_NBT, animationsLocation.toString());
         }
+        final String selAnim = selectedAnimation.getDirect();
+        if (!selAnim.equals(DEFAULT_SELECTED_ANIMATION)) {
+            modTag.putString(SELECTED_ANIMATION_NBT, selAnim);
+        }
         if (!modTag.isEmpty()) {
             tag.put(SimpleMuseum.MOD_ID, modTag);
         }
@@ -129,17 +158,20 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
         this.setInvisible(tag.getBoolean(INVISIBLE_NBT));
         final CompoundNBT modTag = tag.getCompound(SimpleMuseum.MOD_ID);
         try {
-            if (modTag.contains(MODEL_NBT, Constants.NBT.TAG_STRING)) {
+            if (modTag.contains(MODEL_NBT, TAG_STRING)) {
                 this.setModelLocation(new ResourceLocation(modTag.getString(MODEL_NBT)));
             }
-            if (modTag.contains(TEXTURE_NBT, Constants.NBT.TAG_STRING)) {
+            if (modTag.contains(TEXTURE_NBT, TAG_STRING)) {
                 this.setTextureLocation(new ResourceLocation(modTag.getString(TEXTURE_NBT)));
             }
-            if (modTag.contains(ANIMATIONS_NBT, Constants.NBT.TAG_STRING)) {
+            if (modTag.contains(ANIMATIONS_NBT, TAG_STRING)) {
                 this.setAnimationsLocation(new ResourceLocation(modTag.getString(ANIMATIONS_NBT)));
             }
         } catch (ResourceLocationException e) {
-            SimpleMuseum.LOGGER.error("Failed to load museum entity locations", e);
+            SimpleMuseum.LOGGER.error("Failed to load museum dummy file locations", e);
+        }
+        if (modTag.contains(SELECTED_ANIMATION_NBT, TAG_STRING)) {
+            this.setSelectedAnimation(modTag.getString(SELECTED_ANIMATION_NBT));
         }
     }
 
@@ -306,11 +338,13 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
             texture.set(dataManager.get(TEXTURE_LOCATION));
         } else if (key.equals(ANIMATIONS_LOCATION)) {
             animations.set(dataManager.get(ANIMATIONS_LOCATION));
+        } else if (key.equals(SELECTED_ANIMATION)) {
+            selectedAnimation.set(dataManager.get(SELECTED_ANIMATION));
         }
         super.notifyDataManagerChange(key);
     }
 
-    public CheckedResource getModel() {
+    public CheckedResource<ResourceLocation> getModelLocation() {
         return model;
     }
 
@@ -319,7 +353,7 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
         dataManager.set(MODEL_LOCATION, model.getDirect());
     }
 
-    public CheckedResource getTexture() {
+    public CheckedResource<ResourceLocation> getTextureLocation() {
         return texture;
     }
 
@@ -328,7 +362,7 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
         dataManager.set(TEXTURE_LOCATION, texture.getDirect());
     }
 
-    public CheckedResource getAnimations() {
+    public CheckedResource<ResourceLocation> getAnimationsLocation() {
         return animations;
     }
 
@@ -337,7 +371,20 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
         dataManager.set(ANIMATIONS_LOCATION, animations.getDirect());
     }
 
-    private <E extends IAnimatable> PlayState animationPredicate(AnimationEvent<E> event) {
+    public CheckedResource<String> getSelectedAnimation() {
+        return selectedAnimation;
+    }
+
+    public void setSelectedAnimation(String anim) {
+        selectedAnimation.set(anim);
+        dataManager.set(SELECTED_ANIMATION, selectedAnimation.getDirect());
+    }
+
+    private <P extends IAnimatable> PlayState animationPredicate(AnimationEvent<P> event) {
+        final String selAnim = ((MuseumDummyEntity) event.getAnimatable()).getSelectedAnimation().getSafe();
+        if (!selAnim.equals(DEFAULT_SELECTED_ANIMATION) && !selAnim.isEmpty()) {
+            event.getController().setAnimation(new AnimationBuilder().addAnimation(selAnim, true));
+        }
         return PlayState.CONTINUE;
     }
 
@@ -355,69 +402,5 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
         return this.getBoundingBox().grow(10);
-    }
-
-    @FunctionalInterface
-    private interface Attempticate<T> extends Predicate<T> {
-        void attempt(T t) throws Exception;
-
-        @Override
-        default boolean test(T t) {
-            try {
-                this.attempt(t);
-                return true;
-            } catch (Exception e) {
-                return false;
-            }
-        }
-    }
-
-    public class CheckedResource {
-        private final ResourceLocation fallback;
-        private final Predicate<ResourceLocation> checker;
-        private ResourceLocation current;
-        private ResourceLocation lastGood;
-
-        public CheckedResource(ResourceLocation fallback, Attempticate<ResourceLocation> checker) {
-            this(fallback, (Predicate<ResourceLocation>) checker);
-        }
-
-        public CheckedResource(ResourceLocation fallback, Predicate<ResourceLocation> checker) {
-            this.fallback = fallback;
-            this.checker = checker;
-            current = fallback;
-        }
-
-        public ResourceLocation getFallback() {
-            return fallback;
-        }
-
-        public ResourceLocation getDirect() {
-            return current;
-        }
-
-        public ResourceLocation getSafe() {
-            if (lastGood != current) {
-                if (lastGood != fallback) {
-                    if (checker.test(current)) {
-                        lastGood = current;
-                    } else {
-                        SimpleMuseum.LOGGER.warn("Resource " + current + " doesn't exist");
-                        lastGood = fallback;
-                    }
-                }
-                return lastGood;
-            }
-            return this.getDirect();
-        }
-
-        protected void set(ResourceLocation location) {
-            this.current = location;
-            lastGood = null;
-        }
-
-        public boolean check(ResourceLocation location) {
-            return !world.isRemote || checker.test(location);
-        }
     }
 }

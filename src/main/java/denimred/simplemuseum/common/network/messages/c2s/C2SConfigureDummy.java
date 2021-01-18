@@ -18,18 +18,21 @@ public class C2SConfigureDummy {
     private final ResourceLocation modelLoc;
     private final ResourceLocation texLoc;
     private final ResourceLocation animLoc;
+    private final String selAnim;
 
     public C2SConfigureDummy(
             UUID uuid,
             int rotation,
             ResourceLocation modelLoc,
             ResourceLocation texLoc,
-            ResourceLocation animLoc) {
+            ResourceLocation animLoc,
+            String selAnim) {
         this.uuid = uuid;
         this.rotation = rotation;
         this.modelLoc = modelLoc;
         this.texLoc = texLoc;
         this.animLoc = animLoc;
+        this.selAnim = selAnim;
     }
 
     public static C2SConfigureDummy decode(PacketBuffer buf) {
@@ -38,7 +41,8 @@ public class C2SConfigureDummy {
         final ResourceLocation modelLoc = buf.readResourceLocation();
         final ResourceLocation texLoc = buf.readResourceLocation();
         final ResourceLocation animLoc = buf.readResourceLocation();
-        return new C2SConfigureDummy(dummy, rotation, modelLoc, texLoc, animLoc);
+        final String selAnim = buf.readString(32767);
+        return new C2SConfigureDummy(dummy, rotation, modelLoc, texLoc, animLoc, selAnim);
     }
 
     public void encode(PacketBuffer buf) {
@@ -47,6 +51,7 @@ public class C2SConfigureDummy {
         buf.writeResourceLocation(modelLoc);
         buf.writeResourceLocation(texLoc);
         buf.writeResourceLocation(animLoc);
+        buf.writeString(selAnim);
     }
 
     public void handle(Supplier<NetworkEvent.Context> sup) {
@@ -70,6 +75,7 @@ public class C2SConfigureDummy {
                     dummy.setModelLocation(modelLoc);
                     dummy.setTextureLocation(texLoc);
                     dummy.setAnimationsLocation(animLoc);
+                    dummy.setSelectedAnimation(selAnim);
                 }
             }
         }

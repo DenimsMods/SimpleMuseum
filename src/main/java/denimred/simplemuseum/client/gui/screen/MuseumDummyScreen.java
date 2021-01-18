@@ -23,6 +23,7 @@ import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.common.entity.MuseumDummyEntity;
 import denimred.simplemuseum.common.init.MuseumNetworking;
 import denimred.simplemuseum.common.network.messages.c2s.C2SConfigureDummy;
+import denimred.simplemuseum.common.util.CheckedResource;
 
 public class MuseumDummyScreen extends Screen {
     private static final int WIDTH = 300;
@@ -32,26 +33,29 @@ public class MuseumDummyScreen extends Screen {
     private static final String ANIMATIONS_PREFIX = "animations/";
     private final Minecraft mc = Minecraft.getInstance();
     private final UUID uuid;
-    private final MuseumDummyEntity.CheckedResource model;
-    private final MuseumDummyEntity.CheckedResource texture;
-    private final MuseumDummyEntity.CheckedResource animations;
+    private final CheckedResource<ResourceLocation> model;
+    private final CheckedResource<ResourceLocation> texture;
+    private final CheckedResource<ResourceLocation> animations;
+    private final CheckedResource<String> selectedAnimation;
     private final int defaultRotation;
     private Button doneButton;
     private Button cancelButton;
+    private TextFieldWidget rotationField;
     private TextFieldWidget modelNamespace;
     private TextFieldWidget modelPath;
     private TextFieldWidget textureNamespace;
     private TextFieldWidget texturePath;
     private TextFieldWidget animationsNamespace;
     private TextFieldWidget animationsPath;
-    private TextFieldWidget rotationField;
+    private TextFieldWidget selectedAnimationField;
 
     public MuseumDummyScreen(MuseumDummyEntity dummy) {
         super(StringTextComponent.EMPTY);
         uuid = dummy.getUniqueID();
-        model = dummy.getModel();
-        texture = dummy.getTexture();
-        animations = dummy.getAnimations();
+        model = dummy.getModelLocation();
+        texture = dummy.getTextureLocation();
+        animations = dummy.getAnimationsLocation();
+        selectedAnimation = dummy.getSelectedAnimation();
         defaultRotation = Math.round(dummy.rotationYaw);
     }
 
@@ -110,7 +114,7 @@ public class MuseumDummyScreen extends Screen {
                         modelFieldY,
                         ((WIDTH / 4) * 3) - (MARGIN / 2) - modelPrefixWidth,
                         20,
-                        new StringTextComponent("Model:"));
+                        new StringTextComponent("Model File:"));
 
         final int texturePrefixWidth = font.getStringWidth(TEXTURE_PREFIX);
         final int textureFieldY = (height / 2) - 10;
@@ -129,7 +133,7 @@ public class MuseumDummyScreen extends Screen {
                         textureFieldY,
                         ((WIDTH / 4) * 3) - (MARGIN / 2) - texturePrefixWidth,
                         20,
-                        new StringTextComponent("Texture:"));
+                        new StringTextComponent("Texture File:"));
 
         final int animationPrefixWidth = font.getStringWidth(ANIMATIONS_PREFIX);
         final int animationsFieldY = (height / 2) - 10 + 20 + MARGIN;
@@ -148,18 +152,36 @@ public class MuseumDummyScreen extends Screen {
                         animationsFieldY,
                         ((WIDTH / 4) * 3) - (MARGIN / 2) - animationPrefixWidth,
                         20,
-                        new StringTextComponent("Animations:"));
+                        new StringTextComponent("Animations File:"));
 
+        final StringTextComponent selAnimFieldMsg = new StringTextComponent("Animation:");
+        final StringTextComponent rotFieldMsg = new StringTextComponent("Rotation:");
+        final int selAnimFieldWidth = font.getStringPropertyWidth(selAnimFieldMsg);
+        final int rotFieldWidth = font.getStringPropertyWidth(rotFieldMsg);
+        final int miscY = animationsFieldY + 20 + MARGIN * 3;
         rotationField =
                 new TextFieldWidget(
                         font,
-                        width / 2 - 20,
-                        animationsFieldY + 20 + MARGIN * 2,
-                        40,
+                        (width / 2) - (WIDTH / 2) + rotFieldWidth + 3,
+                        miscY,
+                        (WIDTH / 8) - (MARGIN / 2),
                         20,
-                        new StringTextComponent("Rotation:"));
+                        rotFieldMsg);
+        selectedAnimationField =
+                new TextFieldWidget(
+                        font,
+                        (width / 2)
+                                - (WIDTH / 2)
+                                + rotFieldWidth
+                                + (WIDTH / 8)
+                                + (MARGIN * 6)
+                                + selAnimFieldWidth,
+                        miscY,
+                        WIDTH - (rotFieldWidth + (WIDTH / 8) + (MARGIN * 6) + selAnimFieldWidth),
+                        20,
+                        selAnimFieldMsg);
 
-        final int buttonsY = animationsFieldY + 40 + MARGIN * 4;
+        final int buttonsY = animationsFieldY + 40 + MARGIN * 5;
         doneButton =
                 this.addButton(
                         new Button(
@@ -212,13 +234,11 @@ public class MuseumDummyScreen extends Screen {
         animationsNamespace.setMaxStringLength(16250);
         animationsNamespace.setResponder(animationsResponder);
         animationsNamespace.setText(animationsLocation.getNamespace());
-        animationsNamespace.setEnabled(false);
         children.add(animationsNamespace);
         animationsPath.setMaxStringLength(16250);
         animationsPath.setResponder(animationsResponder);
         animationsPath.setText(
                 animationsLocation.getPath().replaceFirst(Pattern.quote(ANIMATIONS_PREFIX), ""));
-        animationsPath.setEnabled(false);
         children.add(animationsPath);
 
         rotationField.setMaxStringLength(128);
@@ -233,10 +253,22 @@ public class MuseumDummyScreen extends Screen {
                 });
         rotationField.setText(String.valueOf(defaultRotation));
         children.add(rotationField);
+
+        selectedAnimationField.setMaxStringLength(32500);
+        selectedAnimationField.setResponder(
+                s -> {
+                    if (selectedAnimation.check(s)) {
+                        selectedAnimationField.setTextColor(0xe0e0e0);
+                    } else {
+                        selectedAnimationField.setTextColor(0xffff00);
+                    }
+                });
+        selectedAnimationField.setText(selectedAnimation.getDirect());
+        children.add(selectedAnimationField);
     }
 
     private void locFieldResponder(
-            MuseumDummyEntity.CheckedResource resource,
+            CheckedResource<ResourceLocation> resource,
             TextFieldWidget namespace,
             TextFieldWidget path,
             Supplier<Optional<ResourceLocation>> locationSupplier) {
@@ -292,6 +324,7 @@ public class MuseumDummyScreen extends Screen {
         animationsNamespace.tick();
         animationsPath.tick();
         rotationField.tick();
+        selectedAnimationField.tick();
     }
 
     @Override
@@ -319,6 +352,9 @@ public class MuseumDummyScreen extends Screen {
         animationsPath.render(matrixStack, mouseX, mouseY, partialTicks);
         drawStringLeft(matrixStack, font, rotationField, rotationField.getMessage(), 0);
         rotationField.render(matrixStack, mouseX, mouseY, partialTicks);
+        drawStringLeft(
+                matrixStack, font, selectedAnimationField, selectedAnimationField.getMessage(), 0);
+        selectedAnimationField.render(matrixStack, mouseX, mouseY, partialTicks);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
     }
 
@@ -335,11 +371,21 @@ public class MuseumDummyScreen extends Screen {
                             this.getRotation().orElse(defaultRotation),
                             this.getModelLoc().orElse(model.getDirect()),
                             this.getTexLoc().orElse(texture.getDirect()),
-                            this.getAnimLoc().orElse(animations.getDirect())));
+                            this.getAnimLoc().orElse(animations.getDirect()),
+                            selectedAnimationField.getText()));
         } catch (ResourceLocationException e) {
             SimpleMuseum.LOGGER.error("Failed to send dummy configuration to server", e);
         }
         this.closeScreen();
+    }
+
+    protected Optional<Integer> getRotation() {
+        try {
+            final String text = rotationField.getText();
+            return Optional.of(Integer.parseInt(text.isEmpty() ? "0" : text));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
     }
 
     protected Optional<ResourceLocation> getModelLoc() {
@@ -393,15 +439,6 @@ public class MuseumDummyScreen extends Screen {
                                                             Pattern.quote(ANIMATIONS_PREFIX), "")
                                             : path)));
         } catch (ResourceLocationException e) {
-            return Optional.empty();
-        }
-    }
-
-    protected Optional<Integer> getRotation() {
-        try {
-            final String text = rotationField.getText();
-            return Optional.of(Integer.parseInt(text.isEmpty() ? "0" : text));
-        } catch (NumberFormatException e) {
             return Optional.empty();
         }
     }
