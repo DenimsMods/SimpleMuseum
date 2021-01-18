@@ -1,6 +1,6 @@
 ![Simple Museum](./src/main/resources/simplemuseum.png)
 
-[![CurseForge](https://img.shields.io/badge/Simple%20Museum-E04E14?logo=CurseForge)](https://www.curseforge.com/minecraft/mc-mods/simple-museum) [![Minecraft Version](https://img.shields.io/badge/Minecraft-1.16.4-blue)](https://www.minecraft.net) [![Forge Version](https://img.shields.io/badge/Forge-35.1.36-blue)](https://files.minecraftforge.net)
+[![CurseForge](https://img.shields.io/badge/CurseForge-1.1.0-E04E14?logo=CurseForge)](https://www.curseforge.com/minecraft/mc-mods/simple-museum) [![Minecraft Version](https://img.shields.io/badge/Minecraft-1.16.4-green)](https://www.minecraft.net) [![Forge Version](https://img.shields.io/badge/Forge-35.1.36-blue)](https://files.minecraftforge.net)
 
 Allows you to load and display static arbitrary GeckoLib models via resource packs. Primarily useful for testing things
 in-game or creating displays/showcases.
