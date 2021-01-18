@@ -1,0 +1,34 @@
+modLoader = "javafml"
+loaderVersion = "[35,)"
+license = "GPLv3"
+issueTrackerURL="https://github.com/DenimRed/SimpleMuseum/issues"
+
+[[mods]]
+modId = "simplemuseum"
+version = "${file.jarVersion}"
+displayName = "Simple Museum"
+displayURL="https://github.com/DenimRed/SimpleMuseum"
+logoFile="simplemuseum.png"
+credits="@jordanimating for requesting this"
+authors="DenimRed"
+description = '''Allows you to load and display static arbitrary GeckoLib models via resource packs. Primarily useful for testing things in-game or creating displays/showcases.
+
+Use a "Museum Dummy Spawn Egg" (found in the miscellaneous creative tab) to create a dummy, then right-click it to access its properties.'''
+[[dependencies.simplemuseum]]
+modId="forge"
+mandatory=true
+versionRange="[35,)"
+ordering="NONE"
+side="BOTH"
+[[dependencies.simplemuseum]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.16.4,1.17)"
+ordering="NONE"
+side = "BOTH"
+[[dependencies.simplemuseum]]
+modId="geckolib3"
+mandatory=true
+versionRange="[3.0.0,)"
+ordering="NONE"
+side = "BOTH"
