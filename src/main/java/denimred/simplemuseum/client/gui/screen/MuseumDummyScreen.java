@@ -93,25 +93,6 @@ public class MuseumDummyScreen extends Screen {
     protected void init() {
         mc.keyboardListener.enableRepeatEvents(true);
 
-        doneButton =
-                this.addButton(
-                        new Button(
-                                width / 2 - 4 - 150 + 2,
-                                height / 4 + 120 + 12 + 20 + MARGIN,
-                                150,
-                                20,
-                                DialogTexts.GUI_DONE,
-                                b -> this.saveAndClose()));
-        cancelButton =
-                this.addButton(
-                        new Button(
-                                width / 2 + 4 - 2,
-                                height / 4 + 120 + 12 + 20 + MARGIN,
-                                150,
-                                20,
-                                DialogTexts.GUI_CANCEL,
-                                b -> this.closeScreen()));
-
         final int modelPrefixWidth = font.getStringWidth(MODEL_PREFIX);
         final int modelFieldY = (height / 2) - 10 - 20 - MARGIN;
         modelNamespace =
@@ -177,6 +158,26 @@ public class MuseumDummyScreen extends Screen {
                         40,
                         20,
                         new StringTextComponent("Rotation:"));
+
+        final int buttonsY = animationsFieldY + 40 + MARGIN * 4;
+        doneButton =
+                this.addButton(
+                        new Button(
+                                width / 2 - 4 - 150 + 2,
+                                buttonsY,
+                                150,
+                                20,
+                                DialogTexts.GUI_DONE,
+                                b -> this.saveAndClose()));
+        cancelButton =
+                this.addButton(
+                        new Button(
+                                width / 2 + 4 - 2,
+                                buttonsY,
+                                150,
+                                20,
+                                DialogTexts.GUI_CANCEL,
+                                b -> this.closeScreen()));
 
         final Consumer<String> modelResponder =
                 s -> locFieldResponder(model, modelNamespace, modelPath, this::getModelLoc);
