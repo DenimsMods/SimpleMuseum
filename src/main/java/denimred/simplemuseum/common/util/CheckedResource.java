@@ -2,8 +2,6 @@ package denimred.simplemuseum.common.util;
 
 import java.util.function.Predicate;
 
-import denimred.simplemuseum.SimpleMuseum;
-
 public class CheckedResource<T> {
     private final T fallback;
     private final Predicate<T> checker;
@@ -34,10 +32,10 @@ public class CheckedResource<T> {
                 if (checker.test(current)) {
                     lastGood = current;
                 } else {
-                    SimpleMuseum.LOGGER.warn(
-                            String.format(
-                                    "Resource '%s' of type '%s' doesn't exist",
-                                    current, current.getClass().getSimpleName()));
+//                    SimpleMuseum.LOGGER.warn(
+//                            String.format(
+//                                    "Resource '%s' of type '%s' doesn't exist",
+//                                    current, current.getClass().getSimpleName()));
                     lastGood = fallback;
                 }
             }

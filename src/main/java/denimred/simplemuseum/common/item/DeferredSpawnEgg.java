@@ -1,6 +1,5 @@
 package denimred.simplemuseum.common.item;
 
-import net.minecraft.client.renderer.color.IItemColor;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.SpawnEggItem;
 import net.minecraft.nbt.CompoundNBT;
@@ -13,8 +12,6 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 public class DeferredSpawnEgg extends SpawnEggItem {
-    public static final IItemColor COLOR =
-            (stack, tintIndex) -> ((DeferredSpawnEgg) stack.getItem()).getColor(tintIndex);
     private static final List<DeferredSpawnEgg> DEFERRED_EGGS = new ArrayList<>();
     private final Lazy<? extends EntityType<?>> lazy;
 

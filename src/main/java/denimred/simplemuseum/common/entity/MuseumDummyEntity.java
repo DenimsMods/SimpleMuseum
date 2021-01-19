@@ -33,7 +33,7 @@ import java.util.Collections;
 import javax.annotation.Nullable;
 
 import denimred.simplemuseum.SimpleMuseum;
-import denimred.simplemuseum.client.gui.screen.MuseumDummyScreen;
+import denimred.simplemuseum.client.util.ClientUtil;
 import denimred.simplemuseum.common.init.MuseumDataSerializers;
 import denimred.simplemuseum.common.util.CheckedResource;
 import software.bernie.geckolib3.core.IAnimatable;
@@ -184,7 +184,7 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
             if (!player.world.isRemote) {
                 return ActionResultType.CONSUME;
             } else {
-                Minecraft.getInstance().displayGuiScreen(new MuseumDummyScreen(this));
+                ClientUtil.openDummyGui(this);
                 return ActionResultType.SUCCESS;
             }
         }

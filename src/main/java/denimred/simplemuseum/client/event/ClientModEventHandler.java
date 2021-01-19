@@ -1,5 +1,6 @@
 package denimred.simplemuseum.client.event;
 
+import net.minecraft.client.renderer.color.IItemColor;
 import net.minecraft.client.renderer.color.ItemColors;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ColorHandlerEvent;
@@ -19,6 +20,9 @@ import denimred.simplemuseum.common.item.DeferredSpawnEgg;
         bus = Mod.EventBusSubscriber.Bus.MOD,
         value = Dist.CLIENT)
 public class ClientModEventHandler {
+    public static final IItemColor EGG_COLOR =
+            (stack, tintIndex) -> ((DeferredSpawnEgg) stack.getItem()).getColor(tintIndex);
+
     @SubscribeEvent
     public static void onFMLClientSetup(FMLClientSetupEvent event) {
         RenderingRegistry.registerEntityRenderingHandler(
@@ -28,6 +32,6 @@ public class ClientModEventHandler {
     @SubscribeEvent
     public static void onColorHandlerItem(ColorHandlerEvent.Item event) {
         final ItemColors itemColors = event.getItemColors();
-        itemColors.register(DeferredSpawnEgg.COLOR, MuseumItems.MUSEUM_DUMMY_SPAWN_EGG.get());
+        itemColors.register(EGG_COLOR, MuseumItems.MUSEUM_DUMMY_SPAWN_EGG.get());
     }
 }
