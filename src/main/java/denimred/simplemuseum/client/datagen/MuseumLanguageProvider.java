@@ -14,6 +14,6 @@ public class MuseumLanguageProvider extends LanguageProvider {
     @Override
     protected void addTranslations() {
         this.addEntityType(MuseumEntities.MUSEUM_DUMMY, "Museum Dummy");
-        this.addItem(MuseumItems.MUSEUM_DUMMY_SPAWN_EGG, "Museum Dummy Spawn Egg");
+        this.addItem(MuseumItems.CURATORS_CANE, "Curator's Cane");
     }
 }

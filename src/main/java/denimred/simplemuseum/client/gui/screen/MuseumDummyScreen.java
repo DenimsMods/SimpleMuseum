@@ -48,7 +48,6 @@ public class MuseumDummyScreen extends Screen {
     private final CheckedResource<String> selectedAnimation;
     private final SavedState state = new SavedState();
     private Button doneButton;
-    private Button cancelButton;
     private TextFieldWidget rotationField;
     private ResourceFieldWidget modelWidget;
     private ResourceFieldWidget textureWidget;
@@ -234,15 +233,14 @@ public class MuseumDummyScreen extends Screen {
                                 20,
                                 DialogTexts.GUI_DONE,
                                 b -> this.saveAndClose()));
-        cancelButton =
-                this.addButton(
-                        new Button(
-                                width / 2 + 4 - 2,
-                                buttonsY,
-                                150,
-                                20,
-                                DialogTexts.GUI_CANCEL,
-                                b -> this.closeScreen()));
+        this.addButton(
+                new Button(
+                        width / 2 + 4 - 2,
+                        buttonsY,
+                        150,
+                        20,
+                        DialogTexts.GUI_CANCEL,
+                        b -> this.closeScreen()));
 
         modelWidget.setChangeListener(this::checkDoneButton);
         children.add(modelWidget);

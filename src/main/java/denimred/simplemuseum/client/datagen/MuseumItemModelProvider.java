@@ -1,7 +1,8 @@
 package denimred.simplemuseum.client.datagen;
 
 import net.minecraft.data.DataGenerator;
-import net.minecraft.item.SpawnEggItem;
+import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.generators.ItemModelProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
 
@@ -18,11 +19,14 @@ public class MuseumItemModelProvider extends ItemModelProvider {
 
     @Override
     protected void registerModels() {
-        this.spawnEgg(MuseumItems.MUSEUM_DUMMY_SPAWN_EGG);
+        this.handheld(MuseumItems.CURATORS_CANE);
     }
 
-    protected void spawnEgg(Supplier<? extends SpawnEggItem> egg) {
-        final String name = Objects.requireNonNull(egg.get().getRegistryName()).getPath();
-        this.withExistingParent(name, "item/template_spawn_egg");
+    @SuppressWarnings("SameParameterValue")
+    protected void handheld(Supplier<? extends Item> item) {
+        final ResourceLocation name = Objects.requireNonNull(item.get().getRegistryName());
+        final ResourceLocation tex =
+                new ResourceLocation(name.getNamespace(), ITEM_FOLDER + "/" + name.getPath());
+        this.withExistingParent(name.toString(), "item/handheld").texture("layer0", tex);
     }
 }

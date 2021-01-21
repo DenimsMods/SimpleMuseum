@@ -32,7 +32,6 @@ import java.util.Collections;
 import javax.annotation.Nullable;
 
 import denimred.simplemuseum.SimpleMuseum;
-import denimred.simplemuseum.client.util.ClientUtil;
 import denimred.simplemuseum.common.init.MuseumDataSerializers;
 import denimred.simplemuseum.common.util.CheckedResource;
 import software.bernie.geckolib3.core.IAnimatable;
@@ -173,21 +172,6 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
     }
 
     @Override
-    public ActionResultType processInitialInteract(PlayerEntity player, Hand hand) {
-        final ActionResultType result = super.processInitialInteract(player, hand);
-        if (result.isSuccessOrConsume()) {
-            return result;
-        } else {
-            if (!player.world.isRemote) {
-                return ActionResultType.CONSUME;
-            } else {
-                ClientUtil.openDummyScreen(this);
-                return ActionResultType.SUCCESS;
-            }
-        }
-    }
-
-    @Override
     public boolean canBePushed() {
         return false;
     }
@@ -209,16 +193,7 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
 
     @Override
     public boolean attackEntityFrom(DamageSource source, float amount) {
-        if (this.isInvulnerableTo(source)) {
-            return false;
-        } else {
-            if (this.isAlive() && !world.isRemote) {
-                this.remove();
-                this.markVelocityChanged();
-            }
-
-            return true;
-        }
+        return !this.isInvulnerableTo(source) && !this.world.isRemote && !this.getShouldBeDead();
     }
 
     @Override
@@ -275,8 +250,8 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
 
     @Override
     public boolean hitByEntity(Entity entityIn) {
-        return entityIn instanceof PlayerEntity
-                && !world.isBlockModifiable((PlayerEntity) entityIn, this.getPosition());
+        return !(entityIn instanceof PlayerEntity
+                && world.isBlockModifiable((PlayerEntity) entityIn, this.getPosition()));
     }
 
     @Override

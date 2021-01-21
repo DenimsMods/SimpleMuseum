@@ -22,10 +22,6 @@ public class CheckedResource<T> {
         current = fallback;
     }
 
-    public T getFallback() {
-        return fallback;
-    }
-
     public T getDirect() {
         return current;
     }
