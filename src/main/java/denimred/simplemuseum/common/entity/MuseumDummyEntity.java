@@ -2,7 +2,6 @@ package denimred.simplemuseum.common.entity;
 
 import net.minecraft.block.material.PushReaction;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.SimpleTexture;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -47,6 +46,7 @@ import software.bernie.geckolib3.resource.GeckoLibCache;
 
 import static net.minecraftforge.common.util.Constants.NBT.TAG_STRING;
 
+// TODO: The specifics of this entity were just kind of thrown together; needs to be reviewed
 public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
     public static final ResourceLocation DEFAULT_MODEL_LOCATION =
             new ResourceLocation(SimpleMuseum.MOD_ID, "geo/museum_dummy.geo.json");
@@ -57,16 +57,15 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
     public static final String DEFAULT_SELECTED_ANIMATION = "";
     public static final DataParameter<ResourceLocation> MODEL_LOCATION =
             EntityDataManager.createKey(
-                    MuseumDummyEntity.class, MuseumDataSerializers.getResourceLocation());
+                    MuseumDummyEntity.class, MuseumDataSerializers.getResourceLocationSerializer());
     public static final DataParameter<ResourceLocation> TEXTURE_LOCATION =
             EntityDataManager.createKey(
-                    MuseumDummyEntity.class, MuseumDataSerializers.getResourceLocation());
+                    MuseumDummyEntity.class, MuseumDataSerializers.getResourceLocationSerializer());
     public static final DataParameter<ResourceLocation> ANIMATIONS_LOCATION =
             EntityDataManager.createKey(
-                    MuseumDummyEntity.class, MuseumDataSerializers.getResourceLocation());
+                    MuseumDummyEntity.class, MuseumDataSerializers.getResourceLocationSerializer());
     public static final DataParameter<String> SELECTED_ANIMATION =
-            EntityDataManager.createKey(
-                    MuseumDummyEntity.class, DataSerializers.STRING);
+            EntityDataManager.createKey(MuseumDummyEntity.class, DataSerializers.STRING);
     public static final String MODEL_NBT = "Model";
     public static final String TEXTURE_NBT = "Texture";
     public static final String ANIMATIONS_NBT = "Animations";
@@ -80,9 +79,7 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
     private final CheckedResource<ResourceLocation> texture =
             new CheckedResource<>(
                     DEFAULT_TEXTURE_LOCATION,
-                    loc ->
-                            new SimpleTexture(loc)
-                                    .loadTexture(Minecraft.getInstance().getResourceManager()));
+                    loc -> Minecraft.getInstance().getResourceManager().getResource(loc));
     private final CheckedResource<ResourceLocation> animations =
             new CheckedResource<>(
                     DEFAULT_ANIMATIONS_LOCATION,
@@ -95,7 +92,7 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
                             return true;
                         } else {
                             final ResourceLocation animsLoc = animations.getDirect();
-                            return animations.check(animsLoc)
+                            return animations.validate(animsLoc)
                                     && GeckoLibCache.getInstance()
                                                     .getAnimations()
                                                     .get(animsLoc)
@@ -184,7 +181,7 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
             if (!player.world.isRemote) {
                 return ActionResultType.CONSUME;
             } else {
-                ClientUtil.openDummyGui(this);
+                ClientUtil.openDummyScreen(this);
                 return ActionResultType.SUCCESS;
             }
         }
@@ -381,8 +378,9 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
     }
 
     private <P extends IAnimatable> PlayState animationPredicate(AnimationEvent<P> event) {
-        final String selAnim = ((MuseumDummyEntity) event.getAnimatable()).getSelectedAnimation().getSafe();
-        if (!selAnim.equals(DEFAULT_SELECTED_ANIMATION) && !selAnim.isEmpty()) {
+        final String selAnim =
+                ((MuseumDummyEntity) event.getAnimatable()).getSelectedAnimation().getSafe();
+        if (!selAnim.equals(DEFAULT_SELECTED_ANIMATION)) {
             event.getController().setAnimation(new AnimationBuilder().addAnimation(selAnim, true));
         }
         return PlayState.CONTINUE;
@@ -402,5 +400,12 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
         return this.getBoundingBox().grow(10);
+    }
+
+    public void clearAllCached() {
+        model.clearCached();
+        texture.clearCached();
+        animations.clearCached();
+        selectedAnimation.clearCached();
     }
 }

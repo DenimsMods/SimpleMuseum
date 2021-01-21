@@ -7,23 +7,28 @@ import net.minecraft.client.gui.DialogTexts;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.ResourceLocationException;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
 
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import java.util.regex.Pattern;
 
 import denimred.simplemuseum.SimpleMuseum;
+import denimred.simplemuseum.client.gui.widget.BetterImageButton;
+import denimred.simplemuseum.client.gui.widget.ResourceFieldWidget;
 import denimred.simplemuseum.common.entity.MuseumDummyEntity;
 import denimred.simplemuseum.common.init.MuseumNetworking;
 import denimred.simplemuseum.common.network.messages.c2s.C2SConfigureDummy;
 import denimred.simplemuseum.common.util.CheckedResource;
+import software.bernie.geckolib3.file.AnimationFile;
+import software.bernie.geckolib3.resource.GeckoLibCache;
+
+import static denimred.simplemuseum.client.gui.widget.ResourceFieldWidget.FOLDER_BUTTON_TEXTURE;
 
 public class MuseumDummyScreen extends Screen {
     private static final int WIDTH = 300;
@@ -31,46 +36,44 @@ public class MuseumDummyScreen extends Screen {
     private static final String MODEL_PREFIX = "geo/";
     private static final String TEXTURE_PREFIX = "textures/";
     private static final String ANIMATIONS_PREFIX = "animations/";
+    private static final int TEXT_VALID = 0xe0e0e0;
+    private static final int TEXT_INVALID = 0xffff00;
+    private static final int TEXT_ERROR = 0xff0000;
+    public final int defaultRotation;
     private final Minecraft mc = Minecraft.getInstance();
     private final UUID uuid;
     private final CheckedResource<ResourceLocation> model;
     private final CheckedResource<ResourceLocation> texture;
     private final CheckedResource<ResourceLocation> animations;
     private final CheckedResource<String> selectedAnimation;
-    private final int defaultRotation;
+    private final SavedState state = new SavedState();
     private Button doneButton;
     private Button cancelButton;
     private TextFieldWidget rotationField;
-    private TextFieldWidget modelNamespace;
-    private TextFieldWidget modelPath;
-    private TextFieldWidget textureNamespace;
-    private TextFieldWidget texturePath;
-    private TextFieldWidget animationsNamespace;
-    private TextFieldWidget animationsPath;
+    private ResourceFieldWidget modelWidget;
+    private ResourceFieldWidget textureWidget;
+    private ResourceFieldWidget animationsWidget;
     private TextFieldWidget selectedAnimationField;
 
     public MuseumDummyScreen(MuseumDummyEntity dummy) {
-        super(StringTextComponent.EMPTY);
+        super(dummy.getDisplayName());
         uuid = dummy.getUniqueID();
         model = dummy.getModelLocation();
         texture = dummy.getTextureLocation();
         animations = dummy.getAnimationsLocation();
         selectedAnimation = dummy.getSelectedAnimation();
         defaultRotation = Math.round(dummy.rotationYaw);
+        state.init();
     }
 
-    private static void drawStringAbove(
-            MatrixStack matrixStack,
-            FontRenderer font,
-            TextFieldWidget field,
-            ITextComponent text) {
-        drawCenteredString(
+    private static void drawTitle(MatrixStack matrixStack, FontRenderer font, Widget widget) {
+        drawString(
                 matrixStack,
                 font,
-                text,
-                field.x + field.getAdjustedWidth() / 2,
-                field.y - font.FONT_HEIGHT - MARGIN,
-                field.getFGColor());
+                widget.getMessage(),
+                widget.x,
+                widget.y - font.FONT_HEIGHT - MARGIN / 2,
+                0xA0A0A0);
     }
 
     private static void drawStringLeft(
@@ -85,74 +88,90 @@ public class MuseumDummyScreen extends Screen {
                 text,
                 field.x - font.getStringWidth(text.getUnformattedComponentText()) - MARGIN + offset,
                 field.y + field.getHeightRealms() / 2 - font.FONT_HEIGHT / 2,
-                field.getFGColor());
-    }
-
-    @Override
-    public void init(Minecraft minecraft, int width, int height) {
-        super.init(minecraft, width, height);
+                0xA0A0A0);
     }
 
     @Override
     protected void init() {
         mc.keyboardListener.enableRepeatEvents(true);
 
-        final int modelPrefixWidth = font.getStringWidth(MODEL_PREFIX);
-        final int modelFieldY = (height / 2) - 10 - 20 - MARGIN;
-        modelNamespace =
-                new TextFieldWidget(
-                        font,
-                        (width / 2) - (WIDTH / 2),
-                        modelFieldY,
-                        (WIDTH / 4) - (MARGIN / 2),
-                        20,
-                        StringTextComponent.EMPTY);
-        modelPath =
-                new TextFieldWidget(
-                        font,
-                        (width / 2) - (WIDTH / 2) + (WIDTH / 4) + MARGIN / 2 + modelPrefixWidth,
-                        modelFieldY,
-                        ((WIDTH / 4) * 3) - (MARGIN / 2) - modelPrefixWidth,
-                        20,
-                        new StringTextComponent("Model File:"));
+        state.save();
 
-        final int texturePrefixWidth = font.getStringWidth(TEXTURE_PREFIX);
-        final int textureFieldY = (height / 2) - 10;
-        textureNamespace =
-                new TextFieldWidget(
+        final int left = (width / 2) - (WIDTH / 2);
+        final int modelFieldY = (height / 2) - 70 - MARGIN;
+        modelWidget =
+                new ResourceFieldWidget(
                         font,
-                        (width / 2) - (WIDTH / 2),
-                        textureFieldY,
-                        (WIDTH / 4) - (MARGIN / 2),
+                        left,
+                        modelFieldY,
+                        WIDTH,
                         20,
-                        StringTextComponent.EMPTY);
-        texturePath =
-                new TextFieldWidget(
-                        font,
-                        (width / 2) - (WIDTH / 2) + (WIDTH / 4) + MARGIN / 2 + texturePrefixWidth,
-                        textureFieldY,
-                        ((WIDTH / 4) * 3) - (MARGIN / 2) - texturePrefixWidth,
-                        20,
-                        new StringTextComponent("Texture File:"));
+                        new StringTextComponent("Model Resource"),
+                        MODEL_PREFIX,
+                        model::validate,
+                        button ->
+                                mc.displayGuiScreen(
+                                        new SelectResourceScreen(
+                                                this,
+                                                new StringTextComponent("Select Model Resource"),
+                                                modelWidget)),
+                        (button, matrixStack, mouseX, mouseY) ->
+                                this.renderTooltip(
+                                        matrixStack,
+                                        new StringTextComponent("Select Model Resource"),
+                                        mouseX,
+                                        mouseY));
 
-        final int animationPrefixWidth = font.getStringWidth(ANIMATIONS_PREFIX);
-        final int animationsFieldY = (height / 2) - 10 + 20 + MARGIN;
-        animationsNamespace =
-                new TextFieldWidget(
+        final int textureFieldY =
+                modelFieldY + modelWidget.getHeightRealms() + font.FONT_HEIGHT + MARGIN * 3;
+        textureWidget =
+                new ResourceFieldWidget(
                         font,
-                        (width / 2) - (WIDTH / 2),
-                        animationsFieldY,
-                        (WIDTH / 4) - (MARGIN / 2),
+                        left,
+                        textureFieldY,
+                        WIDTH,
                         20,
-                        StringTextComponent.EMPTY);
-        animationsPath =
-                new TextFieldWidget(
+                        new StringTextComponent("Texture Resource"),
+                        TEXTURE_PREFIX,
+                        texture::validate,
+                        button ->
+                                mc.displayGuiScreen(
+                                        new SelectResourceScreen(
+                                                this,
+                                                new StringTextComponent("Select Texture Resource"),
+                                                textureWidget)),
+                        (button, matrixStack, mouseX, mouseY) ->
+                                this.renderTooltip(
+                                        matrixStack,
+                                        new StringTextComponent("Select Texture Resource"),
+                                        mouseX,
+                                        mouseY));
+
+        final int animationsFieldY =
+                textureFieldY + textureWidget.getHeightRealms() + font.FONT_HEIGHT + MARGIN * 3;
+        animationsWidget =
+                new ResourceFieldWidget(
                         font,
-                        (width / 2) - (WIDTH / 2) + (WIDTH / 4) + MARGIN / 2 + animationPrefixWidth,
+                        left,
                         animationsFieldY,
-                        ((WIDTH / 4) * 3) - (MARGIN / 2) - animationPrefixWidth,
+                        WIDTH,
                         20,
-                        new StringTextComponent("Animations File:"));
+                        new StringTextComponent("Animations Resource"),
+                        ANIMATIONS_PREFIX,
+                        animations::validate,
+                        button ->
+                                mc.displayGuiScreen(
+                                        new SelectResourceScreen(
+                                                this,
+                                                new StringTextComponent(
+                                                        "Select Animations Resource"),
+                                                animationsWidget)),
+                        (button, matrixStack, mouseX, mouseY) ->
+                                this.renderTooltip(
+                                        matrixStack,
+                                        new StringTextComponent("Select Animations Resource"),
+                                        mouseX,
+                                        mouseY));
 
         final StringTextComponent selAnimFieldMsg = new StringTextComponent("Animation:");
         final StringTextComponent rotFieldMsg = new StringTextComponent("Rotation:");
@@ -162,7 +181,7 @@ public class MuseumDummyScreen extends Screen {
         rotationField =
                 new TextFieldWidget(
                         font,
-                        (width / 2) - (WIDTH / 2) + rotFieldWidth + 3,
+                        left + rotFieldWidth + 3,
                         miscY,
                         (WIDTH / 8) - (MARGIN / 2),
                         20,
@@ -170,16 +189,40 @@ public class MuseumDummyScreen extends Screen {
         selectedAnimationField =
                 new TextFieldWidget(
                         font,
-                        (width / 2)
-                                - (WIDTH / 2)
-                                + rotFieldWidth
-                                + (WIDTH / 8)
-                                + (MARGIN * 6)
-                                + selAnimFieldWidth,
+                        left + rotFieldWidth + (WIDTH / 8) + (MARGIN * 6) + selAnimFieldWidth,
                         miscY,
-                        WIDTH - (rotFieldWidth + (WIDTH / 8) + (MARGIN * 6) + selAnimFieldWidth),
+                        WIDTH
+                                - (rotFieldWidth + (WIDTH / 8) + (MARGIN * 6) + selAnimFieldWidth)
+                                - 21,
                         20,
                         selAnimFieldMsg);
+        final BetterImageButton selectAnimButton =
+                this.addButton(
+                        new BetterImageButton(
+                                selectedAnimationField.x + selectedAnimationField.getWidth() + 2,
+                                selectedAnimationField.y,
+                                20,
+                                20,
+                                0,
+                                0,
+                                20,
+                                FOLDER_BUTTON_TEXTURE,
+                                32,
+                                64,
+                                button ->
+                                        mc.displayGuiScreen(
+                                                new SelectAnimationScreen(
+                                                        this,
+                                                        new StringTextComponent("Select Animation"),
+                                                        selectedAnimationField,
+                                                        () -> this.getAnimLoc().orElse(null))),
+                                (button, matrixStack, mouseX, mouseY) ->
+                                        this.renderTooltip(
+                                                matrixStack,
+                                                new StringTextComponent("Select Animation"),
+                                                mouseX,
+                                                mouseY),
+                                StringTextComponent.EMPTY));
 
         final int buttonsY = animationsFieldY + 40 + MARGIN * 5;
         doneButton =
@@ -201,91 +244,56 @@ public class MuseumDummyScreen extends Screen {
                                 DialogTexts.GUI_CANCEL,
                                 b -> this.closeScreen()));
 
-        final Consumer<String> modelResponder =
-                s -> locFieldResponder(model, modelNamespace, modelPath, this::getModelLoc);
-        final ResourceLocation modelLocation = model.getDirect();
-        modelNamespace.setMaxStringLength(16250);
-        modelNamespace.setResponder(modelResponder);
-        modelNamespace.setText(modelLocation.getNamespace());
-        children.add(modelNamespace);
-        modelPath.setMaxStringLength(16250);
-        modelPath.setResponder(modelResponder);
-        modelPath.setText(modelLocation.getPath().replaceFirst(Pattern.quote(MODEL_PREFIX), ""));
-        children.add(modelPath);
+        modelWidget.setChangeListener(this::checkDoneButton);
+        children.add(modelWidget);
 
-        final Consumer<String> textureResponder =
-                s -> locFieldResponder(texture, textureNamespace, texturePath, this::getTexLoc);
-        final ResourceLocation textureLocation = texture.getDirect();
-        textureNamespace.setMaxStringLength(16250);
-        textureNamespace.setResponder(textureResponder);
-        textureNamespace.setText(textureLocation.getNamespace());
-        children.add(textureNamespace);
-        texturePath.setMaxStringLength(16250);
-        texturePath.setResponder(textureResponder);
-        texturePath.setText(
-                textureLocation.getPath().replaceFirst(Pattern.quote(TEXTURE_PREFIX), ""));
-        children.add(texturePath);
+        textureWidget.setChangeListener(this::checkDoneButton);
+        children.add(textureWidget);
 
-        final Consumer<String> animationsResponder =
-                s ->
-                        locFieldResponder(
-                                animations, animationsNamespace, animationsPath, this::getAnimLoc);
-        final ResourceLocation animationsLocation = animations.getDirect();
-        animationsNamespace.setMaxStringLength(16250);
-        animationsNamespace.setResponder(animationsResponder);
-        animationsNamespace.setText(animationsLocation.getNamespace());
-        children.add(animationsNamespace);
-        animationsPath.setMaxStringLength(16250);
-        animationsPath.setResponder(animationsResponder);
-        animationsPath.setText(
-                animationsLocation.getPath().replaceFirst(Pattern.quote(ANIMATIONS_PREFIX), ""));
-        children.add(animationsPath);
+        animationsWidget.setChangeListener(
+                () -> {
+                    this.checkDoneButton();
+                    // Triggers the responder
+                    selectedAnimationField.setText(selectedAnimationField.getText());
+                });
+        children.add(animationsWidget);
 
         rotationField.setMaxStringLength(128);
         rotationField.setResponder(
                 s -> {
                     if (this.getRotation().isPresent()) {
-                        rotationField.setTextColor(0xe0e0e0);
+                        rotationField.setTextColor(TEXT_VALID);
                     } else {
-                        rotationField.setTextColor(0xff0000);
+                        rotationField.setTextColor(TEXT_ERROR);
                     }
                     this.checkDoneButton();
                 });
-        rotationField.setText(String.valueOf(defaultRotation));
         children.add(rotationField);
 
         selectedAnimationField.setMaxStringLength(32500);
         selectedAnimationField.setResponder(
                 s -> {
-                    if (selectedAnimation.check(s)) {
-                        selectedAnimationField.setTextColor(0xe0e0e0);
+                    // This is needed since selectedAnimation isn't set
+                    // until the done button is pressed
+                    final Optional<ResourceLocation> animLoc = this.getAnimLoc();
+                    if (animLoc.isPresent()) {
+                        final AnimationFile animFile =
+                                GeckoLibCache.getInstance().getAnimations().get(animLoc.get());
+                        final boolean fileExists = animFile != null;
+                        if (fileExists && (s.isEmpty() || animFile.getAnimation(s) != null)) {
+                            selectedAnimationField.setTextColor(TEXT_VALID);
+                        } else {
+                            selectedAnimationField.setTextColor(TEXT_INVALID);
+                        }
+                        selectAnimButton.active = fileExists;
                     } else {
-                        selectedAnimationField.setTextColor(0xffff00);
+                        selectAnimButton.active = false;
+                        selectedAnimationField.setTextColor(TEXT_ERROR);
                     }
                 });
-        selectedAnimationField.setText(selectedAnimation.getDirect());
         children.add(selectedAnimationField);
-    }
 
-    private void locFieldResponder(
-            CheckedResource<ResourceLocation> resource,
-            TextFieldWidget namespace,
-            TextFieldWidget path,
-            Supplier<Optional<ResourceLocation>> locationSupplier) {
-        final Optional<ResourceLocation> location = locationSupplier.get();
-        if (location.isPresent()) {
-            if (resource.check(location.get())) {
-                namespace.setTextColor(0xe0e0e0);
-                path.setTextColor(0xe0e0e0);
-            } else {
-                namespace.setTextColor(0xffff00);
-                path.setTextColor(0xffff00);
-            }
-        } else {
-            namespace.setTextColor(0xff0000);
-            path.setTextColor(0xff0000);
-        }
-        this.checkDoneButton();
+        state.load();
     }
 
     private void checkDoneButton() {
@@ -297,32 +305,10 @@ public class MuseumDummyScreen extends Screen {
     }
 
     @Override
-    public void resize(Minecraft minecraft, int width, int height) {
-        final String modelNamespaceText = modelNamespace.getText();
-        final String modelPathText = modelPath.getText();
-        final String textureNamespaceText = textureNamespace.getText();
-        final String texturePathText = texturePath.getText();
-        final String animationsNamespaceText = animationsNamespace.getText();
-        final String animationsPathText = animationsPath.getText();
-        final String rotationFieldText = rotationField.getText();
-        super.resize(minecraft, width, height);
-        modelNamespace.setText(modelNamespaceText);
-        modelPath.setText(modelPathText);
-        textureNamespace.setText(textureNamespaceText);
-        texturePath.setText(texturePathText);
-        animationsNamespace.setText(animationsNamespaceText);
-        animationsPath.setText(animationsPathText);
-        rotationField.setText(rotationFieldText);
-    }
-
-    @Override
     public void tick() {
-        modelNamespace.tick();
-        modelPath.tick();
-        textureNamespace.tick();
-        texturePath.tick();
-        animationsNamespace.tick();
-        animationsPath.tick();
+        modelWidget.tick();
+        textureWidget.tick();
+        animationsWidget.tick();
         rotationField.tick();
         selectedAnimationField.tick();
     }
@@ -330,26 +316,22 @@ public class MuseumDummyScreen extends Screen {
     @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         this.renderBackground(matrixStack);
-        drawStringAbove(matrixStack, font, modelNamespace, new StringTextComponent("Namespace"));
-        drawStringAbove(matrixStack, font, modelPath, new StringTextComponent("File Path"));
-        drawStringLeft(matrixStack, font, modelNamespace, modelPath.getMessage(), 0);
-        modelNamespace.render(matrixStack, mouseX, mouseY, partialTicks);
-        drawStringLeft(matrixStack, font, modelPath, new StringTextComponent(MODEL_PREFIX), MARGIN);
-        modelPath.render(matrixStack, mouseX, mouseY, partialTicks);
-        drawStringLeft(matrixStack, font, textureNamespace, texturePath.getMessage(), 0);
-        textureNamespace.render(matrixStack, mouseX, mouseY, partialTicks);
-        drawStringLeft(
-                matrixStack, font, texturePath, new StringTextComponent(TEXTURE_PREFIX), MARGIN);
-        texturePath.render(matrixStack, mouseX, mouseY, partialTicks);
-        drawStringLeft(matrixStack, font, animationsNamespace, animationsPath.getMessage(), 0);
-        animationsNamespace.render(matrixStack, mouseX, mouseY, partialTicks);
-        drawStringLeft(
+
+        drawCenteredString(
                 matrixStack,
                 font,
-                animationsPath,
-                new StringTextComponent(ANIMATIONS_PREFIX),
-                MARGIN);
-        animationsPath.render(matrixStack, mouseX, mouseY, partialTicks);
+                title.copyRaw().mergeStyle(TextFormatting.UNDERLINE),
+                width / 2,
+                10,
+                0xFFFFFF);
+
+        modelWidget.render(matrixStack, mouseX, mouseY, partialTicks);
+        drawTitle(matrixStack, font, modelWidget);
+        textureWidget.render(matrixStack, mouseX, mouseY, partialTicks);
+        drawTitle(matrixStack, font, textureWidget);
+        animationsWidget.render(matrixStack, mouseX, mouseY, partialTicks);
+        drawTitle(matrixStack, font, animationsWidget);
+
         drawStringLeft(matrixStack, font, rotationField, rotationField.getMessage(), 0);
         rotationField.render(matrixStack, mouseX, mouseY, partialTicks);
         drawStringLeft(
@@ -361,6 +343,11 @@ public class MuseumDummyScreen extends Screen {
     @Override
     public void onClose() {
         mc.keyboardListener.enableRepeatEvents(false);
+    }
+
+    @Override
+    public boolean isPauseScreen() {
+        return false;
     }
 
     protected void saveAndClose() {
@@ -389,57 +376,66 @@ public class MuseumDummyScreen extends Screen {
     }
 
     protected Optional<ResourceLocation> getModelLoc() {
-        try {
-            final ResourceLocation fallback = model.getFallback();
-            final String namespace = modelNamespace.getText();
-            final String path = modelPath.getText();
-            return Optional.of(
-                    new ResourceLocation(
-                            namespace.isEmpty() ? fallback.getNamespace() : namespace,
-                            MODEL_PREFIX
-                                    + (path.isEmpty()
-                                            ? fallback.getPath()
-                                                    .replaceFirst(Pattern.quote(MODEL_PREFIX), "")
-                                            : path)));
-        } catch (ResourceLocationException e) {
-            return Optional.empty();
-        }
+        return Optional.ofNullable(modelWidget.getLocation());
     }
 
     protected Optional<ResourceLocation> getTexLoc() {
-        try {
-            final ResourceLocation fallback = texture.getFallback();
-            final String namespace = textureNamespace.getText();
-            final String path = texturePath.getText();
-            return Optional.of(
-                    new ResourceLocation(
-                            namespace.isEmpty() ? fallback.getNamespace() : namespace,
-                            TEXTURE_PREFIX
-                                    + (path.isEmpty()
-                                            ? fallback.getPath()
-                                                    .replaceFirst(Pattern.quote(TEXTURE_PREFIX), "")
-                                            : path)));
-        } catch (ResourceLocationException e) {
-            return Optional.empty();
-        }
+        return Optional.ofNullable(textureWidget.getLocation());
     }
 
     protected Optional<ResourceLocation> getAnimLoc() {
-        try {
-            final ResourceLocation fallback = animations.getFallback();
-            final String namespace = animationsNamespace.getText();
-            final String path = animationsPath.getText();
-            return Optional.of(
-                    new ResourceLocation(
-                            namespace.isEmpty() ? fallback.getNamespace() : namespace,
-                            ANIMATIONS_PREFIX
-                                    + (path.isEmpty()
-                                            ? fallback.getPath()
-                                                    .replaceFirst(
-                                                            Pattern.quote(ANIMATIONS_PREFIX), "")
-                                            : path)));
-        } catch (ResourceLocationException e) {
-            return Optional.empty();
+        return Optional.ofNullable(animationsWidget.getLocation());
+    }
+
+    private class SavedState {
+        private ResourceLocation modelState;
+        private ResourceLocation texState;
+        private ResourceLocation animsState;
+        private String rotState;
+        private String selAnimState;
+
+        public void init() {
+            modelState = model.getDirect();
+            texState = texture.getDirect();
+            animsState = animations.getDirect();
+            rotState = String.valueOf(defaultRotation);
+            selAnimState = selectedAnimation.getDirect();
+        }
+
+        public void save() {
+            if (modelWidget != null) {
+                modelState = modelWidget.getLocation();
+            }
+            if (textureWidget != null) {
+                texState = textureWidget.getLocation();
+            }
+            if (animationsWidget != null) {
+                animsState = animationsWidget.getLocation();
+            }
+            if (rotationField != null) {
+                rotState = rotationField.getText();
+            }
+            if (selectedAnimationField != null) {
+                selAnimState = selectedAnimationField.getText();
+            }
+        }
+
+        public void load() {
+            if (modelWidget != null) {
+                modelWidget.setLocation(modelState, true);
+            }
+            if (textureWidget != null) {
+                textureWidget.setLocation(texState, true);
+            }
+            if (animationsWidget != null) {
+                animationsWidget.setLocation(animsState, true);
+            }
+            if (rotationField != null) {
+                rotationField.setText(rotState);
+            }
+            if (selectedAnimationField != null) {
+                selectedAnimationField.setText(selAnimState);
+            }
         }
     }
 }

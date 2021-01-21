@@ -35,7 +35,7 @@ public class MuseumDataSerializers {
                                     }));
 
     @SuppressWarnings("unchecked") // Forge >:(
-    public static IDataSerializer<ResourceLocation> getResourceLocation() {
+    public static IDataSerializer<ResourceLocation> getResourceLocationSerializer() {
         return (IDataSerializer<ResourceLocation>)
                 MuseumDataSerializers.RESOURCE_LOCATION.get().getSerializer();
     }

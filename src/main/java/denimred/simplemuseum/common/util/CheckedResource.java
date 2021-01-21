@@ -2,19 +2,23 @@ package denimred.simplemuseum.common.util;
 
 import java.util.function.Predicate;
 
-public class CheckedResource<T> {
-    private final T fallback;
-    private final Predicate<T> checker;
-    private T current;
-    private T lastGood;
+import javax.annotation.Nullable;
 
-    public CheckedResource(T fallback, Attempticate<T> checker) {
-        this(fallback, (Predicate<T>) checker);
+import denimred.simplemuseum.SimpleMuseum;
+
+public class CheckedResource<T> {
+    private final Predicate<T> validator;
+    private final T fallback;
+    private T current;
+    @Nullable private T cached;
+
+    public CheckedResource(T fallback, Attempticate<T> validator) {
+        this(fallback, (Predicate<T>) validator);
     }
 
-    public CheckedResource(T fallback, Predicate<T> checker) {
+    public CheckedResource(T fallback, Predicate<T> validator) {
         this.fallback = fallback;
-        this.checker = checker;
+        this.validator = validator;
         current = fallback;
     }
 
@@ -27,29 +31,28 @@ public class CheckedResource<T> {
     }
 
     public T getSafe() {
-        if (lastGood != current) {
-            if (lastGood != fallback) {
-                if (checker.test(current)) {
-                    lastGood = current;
-                } else {
-//                    SimpleMuseum.LOGGER.warn(
-//                            String.format(
-//                                    "Resource '%s' of type '%s' doesn't exist",
-//                                    current, current.getClass().getSimpleName()));
-                    lastGood = fallback;
-                }
+        if (cached != current && cached != fallback || cached == null) {
+            if (validator.test(current)) {
+                cached = current;
+            } else {
+                SimpleMuseum.LOGGER.debug(
+                        String.format("Resource '%s' is invalid (may not exist)", current));
+                cached = fallback;
             }
-            return lastGood;
         }
-        return this.getDirect();
+        return cached;
     }
 
     public void set(T t) {
         current = t;
-        lastGood = null;
+        cached = null;
     }
 
-    public boolean check(T t) {
-        return checker.test(t);
+    public boolean validate(T t) {
+        return validator.test(t);
+    }
+
+    public void clearCached() {
+        cached = null;
     }
 }

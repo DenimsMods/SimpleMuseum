@@ -1,12 +1,15 @@
 package denimred.simplemuseum;
 
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import denimred.simplemuseum.client.util.ClientUtil;
 import denimred.simplemuseum.common.init.MuseumDataSerializers;
 import denimred.simplemuseum.common.init.MuseumEntities;
 import denimred.simplemuseum.common.init.MuseumItems;
@@ -24,5 +27,7 @@ public class SimpleMuseum {
         MuseumItems.REGISTRY.register(bus);
 
         MuseumNetworking.registerMessages();
+
+        DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> ClientUtil::registerResourceReloadListener);
     }
 }
