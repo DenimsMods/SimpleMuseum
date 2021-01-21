@@ -5,8 +5,7 @@
 Allows you to load and display static arbitrary GeckoLib models via resource packs. Primarily useful for testing things
 in-game or creating displays/showcases.
 
-Use a "Museum Dummy Spawn Egg" (found in the miscellaneous creative tab) to create a dummy, then right-click it to
-access its properties.
+Use the "Curator's Cane" (found in the miscellaneous creative tab) to create a dummy. Use the cane on the dummy to open its settings, or hit the dummy with the cane to remove the dummy.
 
 Custom models can be loaded via resource packs (server packs are recommended). Use whatever you like for the namespace (
 the `/assets/<namespace-here>/`folder). I recommend either using this mod's ID (`simplemuseum`) or coming up with
