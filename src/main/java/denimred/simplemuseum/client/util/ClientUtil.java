@@ -10,12 +10,9 @@ import net.minecraftforge.resource.IResourceType;
 import net.minecraftforge.resource.ISelectiveResourceReloadListener;
 import net.minecraftforge.resource.VanillaResourceType;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import denimred.simplemuseum.client.gui.screen.MuseumDummyScreen;
 import denimred.simplemuseum.common.entity.MuseumDummyEntity;
@@ -31,28 +28,19 @@ public class ClientUtil {
         MC.displayGuiScreen(new MuseumDummyScreen(dummy));
     }
 
-    public static Collection<ResourceLocation> getCachedResourceCollection(
+    public static CompletableFuture<List<ResourceLocation>> getCachedResourcesAsync(
             String path, Predicate<ResourceLocation> filter) {
-        final IResourceManager manager = MC.getResourceManager();
-        return RESOURCE_CACHE.computeIfAbsent(
-                path,
-                p ->
-                        manager.getAllResourceLocations(p, string -> true).stream()
-                                .filter(
-                                        loc -> {
-                                            if (!filter.test(loc)) {
-                                                return false;
-                                            } else {
-                                                try {
-                                                    manager.getResource(loc);
-                                                    return true;
-                                                } catch (IOException e) {
-                                                    return false;
-                                                }
-                                            }
-                                        })
-                                .sorted(Comparator.comparing(ResourceLocation::toString))
-                                .collect(Collectors.toList()));
+        if (RESOURCE_CACHE.containsKey(path)) {
+            return CompletableFuture.completedFuture(RESOURCE_CACHE.get(path));
+        } else {
+            return CompletableFuture.supplyAsync(
+                    () -> {
+                        final List<ResourceLocation> resources =
+                                CarefulPackLoader.getAllResources(path, filter);
+                        RESOURCE_CACHE.put(path, resources);
+                        return resources;
+                    });
+        }
     }
 
     public static void registerResourceReloadListener() {

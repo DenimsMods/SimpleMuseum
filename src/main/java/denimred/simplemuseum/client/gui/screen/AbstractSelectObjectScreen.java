@@ -5,7 +5,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.DialogTexts;
-import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.button.Button;
@@ -16,7 +15,9 @@ import net.minecraft.util.text.LanguageMap;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 
-import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import javax.annotation.Nullable;
 
@@ -155,7 +156,7 @@ public abstract class AbstractSelectObjectScreen<T> extends Screen {
 
     protected abstract boolean isSelected(ListWidget.Entry entry);
 
-    protected abstract Collection<T> getEntries();
+    protected abstract CompletableFuture<List<T>> getEntriesAsync();
 
     protected boolean matchesSearch(T value) {
         if (!lastSearchText.isEmpty()) {
@@ -166,6 +167,8 @@ public abstract class AbstractSelectObjectScreen<T> extends Screen {
 
     protected class ListWidget extends ExtendedList<ListWidget.Entry> {
         protected final int listWidth;
+        protected boolean loading;
+        protected boolean errored;
 
         public ListWidget(int top, int bottom, int width) {
             super(
@@ -190,18 +193,58 @@ public abstract class AbstractSelectObjectScreen<T> extends Screen {
         }
 
         public void refreshList() {
+            errored = false;
+            loading = true;
             this.clearEntries();
-            for (T value : AbstractSelectObjectScreen.this.getEntries()) {
-                if (AbstractSelectObjectScreen.this.matchesSearch(value)) {
-                    this.addEntry(new Entry(value));
-                }
-            }
+            AbstractSelectObjectScreen.this
+                    .getEntriesAsync()
+                    .exceptionally(
+                            t -> {
+                                errored = true;
+                                return Collections.emptyList();
+                            })
+                    .thenAccept(
+                            entries -> {
+                                for (T entry : entries) {
+                                    if (AbstractSelectObjectScreen.this.matchesSearch(entry)) {
+                                        this.addEntry(new Entry(entry));
+                                    }
+                                }
+                                loading = false;
+                            });
         }
 
         @Override
         protected void renderBackground(MatrixStack matrixStack) {
             AbstractSelectObjectScreen.this.fillGradient(
                     matrixStack, x0, y0, x1, y1, 0xc0101010, 0xd0101010);
+        }
+
+        @Override
+        protected void renderDecorations(MatrixStack stack, int mouseX, int mouseY) {
+            if (loading || errored) {
+                final ITextComponent msg;
+                final float scale = 3.0F;
+                if (loading) {
+                    msg =
+                            new StringTextComponent("Loading...")
+                                    .mergeStyle(TextFormatting.ITALIC, TextFormatting.GRAY);
+                } else {
+                    msg =
+                            new StringTextComponent("Error, check log!")
+                                    .mergeStyle(TextFormatting.ITALIC, TextFormatting.RED);
+                }
+
+                final float width = (font.getStringPropertyWidth(msg) / 2.0F) * scale;
+                final float x = x0 + (this.width / 2.0F) - width;
+                final float y = y0 + (height / 2.0F) - ((font.FONT_HEIGHT / 2.0F) * scale);
+                stack.push();
+                stack.scale(scale, scale, scale);
+                RenderSystem.enableBlend();
+                font.func_243246_a(stack, msg, x / scale, y / scale, 0x66FFFFFF);
+                RenderSystem.disableBlend();
+                stack.pop();
+            }
         }
 
         protected class Entry extends ExtendedList.AbstractListEntry<Entry> {
@@ -224,7 +267,6 @@ public abstract class AbstractSelectObjectScreen<T> extends Screen {
                     boolean hovered,
                     float partialTicks) {
                 final ITextComponent name = new StringTextComponent(value.toString());
-                final FontRenderer font = AbstractSelectObjectScreen.this.font;
                 font.func_238422_b_(
                         matrixStack,
                         LanguageMap.getInstance()

@@ -5,8 +5,9 @@ import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -40,16 +41,18 @@ public class SelectAnimationScreen extends AbstractSelectObjectScreen<String> {
     }
 
     @Override
-    protected Collection<String> getEntries() {
+    protected CompletableFuture<List<String>> getEntriesAsync() {
         final ResourceLocation loc = fileLocSupplier.get();
         if (loc != null) {
             final AnimationFile file = GeckoLibCache.getInstance().getAnimations().get(loc);
             if (file != null) {
-                return file.getAllAnimations().stream()
-                        .map(anim -> anim.animationName)
-                        .collect(Collectors.toList());
+                return CompletableFuture.supplyAsync(
+                        () ->
+                                file.getAllAnimations().stream()
+                                        .map(anim -> anim.animationName)
+                                        .collect(Collectors.toList()));
             }
         }
-        return Collections.emptyList();
+        return CompletableFuture.completedFuture(Collections.emptyList());
     }
 }

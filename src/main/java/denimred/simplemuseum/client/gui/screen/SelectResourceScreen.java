@@ -4,7 +4,8 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import denimred.simplemuseum.client.gui.widget.ResourceFieldWidget;
 import denimred.simplemuseum.client.util.ClientUtil;
@@ -31,8 +32,8 @@ public class SelectResourceScreen extends AbstractSelectObjectScreen<ResourceLoc
     }
 
     @Override
-    protected Collection<ResourceLocation> getEntries() {
+    protected CompletableFuture<List<ResourceLocation>> getEntriesAsync() {
         final String path = caller.getPathPrefix().replaceFirst("/$", "");
-        return ClientUtil.getCachedResourceCollection(path, caller::validate);
+        return ClientUtil.getCachedResourcesAsync(path, caller::validate);
     }
 }
