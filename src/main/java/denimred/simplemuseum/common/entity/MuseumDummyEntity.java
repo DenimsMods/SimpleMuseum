@@ -364,7 +364,7 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
     @Override
     public void registerControllers(AnimationData data) {
         data.addAnimationController(
-                new AnimationController<>(this, "controller", 0.0F, this::animationPredicate));
+                new AnimationController<>(this, "controller", 0, this::animationPredicate));
     }
 
     @Override

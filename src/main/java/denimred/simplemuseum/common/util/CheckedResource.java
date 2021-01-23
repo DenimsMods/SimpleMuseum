@@ -4,8 +4,6 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
-import denimred.simplemuseum.SimpleMuseum;
-
 public class CheckedResource<T> {
     private final Predicate<T> validator;
     private final T fallback;
@@ -22,6 +20,10 @@ public class CheckedResource<T> {
         current = fallback;
     }
 
+    public T getFallback() {
+        return fallback;
+    }
+
     public T getDirect() {
         return current;
     }
@@ -31,8 +33,6 @@ public class CheckedResource<T> {
             if (validator.test(current)) {
                 cached = current;
             } else {
-                SimpleMuseum.LOGGER.debug(
-                        String.format("Resource '%s' is invalid (may not exist)", current));
                 cached = fallback;
             }
         }

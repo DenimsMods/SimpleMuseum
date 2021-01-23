@@ -21,6 +21,8 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.annotation.Nullable;
 
+import denimred.simplemuseum.SimpleMuseum;
+
 public abstract class AbstractSelectObjectScreen<T> extends Screen {
     protected final Minecraft mc = Minecraft.getInstance();
     protected final Screen parent;
@@ -201,6 +203,7 @@ public abstract class AbstractSelectObjectScreen<T> extends Screen {
                     .exceptionally(
                             t -> {
                                 errored = true;
+                                SimpleMuseum.LOGGER.error("Exception while refreshing list", t);
                                 return Collections.emptyList();
                             })
                     .thenAccept(
@@ -225,14 +228,17 @@ public abstract class AbstractSelectObjectScreen<T> extends Screen {
             if (loading || errored) {
                 final ITextComponent msg;
                 final float scale = 3.0F;
+                final int a;
                 if (loading) {
                     msg =
                             new StringTextComponent("Loading...")
                                     .mergeStyle(TextFormatting.ITALIC, TextFormatting.GRAY);
+                    a = 0x66000000;
                 } else {
                     msg =
                             new StringTextComponent("Error, check log!")
                                     .mergeStyle(TextFormatting.ITALIC, TextFormatting.RED);
+                    a = 0xFF000000;
                 }
 
                 final float width = (font.getStringPropertyWidth(msg) / 2.0F) * scale;
@@ -241,7 +247,7 @@ public abstract class AbstractSelectObjectScreen<T> extends Screen {
                 stack.push();
                 stack.scale(scale, scale, scale);
                 RenderSystem.enableBlend();
-                font.func_243246_a(stack, msg, x / scale, y / scale, 0x66FFFFFF);
+                font.func_243246_a(stack, msg, x / scale, y / scale, a | 0xFFFFFF);
                 RenderSystem.disableBlend();
                 stack.pop();
             }
