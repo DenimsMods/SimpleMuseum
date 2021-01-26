@@ -23,6 +23,7 @@ import net.minecraft.util.ResourceLocationException;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
@@ -33,6 +34,7 @@ import javax.annotation.Nullable;
 
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.common.init.MuseumDataSerializers;
+import denimred.simplemuseum.common.init.MuseumItems;
 import denimred.simplemuseum.common.util.CheckedResource;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
@@ -169,6 +171,11 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
         if (modTag.contains(SELECTED_ANIMATION_NBT, TAG_STRING)) {
             this.setSelectedAnimation(modTag.getString(SELECTED_ANIMATION_NBT));
         }
+    }
+
+    @Override
+    public ItemStack getPickedResult(RayTraceResult target) {
+        return new ItemStack(MuseumItems.CURATORS_CANE.get());
     }
 
     @Override
