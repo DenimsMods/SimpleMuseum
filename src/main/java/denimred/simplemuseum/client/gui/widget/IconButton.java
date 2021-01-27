@@ -8,7 +8,7 @@ import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 
-public class BetterImageButton extends Button {
+public class IconButton extends Button {
     private final ResourceLocation resourceLocation;
     private final int xTexStart;
     private final int yTexStart;
@@ -16,7 +16,7 @@ public class BetterImageButton extends Button {
     private final int textureWidth;
     private final int textureHeight;
 
-    public BetterImageButton(
+    public IconButton(
             int x,
             int y,
             int width,

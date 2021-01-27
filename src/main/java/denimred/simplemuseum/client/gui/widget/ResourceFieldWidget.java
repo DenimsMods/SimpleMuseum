@@ -32,7 +32,7 @@ public class ResourceFieldWidget extends Widget {
     protected final String pathPrefix;
     protected final TextFieldWidget namespaceField;
     protected final TextFieldWidget pathField;
-    protected final BetterImageButton openListButton;
+    protected final IconButton openListButton;
     protected final Pattern pathPrefixPattern;
     private final Predicate<ResourceLocation> validator;
     protected int color;
@@ -69,7 +69,7 @@ public class ResourceFieldWidget extends Widget {
                         height,
                         StringTextComponent.EMPTY);
         openListButton =
-                new BetterImageButton(
+                new IconButton(
                         pathField.x + pathWidth + 2,
                         y,
                         20,
@@ -108,6 +108,20 @@ public class ResourceFieldWidget extends Widget {
 
     public void setChangeListener(@Nullable Runnable changeListener) {
         this.changeListener = changeListener;
+    }
+
+    public void setLocation(@Nullable String loc, boolean trimPathPrefix, boolean ignoreException) {
+        if (loc == null || loc.isEmpty()) {
+            this.setLocation(null, trimPathPrefix);
+        } else {
+            try {
+                this.setLocation(new ResourceLocation(loc), trimPathPrefix);
+            } catch (ResourceLocationException e) {
+                if (!ignoreException) {
+                    throw e;
+                }
+            }
+        }
     }
 
     public void setLocation(@Nullable ResourceLocation loc, boolean trimPathPrefix) {

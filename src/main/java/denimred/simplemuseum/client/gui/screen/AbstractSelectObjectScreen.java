@@ -150,6 +150,11 @@ public abstract class AbstractSelectObjectScreen<T> extends Screen {
         mc.keyboardListener.enableRepeatEvents(false);
     }
 
+    @Override
+    public boolean isPauseScreen() {
+        return false;
+    }
+
     public void setSelected(ListWidget.Entry entry) {
         selected = (entry == selected ? null : entry);
     }

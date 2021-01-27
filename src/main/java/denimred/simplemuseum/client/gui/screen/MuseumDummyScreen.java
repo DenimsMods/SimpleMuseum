@@ -16,10 +16,11 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 
 import java.util.Optional;
+import java.util.StringJoiner;
 import java.util.UUID;
 
 import denimred.simplemuseum.SimpleMuseum;
-import denimred.simplemuseum.client.gui.widget.BetterImageButton;
+import denimred.simplemuseum.client.gui.widget.IconButton;
 import denimred.simplemuseum.client.gui.widget.ResourceFieldWidget;
 import denimred.simplemuseum.common.entity.MuseumDummyEntity;
 import denimred.simplemuseum.common.init.MuseumNetworking;
@@ -31,6 +32,10 @@ import software.bernie.geckolib3.resource.GeckoLibCache;
 import static denimred.simplemuseum.client.gui.widget.ResourceFieldWidget.FOLDER_BUTTON_TEXTURE;
 
 public class MuseumDummyScreen extends Screen {
+    public static final ResourceLocation COPY_BUTTON_TEXTURE =
+            new ResourceLocation(SimpleMuseum.MOD_ID, "textures/gui/copy_button.png");
+    public static final ResourceLocation PASTE_BUTTON_TEXTURE =
+            new ResourceLocation(SimpleMuseum.MOD_ID, "textures/gui/paste_button.png");
     private static final int WIDTH = 300;
     private static final int MARGIN = 4;
     private static final String MODEL_PREFIX = "geo/";
@@ -47,12 +52,13 @@ public class MuseumDummyScreen extends Screen {
     private final CheckedResource<ResourceLocation> animations;
     private final CheckedResource<String> selectedAnimation;
     private final SavedState state = new SavedState();
+    private IconButton copyButton;
     private Button doneButton;
-    private TextFieldWidget rotationField;
     private ResourceFieldWidget modelWidget;
     private ResourceFieldWidget textureWidget;
     private ResourceFieldWidget animationsWidget;
     private TextFieldWidget selectedAnimationField;
+    private TextFieldWidget rotationField;
 
     public MuseumDummyScreen(MuseumDummyEntity dummy) {
         super(dummy.getDisplayName());
@@ -90,14 +96,79 @@ public class MuseumDummyScreen extends Screen {
                 0xA0A0A0);
     }
 
+    private void copy() {
+        final StringJoiner joiner = new StringJoiner("|");
+        joiner.add(this.getModelLoc().map(String::valueOf).orElse(""));
+        joiner.add(this.getTexLoc().map(String::valueOf).orElse(""));
+        joiner.add(this.getAnimLoc().map(String::valueOf).orElse(""));
+        joiner.add(selectedAnimationField.getText());
+        joiner.add(this.getRotation().map(String::valueOf).orElse(""));
+        mc.keyboardListener.setClipboardString(joiner.toString());
+    }
+
+    private void paste() {
+        final String clip = mc.keyboardListener.getClipboardString();
+        final String[] split = clip.split("\\|", -1);
+        final int length = split.length;
+        if (length >= 1) modelWidget.setLocation(split[0], true, true);
+        if (length >= 2) textureWidget.setLocation(split[1], true, true);
+        if (length >= 3) animationsWidget.setLocation(split[2], true, true);
+        if (length >= 4) selectedAnimationField.setText(split[3]);
+        if (length >= 5) rotationField.setText(split[4]);
+    }
+
     @Override
     protected void init() {
         mc.keyboardListener.enableRepeatEvents(true);
 
         state.save();
 
-        final int left = (width / 2) - (WIDTH / 2);
-        final int modelFieldY = (height / 2) - 70 - MARGIN;
+        final int center = (width / 2);
+        final int left = center - (WIDTH / 2);
+        final int top = (height / 2) - 100;
+        copyButton =
+                this.addButton(
+                        new IconButton(
+                                center - 20 - MARGIN,
+                                top,
+                                20,
+                                20,
+                                0,
+                                0,
+                                20,
+                                COPY_BUTTON_TEXTURE,
+                                32,
+                                64,
+                                button -> this.copy(),
+                                (button, matrixStack, mouseX, mouseY) ->
+                                        this.renderTooltip(
+                                                matrixStack,
+                                                new StringTextComponent("Copy to Clipboard"),
+                                                mouseX,
+                                                mouseY),
+                                StringTextComponent.EMPTY));
+        this.addButton(
+                new IconButton(
+                        center + MARGIN,
+                        top,
+                        20,
+                        20,
+                        0,
+                        0,
+                        20,
+                        PASTE_BUTTON_TEXTURE,
+                        32,
+                        64,
+                        button -> this.paste(),
+                        (button, matrixStack, mouseX, mouseY) ->
+                                this.renderTooltip(
+                                        matrixStack,
+                                        new StringTextComponent("Paste from Clipboard"),
+                                        mouseX,
+                                        mouseY),
+                        StringTextComponent.EMPTY));
+
+        final int modelFieldY = top + 30 + MARGIN;
         modelWidget =
                 new ResourceFieldWidget(
                         font,
@@ -195,9 +266,9 @@ public class MuseumDummyScreen extends Screen {
                                 - 21,
                         20,
                         selAnimFieldMsg);
-        final BetterImageButton selectAnimButton =
+        final IconButton selectAnimButton =
                 this.addButton(
-                        new BetterImageButton(
+                        new IconButton(
                                 selectedAnimationField.x + selectedAnimationField.getWidth() + 2,
                                 selectedAnimationField.y,
                                 20,
@@ -223,12 +294,12 @@ public class MuseumDummyScreen extends Screen {
                                                 mouseY),
                                 StringTextComponent.EMPTY));
 
-        final int buttonsY = animationsFieldY + 40 + MARGIN * 5;
+        final int exitButtonsY = animationsFieldY + 40 + MARGIN * 5;
         doneButton =
                 this.addButton(
                         new Button(
                                 width / 2 - 4 - 150 + 2,
-                                buttonsY,
+                                exitButtonsY,
                                 150,
                                 20,
                                 DialogTexts.GUI_DONE,
@@ -236,21 +307,21 @@ public class MuseumDummyScreen extends Screen {
         this.addButton(
                 new Button(
                         width / 2 + 4 - 2,
-                        buttonsY,
+                        exitButtonsY,
                         150,
                         20,
                         DialogTexts.GUI_CANCEL,
                         b -> this.closeScreen()));
 
-        modelWidget.setChangeListener(this::checkDoneButton);
+        modelWidget.setChangeListener(this::checkAcceptableState);
         children.add(modelWidget);
 
-        textureWidget.setChangeListener(this::checkDoneButton);
+        textureWidget.setChangeListener(this::checkAcceptableState);
         children.add(textureWidget);
 
         animationsWidget.setChangeListener(
                 () -> {
-                    this.checkDoneButton();
+                    this.checkAcceptableState();
                     // Triggers the responder
                     selectedAnimationField.setText(selectedAnimationField.getText());
                 });
@@ -264,7 +335,7 @@ public class MuseumDummyScreen extends Screen {
                     } else {
                         rotationField.setTextColor(TEXT_ERROR);
                     }
-                    this.checkDoneButton();
+                    this.checkAcceptableState();
                 });
         children.add(rotationField);
 
@@ -294,12 +365,13 @@ public class MuseumDummyScreen extends Screen {
         state.load();
     }
 
-    private void checkDoneButton() {
+    private void checkAcceptableState() {
         doneButton.active =
-                this.getModelLoc().isPresent()
-                        && this.getTexLoc().isPresent()
-                        && this.getAnimLoc().isPresent()
-                        && this.getRotation().isPresent();
+                copyButton.active =
+                        this.getModelLoc().isPresent()
+                                && this.getTexLoc().isPresent()
+                                && this.getAnimLoc().isPresent()
+                                && this.getRotation().isPresent();
     }
 
     @Override
