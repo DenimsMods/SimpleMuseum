@@ -129,11 +129,11 @@ public class ErrorBannersLayerRenderer extends GeoLayerRenderer<MuseumDummyEntit
                     .endVertex();
         }
 
-        // CCEs if the type buffer is for entity outlines, best to be careful
+        // Manually draw the buffer to prevent loops from connecting to other loops
         if (typeBuffer instanceof IRenderTypeBuffer.Impl) {
             ((IRenderTypeBuffer.Impl) typeBuffer).finish(type);
         } else if (typeBuffer instanceof OutlineLayerBuffer) {
-            ((OutlineLayerBuffer) typeBuffer).finish();
+            ((OutlineLayerBuffer) typeBuffer).buffer.finish(type);
         }
 
         matrixStack.pop();
