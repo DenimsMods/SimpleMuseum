@@ -33,14 +33,14 @@ public class ErrorBannersLayerRenderer extends GeoLayerRenderer<MuseumDummyEntit
         final int resolution = 16;
         final double step = Math.PI * 2.0D / resolution;
         final float halfStep = (float) (step / 2.0D);
-        final double diameter = step * resolution;
+        final double circumference = step * resolution;
         final double radius = 1.0D;
 
         // Generate the vertices
         vertices = new ArrayList<>((resolution * 2) + 2);
-        for (double rad = 0.0D; rad < diameter; rad += step) {
-            final float x = (float) (Math.sin(rad) * radius);
-            final float z = (float) (Math.cos(rad) * radius);
+        for (double radians = 0.0D; radians < circumference; radians += step) {
+            final float x = (float) (Math.sin(radians) * radius);
+            final float z = (float) (Math.cos(radians) * radius);
             vertices.add(new Vector3f(x, +halfStep, z));
             vertices.add(new Vector3f(x, -halfStep, z));
         }
