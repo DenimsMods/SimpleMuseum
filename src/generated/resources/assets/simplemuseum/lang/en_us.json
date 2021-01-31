@@ -1,4 +1,18 @@
 {
   "entity.simplemuseum.museum_dummy": "Museum Dummy",
+  "gui.simplemuseum.clipboard.copy": "Copy to Clipboard",
+  "gui.simplemuseum.clipboard.paste": "Paste from Clipboard",
+  "gui.simplemuseum.dummy.animations": "Animations Resource",
+  "gui.simplemuseum.dummy.animations.select": "Select Animations Resource",
+  "gui.simplemuseum.dummy.model": "Model Resource",
+  "gui.simplemuseum.dummy.model.select": "Select Model Resource",
+  "gui.simplemuseum.dummy.rotation": "Rotation:",
+  "gui.simplemuseum.dummy.selected_animation": "Animation:",
+  "gui.simplemuseum.dummy.selected_animation.select": "Select Animation",
+  "gui.simplemuseum.dummy.texture": "Texture Resource",
+  "gui.simplemuseum.dummy.texture.select": "Select Texture Resource",
+  "gui.simplemuseum.error": "Error, check log!",
+  "gui.simplemuseum.loading": "Loading...",
+  "gui.simplemuseum.search": "Search",
   "item.simplemuseum.curators_cane": "Curator's Cane"
 }

@@ -10,7 +10,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import denimred.simplemuseum.SimpleMuseum;
 
-public class MuseumDataSerializers {
+public final class MuseumDataSerializers {
     public static final DeferredRegister<DataSerializerEntry> REGISTRY =
             DeferredRegister.create(ForgeRegistries.DATA_SERIALIZERS, SimpleMuseum.MOD_ID);
     public static final RegistryObject<DataSerializerEntry> RESOURCE_LOCATION =
@@ -34,7 +34,7 @@ public class MuseumDataSerializers {
                                         }
                                     }));
 
-    @SuppressWarnings("unchecked") // Forge >:(
+    @SuppressWarnings("unchecked") // Forge >:I
     public static IDataSerializer<ResourceLocation> getResourceLocationSerializer() {
         return (IDataSerializer<ResourceLocation>)
                 MuseumDataSerializers.RESOURCE_LOCATION.get().getSerializer();

@@ -17,21 +17,22 @@ import net.minecraft.util.text.TextFormatting;
 
 import java.util.Optional;
 import java.util.StringJoiner;
-import java.util.UUID;
+
+import javax.annotation.Nullable;
 
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.client.gui.widget.IconButton;
+import denimred.simplemuseum.client.gui.widget.MovementButtons;
 import denimred.simplemuseum.client.gui.widget.ResourceFieldWidget;
 import denimred.simplemuseum.common.entity.MuseumDummyEntity;
+import denimred.simplemuseum.common.init.MuseumLang;
 import denimred.simplemuseum.common.init.MuseumNetworking;
 import denimred.simplemuseum.common.network.messages.c2s.C2SConfigureDummy;
 import denimred.simplemuseum.common.util.CheckedResource;
 import software.bernie.geckolib3.file.AnimationFile;
 import software.bernie.geckolib3.resource.GeckoLibCache;
 
-import static denimred.simplemuseum.client.gui.widget.ResourceFieldWidget.FOLDER_BUTTON_TEXTURE;
-
-public class MuseumDummyScreen extends Screen {
+public class ConfigureDummyScreen extends Screen {
     public static final ResourceLocation COPY_BUTTON_TEXTURE =
             new ResourceLocation(SimpleMuseum.MOD_ID, "textures/gui/copy_button.png");
     public static final ResourceLocation PASTE_BUTTON_TEXTURE =
@@ -45,8 +46,9 @@ public class MuseumDummyScreen extends Screen {
     private static final int TEXT_INVALID = 0xffff00;
     private static final int TEXT_ERROR = 0xff0000;
     public final int defaultRotation;
-    private final Minecraft mc = Minecraft.getInstance();
-    private final UUID uuid;
+    @Nullable private final Screen parent;
+    private final Minecraft mc = Minecraft.getInstance(); // Parent's is nullable for no good reason
+    private final MuseumDummyEntity dummy;
     private final CheckedResource<ResourceLocation> model;
     private final CheckedResource<ResourceLocation> texture;
     private final CheckedResource<ResourceLocation> animations;
@@ -59,10 +61,12 @@ public class MuseumDummyScreen extends Screen {
     private ResourceFieldWidget animationsWidget;
     private TextFieldWidget selectedAnimationField;
     private TextFieldWidget rotationField;
+    private MovementButtons mb;
 
-    public MuseumDummyScreen(MuseumDummyEntity dummy) {
+    public ConfigureDummyScreen(MuseumDummyEntity dummy, @Nullable Screen parent) {
         super(dummy.getDisplayName());
-        uuid = dummy.getUniqueID();
+        this.dummy = dummy;
+        this.parent = parent;
         model = dummy.getModelLocation();
         texture = dummy.getTextureLocation();
         animations = dummy.getAnimationsLocation();
@@ -85,13 +89,12 @@ public class MuseumDummyScreen extends Screen {
             MatrixStack matrixStack,
             FontRenderer font,
             TextFieldWidget field,
-            ITextComponent text,
-            int offset) {
+            ITextComponent text) {
         drawString(
                 matrixStack,
                 font,
                 text,
-                field.x - font.getStringWidth(text.getUnformattedComponentText()) - MARGIN + offset,
+                field.x - font.getStringPropertyWidth(text) - MARGIN,
                 field.y + field.getHeightRealms() / 2 - font.FONT_HEIGHT / 2,
                 0xA0A0A0);
     }
@@ -110,11 +113,11 @@ public class MuseumDummyScreen extends Screen {
         final String clip = mc.keyboardListener.getClipboardString();
         final String[] split = clip.split("\\|", -1);
         final int length = split.length;
-        if (length >= 1) modelWidget.setLocation(split[0], true, true);
-        if (length >= 2) textureWidget.setLocation(split[1], true, true);
-        if (length >= 3) animationsWidget.setLocation(split[2], true, true);
-        if (length >= 4) selectedAnimationField.setText(split[3]);
-        if (length >= 5) rotationField.setText(split[4]);
+        if (length > 0) modelWidget.setLocation(split[0], true, true);
+        if (length > 1) textureWidget.setLocation(split[1], true, true);
+        if (length > 2) animationsWidget.setLocation(split[2], true, true);
+        if (length > 3) selectedAnimationField.setText(split[3]);
+        if (length > 4) rotationField.setText(split[4]);
     }
 
     @Override
@@ -126,6 +129,18 @@ public class MuseumDummyScreen extends Screen {
         final int center = (width / 2);
         final int left = center - (WIDTH / 2);
         final int top = (height / 2) - 100;
+
+        // TODO: This doesn't do anything lol
+        mb =
+                new MovementButtons(
+                        left - 70,
+                        top,
+                        new StringTextComponent("todo"),
+                        MovementButtons::getName,
+                        i -> {},
+                        this::renderWidgetTooltip);
+        children.add(mb);
+
         copyButton =
                 this.addButton(
                         new IconButton(
@@ -140,13 +155,8 @@ public class MuseumDummyScreen extends Screen {
                                 32,
                                 64,
                                 button -> this.copy(),
-                                (button, matrixStack, mouseX, mouseY) ->
-                                        this.renderTooltip(
-                                                matrixStack,
-                                                new StringTextComponent("Copy to Clipboard"),
-                                                mouseX,
-                                                mouseY),
-                                StringTextComponent.EMPTY));
+                                this::renderWidgetTooltip,
+                                MuseumLang.GUI_CLIPBOARD_COPY.asText()));
         this.addButton(
                 new IconButton(
                         center + MARGIN,
@@ -160,13 +170,8 @@ public class MuseumDummyScreen extends Screen {
                         32,
                         64,
                         button -> this.paste(),
-                        (button, matrixStack, mouseX, mouseY) ->
-                                this.renderTooltip(
-                                        matrixStack,
-                                        new StringTextComponent("Paste from Clipboard"),
-                                        mouseX,
-                                        mouseY),
-                        StringTextComponent.EMPTY));
+                        this::renderWidgetTooltip,
+                        MuseumLang.GUI_CLIPBOARD_PASTE.asText()));
 
         final int modelFieldY = top + 30 + MARGIN;
         modelWidget =
@@ -176,21 +181,14 @@ public class MuseumDummyScreen extends Screen {
                         modelFieldY,
                         WIDTH,
                         20,
-                        new StringTextComponent("Model Resource"),
+                        MuseumLang.GUI_DUMMY_MODEL.asText(),
+                        MuseumLang.GUI_DUMMY_MODEL_SELECT.asText(),
                         MODEL_PREFIX,
                         model::validate,
                         button ->
                                 mc.displayGuiScreen(
-                                        new SelectResourceScreen(
-                                                this,
-                                                new StringTextComponent("Select Model Resource"),
-                                                modelWidget)),
-                        (button, matrixStack, mouseX, mouseY) ->
-                                this.renderTooltip(
-                                        matrixStack,
-                                        new StringTextComponent("Select Model Resource"),
-                                        mouseX,
-                                        mouseY));
+                                        new SelectResourceScreen(this, button, modelWidget)),
+                        this::renderWidgetTooltip);
 
         final int textureFieldY =
                 modelFieldY + modelWidget.getHeightRealms() + font.FONT_HEIGHT + MARGIN * 3;
@@ -201,21 +199,14 @@ public class MuseumDummyScreen extends Screen {
                         textureFieldY,
                         WIDTH,
                         20,
-                        new StringTextComponent("Texture Resource"),
+                        MuseumLang.GUI_DUMMY_TEXTURE.asText(),
+                        MuseumLang.GUI_DUMMY_TEXTURE_SELECT.asText(),
                         TEXTURE_PREFIX,
                         texture::validate,
                         button ->
                                 mc.displayGuiScreen(
-                                        new SelectResourceScreen(
-                                                this,
-                                                new StringTextComponent("Select Texture Resource"),
-                                                textureWidget)),
-                        (button, matrixStack, mouseX, mouseY) ->
-                                this.renderTooltip(
-                                        matrixStack,
-                                        new StringTextComponent("Select Texture Resource"),
-                                        mouseX,
-                                        mouseY));
+                                        new SelectResourceScreen(this, button, textureWidget)),
+                        this::renderWidgetTooltip);
 
         final int animationsFieldY =
                 textureFieldY + textureWidget.getHeightRealms() + font.FONT_HEIGHT + MARGIN * 3;
@@ -226,25 +217,17 @@ public class MuseumDummyScreen extends Screen {
                         animationsFieldY,
                         WIDTH,
                         20,
-                        new StringTextComponent("Animations Resource"),
+                        MuseumLang.GUI_DUMMY_ANIMATIONS.asText(),
+                        MuseumLang.GUI_DUMMY_ANIMATIONS_SELECT.asText(),
                         ANIMATIONS_PREFIX,
                         animations::validate,
                         button ->
                                 mc.displayGuiScreen(
-                                        new SelectResourceScreen(
-                                                this,
-                                                new StringTextComponent(
-                                                        "Select Animations Resource"),
-                                                animationsWidget)),
-                        (button, matrixStack, mouseX, mouseY) ->
-                                this.renderTooltip(
-                                        matrixStack,
-                                        new StringTextComponent("Select Animations Resource"),
-                                        mouseX,
-                                        mouseY));
+                                        new SelectResourceScreen(this, button, animationsWidget)),
+                        this::renderWidgetTooltip);
 
-        final StringTextComponent selAnimFieldMsg = new StringTextComponent("Animation:");
-        final StringTextComponent rotFieldMsg = new StringTextComponent("Rotation:");
+        final ITextComponent selAnimFieldMsg = MuseumLang.GUI_DUMMY_SELECTED_ANIMATION.asText();
+        final ITextComponent rotFieldMsg = MuseumLang.GUI_DUMMY_ROTATION.asText();
         final int selAnimFieldWidth = font.getStringPropertyWidth(selAnimFieldMsg);
         final int rotFieldWidth = font.getStringPropertyWidth(rotFieldMsg);
         final int miscY = animationsFieldY + 20 + MARGIN * 3;
@@ -276,23 +259,18 @@ public class MuseumDummyScreen extends Screen {
                                 0,
                                 0,
                                 20,
-                                FOLDER_BUTTON_TEXTURE,
+                                ResourceFieldWidget.FOLDER_BUTTON_TEXTURE,
                                 32,
                                 64,
                                 button ->
                                         mc.displayGuiScreen(
                                                 new SelectAnimationScreen(
                                                         this,
-                                                        new StringTextComponent("Select Animation"),
+                                                        button,
                                                         selectedAnimationField,
                                                         () -> this.getAnimLoc().orElse(null))),
-                                (button, matrixStack, mouseX, mouseY) ->
-                                        this.renderTooltip(
-                                                matrixStack,
-                                                new StringTextComponent("Select Animation"),
-                                                mouseX,
-                                                mouseY),
-                                StringTextComponent.EMPTY));
+                                this::renderWidgetTooltip,
+                                MuseumLang.GUI_DUMMY_SELECTED_ANIMATION_SELECT.asText()));
 
         final int exitButtonsY = animationsFieldY + 40 + MARGIN * 5;
         doneButton =
@@ -365,6 +343,11 @@ public class MuseumDummyScreen extends Screen {
         state.load();
     }
 
+    private void renderWidgetTooltip(
+            Widget widget, MatrixStack matrixStack, int mouseX, int mouseY) {
+        this.renderTooltip(matrixStack, widget.getMessage(), mouseX, mouseY);
+    }
+
     private void checkAcceptableState() {
         doneButton.active =
                 copyButton.active =
@@ -395,6 +378,8 @@ public class MuseumDummyScreen extends Screen {
                 10,
                 0xFFFFFF);
 
+        mb.render(matrixStack, mouseX, mouseY, partialTicks);
+
         modelWidget.render(matrixStack, mouseX, mouseY, partialTicks);
         drawTitle(matrixStack, font, modelWidget);
         textureWidget.render(matrixStack, mouseX, mouseY, partialTicks);
@@ -402,12 +387,17 @@ public class MuseumDummyScreen extends Screen {
         animationsWidget.render(matrixStack, mouseX, mouseY, partialTicks);
         drawTitle(matrixStack, font, animationsWidget);
 
-        drawStringLeft(matrixStack, font, rotationField, rotationField.getMessage(), 0);
+        drawStringLeft(matrixStack, font, rotationField, rotationField.getMessage());
         rotationField.render(matrixStack, mouseX, mouseY, partialTicks);
         drawStringLeft(
-                matrixStack, font, selectedAnimationField, selectedAnimationField.getMessage(), 0);
+                matrixStack, font, selectedAnimationField, selectedAnimationField.getMessage());
         selectedAnimationField.render(matrixStack, mouseX, mouseY, partialTicks);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
+    }
+
+    @Override
+    public void closeScreen() {
+        mc.displayGuiScreen(parent);
     }
 
     @Override
@@ -424,7 +414,7 @@ public class MuseumDummyScreen extends Screen {
         try {
             MuseumNetworking.CHANNEL.sendToServer(
                     new C2SConfigureDummy(
-                            uuid,
+                            dummy.getUniqueID(),
                             this.getRotation().orElse(defaultRotation),
                             this.getModelLoc().orElse(model.getDirect()),
                             this.getTexLoc().orElse(texture.getDirect()),
@@ -473,39 +463,19 @@ public class MuseumDummyScreen extends Screen {
         }
 
         public void save() {
-            if (modelWidget != null) {
-                modelState = modelWidget.getLocation();
-            }
-            if (textureWidget != null) {
-                texState = textureWidget.getLocation();
-            }
-            if (animationsWidget != null) {
-                animsState = animationsWidget.getLocation();
-            }
-            if (rotationField != null) {
-                rotState = rotationField.getText();
-            }
-            if (selectedAnimationField != null) {
-                selAnimState = selectedAnimationField.getText();
-            }
+            if (modelWidget != null) modelState = modelWidget.getLocation();
+            if (textureWidget != null) texState = textureWidget.getLocation();
+            if (animationsWidget != null) animsState = animationsWidget.getLocation();
+            if (rotationField != null) rotState = rotationField.getText();
+            if (selectedAnimationField != null) selAnimState = selectedAnimationField.getText();
         }
 
         public void load() {
-            if (modelWidget != null) {
-                modelWidget.setLocation(modelState, true);
-            }
-            if (textureWidget != null) {
-                textureWidget.setLocation(texState, true);
-            }
-            if (animationsWidget != null) {
-                animationsWidget.setLocation(animsState, true);
-            }
-            if (rotationField != null) {
-                rotationField.setText(rotState);
-            }
-            if (selectedAnimationField != null) {
-                selectedAnimationField.setText(selAnimState);
-            }
+            if (modelWidget != null) modelWidget.setLocation(modelState, true);
+            if (textureWidget != null) textureWidget.setLocation(texState, true);
+            if (animationsWidget != null) animationsWidget.setLocation(animsState, true);
+            if (rotationField != null) rotationField.setText(rotState);
+            if (selectedAnimationField != null) selectedAnimationField.setText(selAnimState);
         }
     }
 }

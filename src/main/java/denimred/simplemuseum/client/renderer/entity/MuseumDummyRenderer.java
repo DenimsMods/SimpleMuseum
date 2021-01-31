@@ -10,12 +10,14 @@ import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nullable;
 
+import denimred.simplemuseum.client.renderer.entity.layer.ErrorBannersLayerRenderer;
 import denimred.simplemuseum.common.entity.MuseumDummyEntity;
 import software.bernie.geckolib3.renderers.geo.GeoEntityRenderer;
 
 public class MuseumDummyRenderer extends GeoEntityRenderer<MuseumDummyEntity> {
     public MuseumDummyRenderer(EntityRendererManager renderManager) {
         super(renderManager, new MuseumDummyModel());
+        this.addLayer(new ErrorBannersLayerRenderer(this));
     }
 
     @Override

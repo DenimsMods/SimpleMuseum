@@ -23,6 +23,7 @@ import net.minecraft.util.ResourceLocationException;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
@@ -34,8 +35,10 @@ import javax.annotation.Nullable;
 
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.common.init.MuseumDataSerializers;
+import denimred.simplemuseum.common.init.MuseumEntities;
 import denimred.simplemuseum.common.init.MuseumItems;
 import denimred.simplemuseum.common.util.CheckedResource;
+import denimred.simplemuseum.common.util.MathUtil;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
 import software.bernie.geckolib3.core.builder.AnimationBuilder;
@@ -104,6 +107,27 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
 
     public MuseumDummyEntity(EntityType<? extends LivingEntity> type, World worldIn) {
         super(type, worldIn);
+    }
+
+    @Nullable
+    public static MuseumDummyEntity spawn(
+            ServerWorld world, BlockPos pos, @Nullable PlayerEntity player) {
+        return spawn(
+                world,
+                new Vector3d(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5),
+                player != null ? player.getPositionVec() : null);
+    }
+
+    @Nullable
+    public static MuseumDummyEntity spawn(
+            ServerWorld world, Vector3d pos, @Nullable Vector3d facing) {
+        final MuseumDummyEntity dummy = MuseumEntities.MUSEUM_DUMMY.get().create(world);
+        if (dummy != null) {
+            final float yaw = facing != null ? MathUtil.angleBetween(pos, facing) : 0.0F;
+            dummy.setLocationAndAngles(pos.x, pos.y, pos.z, yaw, 0.0F);
+            world.func_242417_l(dummy);
+        }
+        return dummy;
     }
 
     @Override
@@ -243,16 +267,6 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
     @Override
     public PushReaction getPushReaction() {
         return PushReaction.IGNORE;
-    }
-
-    @Override
-    public void setLocationAndAngles(double x, double y, double z, float yaw, float pitch) {
-        this.forceSetPosition(x, y, z);
-        if (this.isAddedToWorld()) { // Don't set rotation until spawned
-            rotationYaw = yaw;
-            rotationPitch = pitch;
-        }
-        this.recenterBoundingBox();
     }
 
     @Override

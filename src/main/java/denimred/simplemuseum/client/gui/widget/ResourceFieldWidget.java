@@ -10,7 +10,6 @@ import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.ResourceLocationException;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
 
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -45,6 +44,7 @@ public class ResourceFieldWidget extends Widget {
             int width,
             int height,
             ITextComponent title,
+            ITextComponent buttonTitle,
             String pathPrefix,
             Predicate<ResourceLocation> validator,
             Button.IPressable buttonAction,
@@ -58,16 +58,10 @@ public class ResourceFieldWidget extends Widget {
         final int namespaceWidth = (width / 4) - (MARGIN / 2);
         final int pathPrefixWidth = (int) (font.getStringWidth(pathPrefix) + (MARGIN * 1.25));
         final int pathWidth = width - namespaceWidth - pathPrefixWidth - 21;
-        namespaceField =
-                new TextFieldWidget(font, x, y, namespaceWidth, height, StringTextComponent.EMPTY);
+        namespaceField = new TextFieldWidget(font, x, y, namespaceWidth, height, title);
         pathField =
                 new TextFieldWidget(
-                        font,
-                        x + namespaceWidth + pathPrefixWidth,
-                        y,
-                        pathWidth,
-                        height,
-                        StringTextComponent.EMPTY);
+                        font, x + namespaceWidth + pathPrefixWidth, y, pathWidth, height, title);
         openListButton =
                 new IconButton(
                         pathField.x + pathWidth + 2,
@@ -82,7 +76,7 @@ public class ResourceFieldWidget extends Widget {
                         64,
                         buttonAction,
                         buttonTooltip,
-                        StringTextComponent.EMPTY);
+                        buttonTitle);
 
         namespaceField.setResponder(n -> this.respondFields(n, pathField.getText()));
         namespaceField.setMaxStringLength(MAX_LENGTH / 2);

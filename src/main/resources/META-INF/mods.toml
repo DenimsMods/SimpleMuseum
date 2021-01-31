@@ -31,5 +31,11 @@ side = "BOTH"
 modId="geckolib3"
 mandatory=true
 versionRange="[3,)"
-ordering="NONE"
+ordering="AFTER"
+side = "BOTH"
+[[dependencies.simplemuseum]]
+modId="ccp-layl"
+mandatory=false
+versionRange="[0,)"
+ordering="AFTER"
 side = "BOTH"

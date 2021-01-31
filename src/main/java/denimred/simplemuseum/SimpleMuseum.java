@@ -14,9 +14,10 @@ import denimred.simplemuseum.common.init.MuseumDataSerializers;
 import denimred.simplemuseum.common.init.MuseumEntities;
 import denimred.simplemuseum.common.init.MuseumItems;
 import denimred.simplemuseum.common.init.MuseumNetworking;
+import denimred.simplemuseum.modcompat.ModCompatUtil;
 
 @Mod(SimpleMuseum.MOD_ID)
-public class SimpleMuseum {
+public final class SimpleMuseum {
     public static final String MOD_ID = "simplemuseum";
     public static final Logger LOGGER = LogManager.getLogger();
 
@@ -25,6 +26,7 @@ public class SimpleMuseum {
         MuseumDataSerializers.REGISTRY.register(bus);
         MuseumEntities.REGISTRY.register(bus);
         MuseumItems.REGISTRY.register(bus);
+        bus.addListener(ModCompatUtil::enqueueIMC);
 
         MuseumNetworking.registerMessages();
 

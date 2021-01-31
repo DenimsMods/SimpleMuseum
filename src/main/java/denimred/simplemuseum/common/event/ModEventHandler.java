@@ -11,7 +11,7 @@ import denimred.simplemuseum.client.datagen.MuseumItemModelProvider;
 import denimred.simplemuseum.client.datagen.MuseumLanguageProvider;
 
 @Mod.EventBusSubscriber(modid = SimpleMuseum.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
-public class ModEventHandler {
+public final class ModEventHandler {
     @SubscribeEvent
     public static void onGatherData(GatherDataEvent event) {
         final DataGenerator gen = event.getGenerator();

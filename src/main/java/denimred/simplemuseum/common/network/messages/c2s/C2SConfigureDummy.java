@@ -60,7 +60,7 @@ public class C2SConfigureDummy {
         ctx.setPacketHandled(true);
     }
 
-    @SuppressWarnings("deprecation") // Mojang >:(
+    @SuppressWarnings("deprecation") // Mojang >:I
     private void doWork(NetworkEvent.Context ctx) {
         final ServerPlayerEntity sender = ctx.getSender();
         if (sender != null) {
@@ -71,6 +71,7 @@ public class C2SConfigureDummy {
                 if (world.isBlockLoaded(dummy.getPosition())
                         && sender.getDistanceSq(dummy) < 36
                         && dummy.isAlive()) {
+                    // TODO: Do permissions check to avoid hacker griefing
                     dummy.rotationYaw = dummy.prevRotationYaw = rotation % 360;
                     dummy.setModelLocation(modelLoc);
                     dummy.setTextureLocation(texLoc);

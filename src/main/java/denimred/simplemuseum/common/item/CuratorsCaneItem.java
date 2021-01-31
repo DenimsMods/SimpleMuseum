@@ -2,9 +2,7 @@ package denimred.simplemuseum.common.item;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FlowingFluidBlock;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUseContext;
@@ -21,11 +19,8 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
-import java.util.Objects;
-
 import denimred.simplemuseum.client.util.ClientUtil;
 import denimred.simplemuseum.common.entity.MuseumDummyEntity;
-import denimred.simplemuseum.common.init.MuseumEntities;
 
 public class CuratorsCaneItem extends SimpleFoiledItem {
     public CuratorsCaneItem(Properties properties) {
@@ -39,7 +34,7 @@ public class CuratorsCaneItem extends SimpleFoiledItem {
             if (!player.world.isRemote) {
                 return ActionResultType.CONSUME;
             } else {
-                ClientUtil.openDummyScreen((MuseumDummyEntity) target);
+                ClientUtil.openDummyScreen((MuseumDummyEntity) target, null);
                 return ActionResultType.SUCCESS;
             }
         }
@@ -65,16 +60,7 @@ public class CuratorsCaneItem extends SimpleFoiledItem {
             }
 
             final PlayerEntity player = context.getPlayer();
-            MuseumEntities.MUSEUM_DUMMY
-                    .get()
-                    .spawn(
-                            (ServerWorld) world,
-                            stack,
-                            player,
-                            offsetPos,
-                            SpawnReason.SPAWN_EGG,
-                            true,
-                            !Objects.equals(pos, offsetPos) && direction == Direction.UP);
+            MuseumDummyEntity.spawn((ServerWorld) world, offsetPos, player);
 
             return ActionResultType.CONSUME;
         }
@@ -95,17 +81,8 @@ public class CuratorsCaneItem extends SimpleFoiledItem {
                 return ActionResult.resultPass(stack);
             } else if (worldIn.isBlockModifiable(player, blockPos)
                     && player.canPlayerEdit(blockPos, rayTrace.getFace(), stack)) {
-                final Entity dummy =
-                        MuseumEntities.MUSEUM_DUMMY
-                                .get()
-                                .spawn(
-                                        (ServerWorld) worldIn,
-                                        stack,
-                                        player,
-                                        blockPos,
-                                        SpawnReason.SPAWN_EGG,
-                                        false,
-                                        false);
+                final MuseumDummyEntity dummy =
+                        MuseumDummyEntity.spawn((ServerWorld) worldIn, blockPos, player);
                 if (dummy != null) {
                     player.addStat(Stats.ITEM_USED.get(this));
                     return ActionResult.resultConsume(stack);

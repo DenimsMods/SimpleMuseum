@@ -6,9 +6,12 @@ import net.minecraftforge.fml.network.simple.SimpleChannel;
 
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.common.network.messages.c2s.C2SConfigureDummy;
+import denimred.simplemuseum.common.network.messages.c2s.C2SCryptMasterRemoveDummy;
+import denimred.simplemuseum.common.network.messages.c2s.C2SCryptMasterSpawnDummy;
+import denimred.simplemuseum.common.network.messages.c2s.C2SMoveDummy;
 
-public class MuseumNetworking {
-    private static final String PROTOCOL_VERSION = "1";
+public final class MuseumNetworking {
+    private static final String PROTOCOL_VERSION = "2";
     public static final SimpleChannel CHANNEL =
             NetworkRegistry.newSimpleChannel(
                     new ResourceLocation(SimpleMuseum.MOD_ID, "main"),
@@ -25,5 +28,23 @@ public class MuseumNetworking {
                 C2SConfigureDummy::encode,
                 C2SConfigureDummy::decode,
                 C2SConfigureDummy::handle);
+        CHANNEL.registerMessage(
+                ++id,
+                C2SMoveDummy.class,
+                C2SMoveDummy::encode,
+                C2SMoveDummy::decode,
+                C2SMoveDummy::handle);
+        CHANNEL.registerMessage(
+                ++id,
+                C2SCryptMasterSpawnDummy.class,
+                C2SCryptMasterSpawnDummy::encode,
+                C2SCryptMasterSpawnDummy::decode,
+                C2SCryptMasterSpawnDummy::handle);
+        CHANNEL.registerMessage(
+                ++id,
+                C2SCryptMasterRemoveDummy.class,
+                C2SCryptMasterRemoveDummy::encode,
+                C2SCryptMasterRemoveDummy::decode,
+                C2SCryptMasterRemoveDummy::handle);
     }
 }

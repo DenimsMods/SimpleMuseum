@@ -1,6 +1,7 @@
 package denimred.simplemuseum.client.gui.screen;
 
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 
@@ -12,6 +13,10 @@ import denimred.simplemuseum.client.util.ClientUtil;
 
 public class SelectResourceScreen extends AbstractSelectObjectScreen<ResourceLocation> {
     protected final ResourceFieldWidget caller;
+
+    protected SelectResourceScreen(Screen parent, Widget owner, ResourceFieldWidget caller) {
+        this(parent, owner.getMessage(), caller);
+    }
 
     protected SelectResourceScreen(
             Screen parent, ITextComponent title, ResourceFieldWidget caller) {

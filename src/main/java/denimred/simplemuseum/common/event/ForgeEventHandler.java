@@ -10,7 +10,7 @@ import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.common.init.MuseumItems;
 
 @Mod.EventBusSubscriber(modid = SimpleMuseum.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
-public class ForgeEventHandler {
+public final class ForgeEventHandler {
     @SubscribeEvent
     public static void onItemRegistryMissingMappings(RegistryEvent.MissingMappings<Item> event) {
         for (RegistryEvent.MissingMappings.Mapping<Item> mapping : event.getAllMappings()) {

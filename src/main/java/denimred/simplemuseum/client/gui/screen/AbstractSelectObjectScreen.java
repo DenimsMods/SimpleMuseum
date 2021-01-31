@@ -22,6 +22,7 @@ import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 
 import denimred.simplemuseum.SimpleMuseum;
+import denimred.simplemuseum.common.init.MuseumLang;
 
 public abstract class AbstractSelectObjectScreen<T> extends Screen {
     protected final Minecraft mc = Minecraft.getInstance();
@@ -56,7 +57,7 @@ public abstract class AbstractSelectObjectScreen<T> extends Screen {
                         top + font.FONT_HEIGHT + 2,
                         remainingWidth,
                         20,
-                        new StringTextComponent("Search"));
+                        MuseumLang.GUI_SEARCH.asText());
 
         this.addButton(
                 new Button(
@@ -236,12 +237,14 @@ public abstract class AbstractSelectObjectScreen<T> extends Screen {
                 final int a;
                 if (loading) {
                     msg =
-                            new StringTextComponent("Loading...")
+                            MuseumLang.GUI_LOADING
+                                    .asText()
                                     .mergeStyle(TextFormatting.ITALIC, TextFormatting.GRAY);
                     a = 0x66000000;
                 } else {
                     msg =
-                            new StringTextComponent("Error, check log!")
+                            MuseumLang.GUI_ERROR
+                                    .asText()
                                     .mergeStyle(TextFormatting.ITALIC, TextFormatting.RED);
                     a = 0xFF000000;
                 }
