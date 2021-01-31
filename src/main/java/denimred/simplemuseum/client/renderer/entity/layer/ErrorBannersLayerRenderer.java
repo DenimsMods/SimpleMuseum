@@ -24,33 +24,39 @@ public class ErrorBannersLayerRenderer extends GeoLayerRenderer<MuseumDummyEntit
     protected static final ResourceLocation TEXTURE =
             new ResourceLocation(SimpleMuseum.MOD_ID, "textures/misc/error_banners.png");
     protected static final float TEX_HEIGHT = 0.25F;
-    protected final List<Vector3f> vertices;
+    protected final List<Vector3f> outerMesh;
+    protected final List<Vector3f> innerMesh;
     protected final int vertCount;
 
-    public ErrorBannersLayerRenderer(IGeoRenderer<MuseumDummyEntity> renderer) {
+    public ErrorBannersLayerRenderer(
+            IGeoRenderer<MuseumDummyEntity> renderer, int resolution, double radius) {
         super(renderer);
-        // Magic numbers ahoy
-        final int resolution = 16;
+        // Generate the meshes (I could technically concat these into one mesh but that's ugly)
+        outerMesh = this.generateMesh(false, resolution, radius);
+        innerMesh = this.generateMesh(true, resolution, radius);
+        // May as well save this for performance I guess ¯\_(ツ)_/¯
+        vertCount = outerMesh.size();
+    }
+
+    protected List<Vector3f> generateMesh(boolean inner, int resolution, double radius) {
+        // Wacky numbers
         final double step = Math.PI * 2.0D / resolution;
         final float halfStep = (float) (step / 2.0D);
         final double circumference = step * resolution;
-        final double radius = 1.0D;
-
-        // Generate the vertices
-        vertices = new ArrayList<>((resolution * 2) + 2);
-        for (double radians = 0.0D; radians < circumference; radians += step) {
+        // Generate the main loop, reversing the direction if we're generating an inner mesh
+        final List<Vector3f> mesh = new ArrayList<>();
+        for (double radians = inner ? circumference : 0.0D;
+                inner ? (radians >= 0.0D) : (radians < circumference);
+                radians += (inner ? -step : step)) {
             final float x = (float) (Math.sin(radians) * radius);
             final float z = (float) (Math.cos(radians) * radius);
-            vertices.add(new Vector3f(x, +halfStep, z));
-            vertices.add(new Vector3f(x, -halfStep, z));
+            mesh.add(new Vector3f(x, +halfStep, z));
+            mesh.add(new Vector3f(x, -halfStep, z));
         }
-
         // Add the initial vertices to the end to close the loop
-        vertices.add(vertices.get(0));
-        vertices.add(vertices.get(1));
-
-        // May as well save this for performance I guess ¯\_(ツ)_/¯
-        vertCount = vertices.size();
+        mesh.add(mesh.get(0));
+        mesh.add(mesh.get(1));
+        return mesh;
     }
 
     @Override
@@ -65,7 +71,6 @@ public class ErrorBannersLayerRenderer extends GeoLayerRenderer<MuseumDummyEntit
             float ageInTicks,
             float netHeadYaw,
             float headPitch) {
-
         final RenderType type = MuseumRenderType.getErrorBanners(TEXTURE);
         final float time = (float) (ageInTicks * 0.04D);
         final float yPos = (dummy.getHeight() / 2.0F) + 0.25F;
@@ -116,18 +121,11 @@ public class ErrorBannersLayerRenderer extends GeoLayerRenderer<MuseumDummyEntit
         matrixStack.push();
         matrixStack.rotate(new Quaternion(0.0F, yAngle, 0.0F, false));
 
-        // Render the mesh
+        // Render the two meshes
         final Matrix4f matrix4f = matrixStack.getLast().getMatrix();
         final IVertexBuilder buffer = typeBuffer.getBuffer(type);
-        for (int i = 0; i < vertCount; i++) {
-            final boolean top = (i & 1) == 0;
-            final float u = (top ? i * TEX_HEIGHT - TEX_HEIGHT : (i - 1) * TEX_HEIGHT) / 2;
-            final float v = top ? (index - 1) * TEX_HEIGHT : index * TEX_HEIGHT;
-            final Vector3f vert = vertices.get(i);
-            buffer.pos(matrix4f, vert.getX(), vert.getY() + yPos, vert.getZ())
-                    .tex(u, v)
-                    .endVertex();
-        }
+        this.renderMesh(index, yPos, matrix4f, buffer, outerMesh);
+        this.renderMesh(index, yPos, matrix4f, buffer, innerMesh);
 
         // Manually draw the buffer to prevent loops from connecting to other loops
         if (typeBuffer instanceof IRenderTypeBuffer.Impl) {
@@ -137,5 +135,18 @@ public class ErrorBannersLayerRenderer extends GeoLayerRenderer<MuseumDummyEntit
         }
 
         matrixStack.pop();
+    }
+
+    private void renderMesh(
+            int index, float yPos, Matrix4f matrix4f, IVertexBuilder buffer, List<Vector3f> mesh) {
+        for (int i = 0; i < vertCount; i++) {
+            final boolean top = (i & 1) == 0;
+            final float u = (top ? i * TEX_HEIGHT - TEX_HEIGHT : (i - 1) * TEX_HEIGHT) / 2;
+            final float v = top ? (index - 1) * TEX_HEIGHT : index * TEX_HEIGHT;
+            final Vector3f vert = mesh.get(i);
+            buffer.pos(matrix4f, vert.getX(), vert.getY() + yPos, vert.getZ())
+                    .tex(u, v)
+                    .endVertex();
+        }
     }
 }

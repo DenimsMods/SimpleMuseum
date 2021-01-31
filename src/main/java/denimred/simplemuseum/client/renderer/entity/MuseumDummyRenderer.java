@@ -17,7 +17,7 @@ import software.bernie.geckolib3.renderers.geo.GeoEntityRenderer;
 public class MuseumDummyRenderer extends GeoEntityRenderer<MuseumDummyEntity> {
     public MuseumDummyRenderer(EntityRendererManager renderManager) {
         super(renderManager, new MuseumDummyModel());
-        this.addLayer(new ErrorBannersLayerRenderer(this));
+        this.addLayer(new ErrorBannersLayerRenderer(this, 16, 1.0D));
     }
 
     @Override
