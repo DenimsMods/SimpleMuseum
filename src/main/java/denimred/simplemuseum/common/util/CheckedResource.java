@@ -42,13 +42,16 @@ public class CheckedResource<T> {
     }
 
     public boolean isInvalid() {
+        // Most just a sanity check to deal with edge cases
+        if (cached == null) {
+            this.getSafe();
+        }
         return !valid;
     }
 
     public void set(T t) {
         current = t;
         cached = null;
-        valid = true; // Eh, semantically wrong but practically fine
     }
 
     public boolean validate(T t) {
