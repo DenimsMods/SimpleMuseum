@@ -7,6 +7,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.resources.IReloadableResourceManager;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.DatagenModLoader;
 import net.minecraftforge.resource.IResourceType;
 import net.minecraftforge.resource.ISelectiveResourceReloadListener;
 import net.minecraftforge.resource.VanillaResourceType;
@@ -32,9 +33,10 @@ import static org.lwjgl.glfw.GLFW.GLFW_ARROW_CURSOR;
 import static org.lwjgl.glfw.GLFW.GLFW_VRESIZE_CURSOR;
 
 public class ClientUtil {
-    private static final Minecraft MC = Minecraft.getInstance();
+    private static final Minecraft MC =
+            DatagenModLoader.isRunningDataGen() ? null : Minecraft.getInstance();
+    private static final long WINDOW_HANDLE = MC != null ? MC.getMainWindow().getHandle() : 0L;
     private static final Int2LongArrayMap CURSORS = new Int2LongArrayMap(6);
-    private static final long WINDOW_HANDLE = MC.getMainWindow().getHandle();
     private static final Object2ReferenceMap<String, List<ResourceLocation>> RESOURCE_CACHE =
             new Object2ReferenceOpenHashMap<>();
 
@@ -92,7 +94,6 @@ public class ClientUtil {
     }
 
     public static void registerResourceReloadListener() {
-        //noinspection ConstantConditions: Minecraft is null during datagen
         if (MC != null) {
             final IReloadableResourceManager resourceManager =
                     (IReloadableResourceManager) MC.getResourceManager();
