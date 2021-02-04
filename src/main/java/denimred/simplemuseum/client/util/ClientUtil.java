@@ -18,12 +18,14 @@ import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
 import denimred.simplemuseum.client.gui.screen.ConfigureDummyScreen;
+import denimred.simplemuseum.client.gui.screen.MuseumDummyScreen;
 import denimred.simplemuseum.common.entity.MuseumDummyEntity;
 import it.unimi.dsi.fastutil.ints.Int2LongArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceMap;
@@ -39,9 +41,16 @@ public class ClientUtil {
     private static final Int2LongArrayMap CURSORS = new Int2LongArrayMap(6);
     private static final Object2ReferenceMap<String, List<ResourceLocation>> RESOURCE_CACHE =
             new Object2ReferenceOpenHashMap<>();
+    private static BiFunction<MuseumDummyEntity, Screen, ? extends MuseumDummyScreen>
+            lastDummyScreen = ConfigureDummyScreen::new;
+
+    public static void setLastDummyScreen(
+            BiFunction<MuseumDummyEntity, Screen, ? extends MuseumDummyScreen> screenBuilder) {
+        lastDummyScreen = screenBuilder;
+    }
 
     public static void openDummyScreen(MuseumDummyEntity dummy, @Nullable Screen parent) {
-        MC.displayGuiScreen(new ConfigureDummyScreen(dummy, parent));
+        MC.displayGuiScreen(lastDummyScreen.apply(dummy, parent));
     }
 
     public static void setCursor(int shape) {

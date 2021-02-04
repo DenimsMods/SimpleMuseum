@@ -24,7 +24,7 @@ import javax.annotation.Nullable;
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.common.init.MuseumLang;
 
-public abstract class AbstractSelectObjectScreen<T> extends Screen {
+public abstract class SelectObjectScreen<T> extends Screen {
     protected final Minecraft mc = Minecraft.getInstance();
     protected final Screen parent;
     @Nullable protected ListWidget.Entry selected;
@@ -32,7 +32,7 @@ public abstract class AbstractSelectObjectScreen<T> extends Screen {
     protected TextFieldWidget search;
     protected String lastSearchText = "";
 
-    protected AbstractSelectObjectScreen(Screen parent, ITextComponent title) {
+    protected SelectObjectScreen(Screen parent, ITextComponent title) {
         super(title);
         this.parent = parent;
     }
@@ -185,7 +185,7 @@ public abstract class AbstractSelectObjectScreen<T> extends Screen {
                     bottom - top,
                     top,
                     bottom,
-                    AbstractSelectObjectScreen.this.font.FONT_HEIGHT + 6);
+                    SelectObjectScreen.this.font.FONT_HEIGHT + 6);
             this.listWidth = width;
             this.refreshList();
         }
@@ -204,7 +204,7 @@ public abstract class AbstractSelectObjectScreen<T> extends Screen {
             errored = false;
             loading = true;
             this.clearEntries();
-            AbstractSelectObjectScreen.this
+            SelectObjectScreen.this
                     .getEntriesAsync()
                     .exceptionally(
                             t -> {
@@ -215,7 +215,7 @@ public abstract class AbstractSelectObjectScreen<T> extends Screen {
                     .thenAccept(
                             entries -> {
                                 for (T entry : entries) {
-                                    if (AbstractSelectObjectScreen.this.matchesSearch(entry)) {
+                                    if (SelectObjectScreen.this.matchesSearch(entry)) {
                                         this.addEntry(new Entry(entry));
                                     }
                                 }
@@ -225,7 +225,7 @@ public abstract class AbstractSelectObjectScreen<T> extends Screen {
 
         @Override
         protected void renderBackground(MatrixStack matrixStack) {
-            AbstractSelectObjectScreen.this.fillGradient(
+            SelectObjectScreen.this.fillGradient(
                     matrixStack, x0, y0, x1, y1, 0xc0101010, 0xd0101010);
         }
 
@@ -295,7 +295,7 @@ public abstract class AbstractSelectObjectScreen<T> extends Screen {
             @Override
             public boolean mouseClicked(
                     double p_mouseClicked_1_, double p_mouseClicked_3_, int p_mouseClicked_5_) {
-                AbstractSelectObjectScreen.this.setSelected(this);
+                SelectObjectScreen.this.setSelected(this);
                 ListWidget.this.setSelected(this);
                 return false;
             }

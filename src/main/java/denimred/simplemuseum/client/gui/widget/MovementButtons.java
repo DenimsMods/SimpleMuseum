@@ -4,9 +4,15 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
+import net.minecraft.client.renderer.texture.ITickable;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
@@ -16,16 +22,20 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 
 import denimred.simplemuseum.SimpleMuseum;
+import denimred.simplemuseum.common.entity.MuseumDummyEntity;
+import denimred.simplemuseum.common.init.MuseumLang;
+import denimred.simplemuseum.common.init.MuseumNetworking;
+import denimred.simplemuseum.common.network.messages.c2s.C2SMoveDummy;
 
-public class MovementButtons extends Widget {
+public class MovementButtons extends Widget implements ITickable {
     public static final int ROTATE_COUNTER_CLOCKWISE = 0;
-    public static final int MOVE_FORWARD = 1;
+    public static final int MOVE_AWAY = 1;
     public static final int ROTATE_CLOCKWISE = 2;
     public static final int MOVE_LEFT = 3;
     public static final int CENTER = 4;
     public static final int MOVE_RIGHT = 5;
     public static final int MOVE_UP = 6;
-    public static final int MOVE_BACK = 7;
+    public static final int MOVE_TOWARDS = 7;
     public static final int MOVE_DOWN = 8;
     private static final ResourceLocation MOVEMENT_BUTTONS_TEXTURE =
             new ResourceLocation(SimpleMuseum.MOD_ID, "textures/gui/movement_buttons.png");
@@ -50,25 +60,70 @@ public class MovementButtons extends Widget {
         // TODO: Localize
         switch (index) {
             case ROTATE_COUNTER_CLOCKWISE:
-                return new StringTextComponent("Rotate Counter Clockwise");
-            case MOVE_FORWARD:
-                return new StringTextComponent("Move Forward");
+                return MuseumLang.GUI_MOVE_ROTATE_CCW.asText();
+            case MOVE_AWAY:
+                return MuseumLang.GUI_MOVE_AWAY.asText();
             case ROTATE_CLOCKWISE:
-                return new StringTextComponent("Rotate Clockwise");
+                return MuseumLang.GUI_MOVE_ROTATE_CW.asText();
             case MOVE_LEFT:
-                return new StringTextComponent("Move Left");
+                return MuseumLang.GUI_MOVE_LEFT.asText();
             case CENTER:
-                return new StringTextComponent("Center on Block");
+                return MuseumLang.GUI_MOVE_CENTER.asText();
             case MOVE_RIGHT:
-                return new StringTextComponent("Move right");
+                return MuseumLang.GUI_MOVE_RIGHT.asText();
             case MOVE_UP:
-                return new StringTextComponent("Move Up");
-            case MOVE_BACK:
-                return new StringTextComponent("Move Back");
+                return MuseumLang.GUI_MOVE_UP.asText();
+            case MOVE_TOWARDS:
+                return MuseumLang.GUI_MOVE_TOWARDS.asText();
             case MOVE_DOWN:
-                return new StringTextComponent("Move Down");
+                return MuseumLang.GUI_MOVE_DOWN.asText();
         }
         return new StringTextComponent("Unknown button index: " + index);
+    }
+
+    public static void moveDummy(MuseumDummyEntity dummy, int index) {
+        final Minecraft mc = Minecraft.getInstance();
+        final Entity viewer = mc.renderViewEntity;
+        final Direction dir =
+                viewer != null ? viewer.getAdjustedHorizontalFacing() : Direction.NORTH;
+        Vector3d pos = dummy.getPositionVec();
+        float speedMult = Screen.hasShiftDown() ? 0.25F : (Screen.hasControlDown() ? 1.0F : 0.5F);
+        float yaw = dummy.rotationYaw;
+        final float angle = 15.0F * (speedMult * 2.0F);
+        switch (index) {
+            case ROTATE_COUNTER_CLOCKWISE:
+                yaw -= angle;
+                break;
+            case MOVE_AWAY:
+                final Vector3i forward = dir.getDirectionVec();
+                pos = pos.add(Vector3d.copy(forward).mul(speedMult, speedMult, speedMult));
+                break;
+            case ROTATE_CLOCKWISE:
+                yaw += angle;
+                break;
+            case MOVE_LEFT:
+                final Vector3i left = dir.rotateYCCW().getDirectionVec();
+                pos = pos.add(Vector3d.copy(left).mul(speedMult, speedMult, speedMult));
+                break;
+            case CENTER:
+                pos = new Vector3d(Math.floor(pos.x) + 0.5D, pos.y, Math.floor(pos.z) + 0.5D);
+                break;
+            case MOVE_RIGHT:
+                final Vector3i right = dir.rotateY().getDirectionVec();
+                pos = pos.add(Vector3d.copy(right).mul(speedMult, speedMult, speedMult));
+                break;
+            case MOVE_UP:
+                pos = pos.add(new Vector3d(0, 1, 0).mul(speedMult, speedMult, speedMult));
+                break;
+            case MOVE_TOWARDS:
+                final Vector3i back = dir.getOpposite().getDirectionVec();
+                pos = pos.add(Vector3d.copy(back).mul(speedMult, speedMult, speedMult));
+                break;
+            case MOVE_DOWN:
+                pos = pos.add(new Vector3d(0, -1, 0).mul(speedMult, speedMult, speedMult));
+                break;
+        }
+        MuseumNetworking.CHANNEL.sendToServer(new C2SMoveDummy(dummy.getUniqueID(), pos, yaw));
     }
 
     @Nonnull
@@ -122,6 +177,17 @@ public class MovementButtons extends Widget {
     }
 
     @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int mouseButton) {
+        boolean b = false;
+        for (MoveButton button : buttons) {
+            if (button.mouseReleased(mouseX, mouseY, mouseButton)) {
+                b = true;
+            }
+        }
+        return b || super.mouseReleased(mouseX, mouseY, mouseButton);
+    }
+
+    @Override
     public boolean changeFocus(boolean focus) {
         for (MoveButton button : buttons) {
             if (button.changeFocus(focus)) {
@@ -141,14 +207,22 @@ public class MovementButtons extends Widget {
         return false;
     }
 
+    @Override
+    public void tick() {
+        for (final MoveButton button : buttons) {
+            button.tick();
+        }
+    }
+
     @FunctionalInterface
     public interface MultiPressable {
         void press(int index);
     }
 
-    private static final class MoveButton extends Button {
+    private static final class MoveButton extends Button implements ITickable {
         private final int col;
         private final int row;
+        private boolean down;
 
         public MoveButton(
                 int x,
@@ -163,6 +237,23 @@ public class MovementButtons extends Widget {
             this.row = row;
         }
 
+        @Override
+        public void onClick(double mouseX, double mouseY) {
+            down = true;
+        }
+
+        @Override
+        public void onRelease(double mouseX, double mouseY) {
+            down = false;
+        }
+
+        @Override
+        public void tick() {
+            if (down) {
+                this.onPress();
+            }
+        }
+
         @SuppressWarnings("deprecation") // >:I Mojang
         @Override
         public void renderButton(
@@ -172,6 +263,8 @@ public class MovementButtons extends Widget {
             int yTex = SIZE * row;
             if (!active) {
                 yTex += SIZE * (DIM * 3);
+            } else if (down) {
+                yTex += SIZE * (DIM * 2);
             } else if (this.isHovered()) {
                 yTex += SIZE * DIM;
             }

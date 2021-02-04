@@ -11,7 +11,7 @@ import java.util.concurrent.CompletableFuture;
 import denimred.simplemuseum.client.gui.widget.ResourceFieldWidget;
 import denimred.simplemuseum.client.util.ClientUtil;
 
-public class SelectResourceScreen extends AbstractSelectObjectScreen<ResourceLocation> {
+public class SelectResourceScreen extends SelectObjectScreen<ResourceLocation> {
     protected final ResourceFieldWidget caller;
 
     protected SelectResourceScreen(Screen parent, Widget owner, ResourceFieldWidget caller) {

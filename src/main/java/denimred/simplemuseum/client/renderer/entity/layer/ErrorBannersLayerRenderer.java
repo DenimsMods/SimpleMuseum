@@ -3,14 +3,17 @@ package denimred.simplemuseum.client.renderer.entity.layer;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.OutlineLayerBuffer;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Quaternion;
 import net.minecraft.util.math.vector.Vector3f;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +39,11 @@ public class ErrorBannersLayerRenderer extends GeoLayerRenderer<MuseumDummyEntit
         innerMesh = this.generateMesh(true, resolution, radius);
         // May as well save this for performance I guess ¯\_(ツ)_/¯
         vertCount = outerMesh.size();
+    }
+
+    protected static Color getRainbow() {
+        final ClientWorld world = Minecraft.getInstance().world;
+        return Color.getHSBColor(world == null ? 0.0F : (world.getGameTime() * 0.005F), 1.0F, 1.0F);
     }
 
     protected List<Vector3f> generateMesh(boolean inner, int resolution, double radius) {
@@ -86,6 +94,9 @@ public class ErrorBannersLayerRenderer extends GeoLayerRenderer<MuseumDummyEntit
         if (dummy.getAnimationsLocation().isInvalid() || dummy.getSelectedAnimation().isInvalid()) {
             banners.add(3);
         }
+        if (banners.isEmpty() && dummy.doEasterEgg()) {
+            banners.add(4);
+        }
 
         // Render the banners in the correct position
         final int count = banners.size();
@@ -105,7 +116,7 @@ public class ErrorBannersLayerRenderer extends GeoLayerRenderer<MuseumDummyEntit
             } else {
                 offsetY = yPos;
             }
-            final float offsetTime = time * (1.0F + (0.5F * i));
+            final float offsetTime = -(time * (1.0F + (0.5F * i)));
 
             this.renderBanner(banners.get(i), offsetY, offsetTime, matrixStack, typeBuffer, type);
         }
@@ -137,14 +148,16 @@ public class ErrorBannersLayerRenderer extends GeoLayerRenderer<MuseumDummyEntit
         matrixStack.pop();
     }
 
-    private void renderMesh(
+    protected void renderMesh(
             int index, float yPos, Matrix4f matrix4f, IVertexBuilder buffer, List<Vector3f> mesh) {
+        final Color color = index == 4 ? getRainbow() : Color.WHITE;
         for (int i = 0; i < vertCount; i++) {
             final boolean top = (i & 1) == 0;
             final float u = (top ? i * TEX_HEIGHT - TEX_HEIGHT : (i - 1) * TEX_HEIGHT) / 2;
             final float v = top ? (index - 1) * TEX_HEIGHT : index * TEX_HEIGHT;
             final Vector3f vert = mesh.get(i);
             buffer.pos(matrix4f, vert.getX(), vert.getY() + yPos, vert.getZ())
+                    .color(color.getRed(), color.getGreen(), color.getBlue(), 255)
                     .tex(u, v)
                     .endVertex();
         }

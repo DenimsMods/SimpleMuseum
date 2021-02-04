@@ -47,7 +47,6 @@ public class CuratorsCaneItem extends SimpleFoiledItem {
         if (!(world instanceof ServerWorld)) {
             return ActionResultType.SUCCESS;
         } else {
-            final ItemStack stack = context.getItem();
             final BlockPos pos = context.getPos();
             final Direction direction = context.getFace();
             final BlockState state = world.getBlockState(pos);

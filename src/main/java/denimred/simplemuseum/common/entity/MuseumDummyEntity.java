@@ -373,10 +373,14 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
         dataManager.set(SELECTED_ANIMATION, selectedAnimation.getDirect());
     }
 
+    public boolean doEasterEgg() {
+        return this.getDisplayName().getUnformattedComponentText().equals(":)");
+    }
+
     private <P extends IAnimatable> PlayState animationPredicate(AnimationEvent<P> event) {
         final String selAnim =
                 ((MuseumDummyEntity) event.getAnimatable()).getSelectedAnimation().getSafe();
-        if (!selAnim.equals(DEFAULT_SELECTED_ANIMATION)) {
+        if (!selAnim.isEmpty()) {
             event.getController().setAnimation(new AnimationBuilder().addAnimation(selAnim, true));
         }
         return PlayState.CONTINUE;

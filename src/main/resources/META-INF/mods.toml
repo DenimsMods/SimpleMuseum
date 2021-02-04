@@ -10,7 +10,7 @@ displayName = "Simple Museum"
 updateJSONURL="https://raw.githubusercontent.com/DenimRed/SimpleMuseum/main/update.json"
 displayURL="https://github.com/DenimRed/SimpleMuseum"
 logoFile="simplemuseum.png"
-credits="@jordanimating for requesting this"
+credits="@jordanimating for requesting this project, @TofuToons for testing and ideas"
 authors="DenimRed"
 description = '''Allows you to load and display static arbitrary GeckoLib models via resource packs. Primarily useful for testing things in-game or creating displays/showcases.
 

@@ -2,65 +2,58 @@ package denimred.simplemuseum.common.init;
 
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.data.LanguageProvider;
-import net.minecraftforge.fml.DatagenModLoader;
 
-import java.util.ArrayList;
-import java.util.List;
+import denimred.simplemuseum.SimpleMuseum;
 
-import static denimred.simplemuseum.SimpleMuseum.MOD_ID;
+public enum MuseumLang {
+    GUI_CLIPBOARD_COPY("gui", "clipboard.copy", "Copy to Clipboard"),
+    GUI_CLIPBOARD_PASTE("gui", "clipboard.paste", "Paste from Clipboard"),
+    GUI_DUMMY_CONFIG("gui", "dummy.config", "Configure Dummy"),
+    GUI_DUMMY_CONFIG_ANIM("gui", "dummy.config.anim", "Animation:"),
+    GUI_DUMMY_CONFIG_ANIM_SELECT("gui", "dummy.config.anim.select", "Select Animation"),
+    GUI_DUMMY_CONFIG_ANIMS("gui", "dummy.config.anims", "Animations Resource"),
+    GUI_DUMMY_CONFIG_ANIMS_SELECT("gui", "dummy.config.anims.select", "Select Animations Resource"),
+    GUI_DUMMY_CONFIG_MODEL("gui", "dummy.config.model", "Model Resource"),
+    GUI_DUMMY_CONFIG_MODEL_SELECT("gui", "dummy.config.model.select", "Select Model Resource"),
+    GUI_DUMMY_CONFIG_TEX("gui", "dummy.config.tex", "Texture Resource"),
+    GUI_DUMMY_CONFIG_TEX_SELECT("gui", "dummy.config.tex.select", "Select Texture Resource"),
+    GUI_DUMMY_CONFIG_TITLE("gui", "dummy.config.title", "Configure - %s"),
+    GUI_DUMMY_MOVE("gui", "dummy.move", "Move Dummy"),
+    GUI_DUMMY_MOVE_APPLY("gui", "dummy.move.apply", "Apply"),
+    GUI_DUMMY_MOVE_RESET("gui", "dummy.move.reset", "Reset"),
+    GUI_DUMMY_MOVE_TITLE("gui", "dummy.move.title", "Move - %s"),
+    GUI_DUMMY_MOVE_X("gui", "dummy.move.x", "X:"),
+    GUI_DUMMY_MOVE_Y("gui", "dummy.move.y", "Y:"),
+    GUI_DUMMY_MOVE_YAW("gui", "dummy.move.yaw", "Yaw:"),
+    GUI_DUMMY_MOVE_Z("gui", "dummy.move.z", "Z:"),
+    GUI_ERROR("gui", "error", "Error, check log!"),
+    GUI_LOADING("gui", "loading", "Loading..."),
+    GUI_MOVE_AWAY("gui", "move.away", "Move Away"),
+    GUI_MOVE_CENTER("gui", "move.center", "Center on Block"),
+    GUI_MOVE_DOWN("gui", "move.down", "Move Down"),
+    GUI_MOVE_LEFT("gui", "move.left", "Move Left"),
+    GUI_MOVE_RIGHT("gui", "move.right", "Move Right"),
+    GUI_MOVE_ROTATE_CCW("gui", "move.rotate.ccw", "Rotate Counterclockwise"),
+    GUI_MOVE_ROTATE_CW("gui", "move.rotate.cw", "Rotate Clockwise"),
+    GUI_MOVE_TOWARDS("gui", "move.towards", "Move Towards"),
+    GUI_MOVE_UP("gui", "move.up", "Move Up"),
+    GUI_SEARCH("gui", "search", "Search");
 
-public final class MuseumLang {
-    private static final List<PreMappedLang> LANGS_DATA = new ArrayList<>();
-    // Categories
-    private static final String GUI = "gui";
-    // Langs
-    public static final PreMappedLang GUI_SEARCH = new PreMappedLang(GUI, "search", "Search");
-    public static final PreMappedLang GUI_LOADING = new PreMappedLang(GUI, "loading", "Loading...");
-    public static final PreMappedLang GUI_ERROR =
-            new PreMappedLang(GUI, "error", "Error, check log!");
-    public static final PreMappedLang GUI_CLIPBOARD_COPY =
-            new PreMappedLang(GUI, "clipboard.copy", "Copy to Clipboard");
-    public static final PreMappedLang GUI_CLIPBOARD_PASTE =
-            new PreMappedLang(GUI, "clipboard.paste", "Paste from Clipboard");
-    public static final PreMappedLang GUI_DUMMY_MODEL =
-            new PreMappedLang(GUI, "dummy.model", "Model Resource");
-    public static final PreMappedLang GUI_DUMMY_MODEL_SELECT =
-            new PreMappedLang(GUI, "dummy.model.select", "Select Model Resource");
-    public static final PreMappedLang GUI_DUMMY_TEXTURE =
-            new PreMappedLang(GUI, "dummy.texture", "Texture Resource");
-    public static final PreMappedLang GUI_DUMMY_TEXTURE_SELECT =
-            new PreMappedLang(GUI, "dummy.texture.select", "Select Texture Resource");
-    public static final PreMappedLang GUI_DUMMY_ANIMATIONS =
-            new PreMappedLang(GUI, "dummy.animations", "Animations Resource");
-    public static final PreMappedLang GUI_DUMMY_ANIMATIONS_SELECT =
-            new PreMappedLang(GUI, "dummy.animations.select", "Select Animations Resource");
-    public static final PreMappedLang GUI_DUMMY_SELECTED_ANIMATION =
-            new PreMappedLang(GUI, "dummy.selected_animation", "Animation:");
-    public static final PreMappedLang GUI_DUMMY_SELECTED_ANIMATION_SELECT =
-            new PreMappedLang(GUI, "dummy.selected_animation.select", "Select Animation");
-    public static final PreMappedLang GUI_DUMMY_ROTATION =
-            new PreMappedLang(GUI, "dummy.rotation", "Rotation:");
+    private final String key;
+    private final String english;
+
+    MuseumLang(String category, String key, String english) {
+        this.key = String.format("%s.%s.%s", category, SimpleMuseum.MOD_ID, key);
+        this.english = english;
+    }
 
     public static void provideFor(LanguageProvider provider) {
-        for (PreMappedLang lang : LANGS_DATA) {
+        for (MuseumLang lang : MuseumLang.values()) {
             provider.add(lang.key, lang.english);
         }
     }
 
-    public static final class PreMappedLang {
-        private final String key;
-        private final String english;
-
-        private PreMappedLang(String category, String key, String english) {
-            this.key = String.format("%s.%s.%s", category, MOD_ID, key);
-            this.english = english;
-            if (DatagenModLoader.isRunningDataGen()) {
-                LANGS_DATA.add(this);
-            }
-        }
-
-        public TranslationTextComponent asText(Object... args) {
-            return new TranslationTextComponent(key, args);
-        }
+    public TranslationTextComponent asText(Object... args) {
+        return new TranslationTextComponent(key, args);
     }
 }

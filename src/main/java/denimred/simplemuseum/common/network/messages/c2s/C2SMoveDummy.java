@@ -4,6 +4,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -16,9 +17,9 @@ import denimred.simplemuseum.common.entity.MuseumDummyEntity;
 public class C2SMoveDummy {
     private final UUID uuid;
     private final Vector3d pos;
-    private final int yaw;
+    private final float yaw;
 
-    public C2SMoveDummy(UUID uuid, Vector3d pos, int yaw) {
+    public C2SMoveDummy(UUID uuid, Vector3d pos, float yaw) {
         this.uuid = uuid;
         this.pos = pos;
         this.yaw = yaw;
@@ -29,7 +30,7 @@ public class C2SMoveDummy {
         final double x = buf.readDouble();
         final double y = buf.readDouble();
         final double z = buf.readDouble();
-        final int yaw = buf.readInt();
+        final float yaw = buf.readFloat();
         return new C2SMoveDummy(dummy, new Vector3d(x, y, z), yaw);
     }
 
@@ -38,7 +39,7 @@ public class C2SMoveDummy {
         buf.writeDouble(pos.x);
         buf.writeDouble(pos.y);
         buf.writeDouble(pos.z);
-        buf.writeInt(yaw);
+        buf.writeFloat(yaw);
     }
 
     public void handle(Supplier<NetworkEvent.Context> sup) {
@@ -56,10 +57,11 @@ public class C2SMoveDummy {
             if (entity instanceof MuseumDummyEntity) {
                 final MuseumDummyEntity dummy = (MuseumDummyEntity) entity;
                 if (dummy.isAlive()
-                        && world.isBlockLoaded(dummy.getPosition())
+                        && world.isBlockLoaded(new BlockPos(dummy.getPositionVec()))
                         && world.isBlockLoaded(new BlockPos(pos))) {
                     // TODO: Do permissions check to avoid hacker griefing
-                    // TODO: put stuff here pls
+                    dummy.setLocationAndAngles(
+                            pos.x, pos.y, pos.z, MathHelper.wrapDegrees(yaw), dummy.rotationPitch);
                 }
             }
         }

@@ -26,7 +26,7 @@ public final class MuseumRenderType extends RenderType {
                         .build(false);
         return RenderType.makeType(
                 SimpleMuseum.MOD_ID + ":error_banners",
-                DefaultVertexFormats.POSITION_TEX,
+                DefaultVertexFormats.POSITION_COLOR_TEX,
                 GL11.GL_QUAD_STRIP,
                 256,
                 false,
