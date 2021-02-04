@@ -14,7 +14,7 @@ import denimred.simplemuseum.common.init.MuseumEntities;
         modid = SimpleMuseum.MOD_ID,
         bus = Mod.EventBusSubscriber.Bus.MOD,
         value = Dist.CLIENT)
-public class ClientModEventHandler {
+public final class ClientModEventHandler {
     @SubscribeEvent
     public static void onFMLClientSetup(FMLClientSetupEvent event) {
         RenderingRegistry.registerEntityRenderingHandler(

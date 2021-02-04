@@ -10,7 +10,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.common.item.CuratorsCaneItem;
 
-public class MuseumItems {
+public final class MuseumItems {
     public static final DeferredRegister<Item> REGISTRY =
             DeferredRegister.create(ForgeRegistries.ITEMS, SimpleMuseum.MOD_ID);
 
@@ -22,5 +22,5 @@ public class MuseumItems {
                                     new Item.Properties()
                                             .maxStackSize(1)
                                             .rarity(Rarity.UNCOMMON)
-                                            .group(ItemGroup.MISC)));
+                                            .group(ItemGroup.TOOLS)));
 }

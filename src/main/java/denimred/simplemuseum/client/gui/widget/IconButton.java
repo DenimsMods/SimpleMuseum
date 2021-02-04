@@ -8,7 +8,7 @@ import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 
-public class BetterImageButton extends Button {
+public class IconButton extends Button {
     private final ResourceLocation resourceLocation;
     private final int xTexStart;
     private final int yTexStart;
@@ -16,7 +16,7 @@ public class BetterImageButton extends Button {
     private final int textureWidth;
     private final int textureHeight;
 
-    public BetterImageButton(
+    public IconButton(
             int x,
             int y,
             int width,
@@ -39,21 +39,20 @@ public class BetterImageButton extends Button {
         this.resourceLocation = resourceLocation;
     }
 
-    @SuppressWarnings("deprecation") // >:( Mojang
+    @SuppressWarnings("deprecation") // >:I Mojang
     @Override
     public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        Minecraft minecraft = Minecraft.getInstance();
-        minecraft.getTextureManager().bindTexture(resourceLocation);
+        Minecraft.getInstance().getTextureManager().bindTexture(resourceLocation);
         int yTex = yTexStart;
-        if (!this.active) {
+        if (!active) {
             yTex += yDiffText * 2;
         } else if (this.isHovered()) {
             yTex += yDiffText;
         }
 
-        RenderSystem.color4f(1.0F, 1.0F, 1.0F, this.alpha);
+        RenderSystem.color4f(1.0F, 1.0F, 1.0F, alpha);
         RenderSystem.enableDepthTest();
-        blit(matrixStack, x, this.y, xTexStart, yTex, width, height, textureWidth, textureHeight);
+        blit(matrixStack, x, y, xTexStart, yTex, width, height, textureWidth, textureHeight);
         if (this.isHovered()) {
             this.renderToolTip(matrixStack, mouseX, mouseY);
         }

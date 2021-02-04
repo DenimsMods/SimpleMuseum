@@ -33,9 +33,12 @@ import java.util.Collections;
 import javax.annotation.Nullable;
 
 import denimred.simplemuseum.SimpleMuseum;
+import denimred.simplemuseum.client.util.ClientUtil;
 import denimred.simplemuseum.common.init.MuseumDataSerializers;
+import denimred.simplemuseum.common.init.MuseumEntities;
 import denimred.simplemuseum.common.init.MuseumItems;
 import denimred.simplemuseum.common.util.CheckedResource;
+import denimred.simplemuseum.common.util.MathUtil;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
 import software.bernie.geckolib3.core.builder.AnimationBuilder;
@@ -50,11 +53,11 @@ import static net.minecraftforge.common.util.Constants.NBT.TAG_STRING;
 // TODO: The specifics of this entity were just kind of thrown together; needs to be reviewed
 public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
     public static final ResourceLocation DEFAULT_MODEL_LOCATION =
-            new ResourceLocation(SimpleMuseum.MOD_ID, "geo/museum_dummy.geo.json");
+            new ResourceLocation(SimpleMuseum.MOD_ID, "geo/entity/museum_dummy.geo.json");
     public static final ResourceLocation DEFAULT_TEXTURE_LOCATION =
             new ResourceLocation(SimpleMuseum.MOD_ID, "textures/entity/museum_dummy.png");
     public static final ResourceLocation DEFAULT_ANIMATIONS_LOCATION =
-            new ResourceLocation(SimpleMuseum.MOD_ID, "animations/museum_dummy.json");
+            new ResourceLocation(SimpleMuseum.MOD_ID, "animations/entity/museum_dummy.json");
     public static final String DEFAULT_SELECTED_ANIMATION = "";
     public static final DataParameter<ResourceLocation> MODEL_LOCATION =
             EntityDataManager.createKey(
@@ -104,6 +107,24 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
 
     public MuseumDummyEntity(EntityType<? extends LivingEntity> type, World worldIn) {
         super(type, worldIn);
+    }
+
+    @Nullable
+    public static MuseumDummyEntity spawn(
+            ServerWorld world, Vector3d pos, @Nullable Entity entity) {
+        return spawn(world, pos, entity != null ? entity.getPositionVec() : null);
+    }
+
+    @Nullable
+    public static MuseumDummyEntity spawn(
+            ServerWorld world, Vector3d pos, @Nullable Vector3d facing) {
+        final MuseumDummyEntity dummy = MuseumEntities.MUSEUM_DUMMY.get().create(world);
+        if (dummy != null) {
+            final float yaw = facing != null ? MathUtil.angleBetween(pos, facing) : 0.0F;
+            dummy.setLocationAndAngles(pos.x, pos.y, pos.z, yaw, 0.0F);
+            world.func_242417_l(dummy);
+        }
+        return dummy;
     }
 
     @Override
@@ -246,16 +267,6 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
     }
 
     @Override
-    public void setLocationAndAngles(double x, double y, double z, float yaw, float pitch) {
-        this.forceSetPosition(x, y, z);
-        if (this.isAddedToWorld()) { // Don't set rotation until spawned
-            rotationYaw = yaw;
-            rotationPitch = pitch;
-        }
-        this.recenterBoundingBox();
-    }
-
-    @Override
     public boolean hitByEntity(Entity entityIn) {
         return !(entityIn instanceof PlayerEntity
                 && world.isBlockModifiable((PlayerEntity) entityIn, this.getPosition()));
@@ -359,10 +370,14 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
         dataManager.set(SELECTED_ANIMATION, selectedAnimation.getDirect());
     }
 
+    public boolean doEasterEgg() {
+        return this.getDisplayName().getUnformattedComponentText().equals(":)");
+    }
+
     private <P extends IAnimatable> PlayState animationPredicate(AnimationEvent<P> event) {
         final String selAnim =
                 ((MuseumDummyEntity) event.getAnimatable()).getSelectedAnimation().getSafe();
-        if (!selAnim.equals(DEFAULT_SELECTED_ANIMATION)) {
+        if (!selAnim.isEmpty()) {
             event.getController().setAnimation(new AnimationBuilder().addAnimation(selAnim, true));
         }
         return PlayState.CONTINUE;
@@ -382,6 +397,11 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
         return this.getBoundingBox().grow(10);
+    }
+
+    @Override
+    public boolean isGlowing() {
+        return super.isGlowing() || world.isRemote && ClientUtil.shouldDummyGlow(this);
     }
 
     public void clearAllCached() {

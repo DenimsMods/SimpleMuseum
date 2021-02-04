@@ -9,6 +9,7 @@ public class CheckedResource<T> {
     private final T fallback;
     private T current;
     @Nullable private T cached;
+    private boolean valid;
 
     public CheckedResource(T fallback, Attempticate<T> validator) {
         this(fallback, (Predicate<T>) validator);
@@ -30,13 +31,22 @@ public class CheckedResource<T> {
 
     public T getSafe() {
         if (cached != current && cached != fallback || cached == null) {
-            if (validator.test(current)) {
+            valid = validator.test(current);
+            if (valid) {
                 cached = current;
             } else {
                 cached = fallback;
             }
         }
         return cached;
+    }
+
+    public boolean isInvalid() {
+        // Most just a sanity check to deal with edge cases
+        if (cached == null) {
+            this.getSafe();
+        }
+        return !valid;
     }
 
     public void set(T t) {

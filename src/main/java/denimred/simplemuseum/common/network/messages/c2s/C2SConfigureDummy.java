@@ -14,7 +14,6 @@ import denimred.simplemuseum.common.entity.MuseumDummyEntity;
 
 public class C2SConfigureDummy {
     private final UUID uuid;
-    private final int rotation;
     private final ResourceLocation modelLoc;
     private final ResourceLocation texLoc;
     private final ResourceLocation animLoc;
@@ -22,13 +21,11 @@ public class C2SConfigureDummy {
 
     public C2SConfigureDummy(
             UUID uuid,
-            int rotation,
             ResourceLocation modelLoc,
             ResourceLocation texLoc,
             ResourceLocation animLoc,
             String selAnim) {
         this.uuid = uuid;
-        this.rotation = rotation;
         this.modelLoc = modelLoc;
         this.texLoc = texLoc;
         this.animLoc = animLoc;
@@ -37,17 +34,15 @@ public class C2SConfigureDummy {
 
     public static C2SConfigureDummy decode(PacketBuffer buf) {
         final UUID dummy = buf.readUniqueId();
-        final int rotation = buf.readInt();
         final ResourceLocation modelLoc = buf.readResourceLocation();
         final ResourceLocation texLoc = buf.readResourceLocation();
         final ResourceLocation animLoc = buf.readResourceLocation();
         final String selAnim = buf.readString(32767);
-        return new C2SConfigureDummy(dummy, rotation, modelLoc, texLoc, animLoc, selAnim);
+        return new C2SConfigureDummy(dummy, modelLoc, texLoc, animLoc, selAnim);
     }
 
     public void encode(PacketBuffer buf) {
         buf.writeUniqueId(uuid);
-        buf.writeInt(rotation);
         buf.writeResourceLocation(modelLoc);
         buf.writeResourceLocation(texLoc);
         buf.writeResourceLocation(animLoc);
@@ -60,7 +55,7 @@ public class C2SConfigureDummy {
         ctx.setPacketHandled(true);
     }
 
-    @SuppressWarnings("deprecation") // Mojang >:(
+    @SuppressWarnings("deprecation") // Mojang >:I
     private void doWork(NetworkEvent.Context ctx) {
         final ServerPlayerEntity sender = ctx.getSender();
         if (sender != null) {
@@ -68,10 +63,8 @@ public class C2SConfigureDummy {
             final Entity entity = world.getEntityByUuid(uuid);
             if (entity instanceof MuseumDummyEntity) {
                 final MuseumDummyEntity dummy = (MuseumDummyEntity) entity;
-                if (world.isBlockLoaded(dummy.getPosition())
-                        && sender.getDistanceSq(dummy) < 36
-                        && dummy.isAlive()) {
-                    dummy.rotationYaw = dummy.prevRotationYaw = rotation % 360;
+                if (world.isBlockLoaded(dummy.getPosition()) && dummy.isAlive()) {
+                    // TODO: Do permissions check to avoid hacker griefing
                     dummy.setModelLocation(modelLoc);
                     dummy.setTextureLocation(texLoc);
                     dummy.setAnimationsLocation(animLoc);

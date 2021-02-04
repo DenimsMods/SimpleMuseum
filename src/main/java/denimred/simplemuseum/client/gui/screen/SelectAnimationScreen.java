@@ -2,6 +2,7 @@ package denimred.simplemuseum.client.gui.screen;
 
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 
@@ -14,9 +15,17 @@ import java.util.stream.Collectors;
 import software.bernie.geckolib3.file.AnimationFile;
 import software.bernie.geckolib3.resource.GeckoLibCache;
 
-public class SelectAnimationScreen extends AbstractSelectObjectScreen<String> {
+public class SelectAnimationScreen extends SelectObjectScreen<String> {
     protected final TextFieldWidget caller;
     private final Supplier<ResourceLocation> fileLocSupplier;
+
+    protected SelectAnimationScreen(
+            Screen parent,
+            Widget owner,
+            TextFieldWidget caller,
+            Supplier<ResourceLocation> fileLocSupplier) {
+        this(parent, owner.getMessage(), caller, fileLocSupplier);
+    }
 
     protected SelectAnimationScreen(
             Screen parent,

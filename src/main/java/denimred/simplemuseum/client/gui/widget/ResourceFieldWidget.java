@@ -10,7 +10,6 @@ import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.ResourceLocationException;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
 
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -32,7 +31,7 @@ public class ResourceFieldWidget extends Widget {
     protected final String pathPrefix;
     protected final TextFieldWidget namespaceField;
     protected final TextFieldWidget pathField;
-    protected final BetterImageButton openListButton;
+    protected final IconButton openListButton;
     protected final Pattern pathPrefixPattern;
     private final Predicate<ResourceLocation> validator;
     protected int color;
@@ -45,6 +44,7 @@ public class ResourceFieldWidget extends Widget {
             int width,
             int height,
             ITextComponent title,
+            ITextComponent buttonTitle,
             String pathPrefix,
             Predicate<ResourceLocation> validator,
             Button.IPressable buttonAction,
@@ -58,18 +58,12 @@ public class ResourceFieldWidget extends Widget {
         final int namespaceWidth = (width / 4) - (MARGIN / 2);
         final int pathPrefixWidth = (int) (font.getStringWidth(pathPrefix) + (MARGIN * 1.25));
         final int pathWidth = width - namespaceWidth - pathPrefixWidth - 21;
-        namespaceField =
-                new TextFieldWidget(font, x, y, namespaceWidth, height, StringTextComponent.EMPTY);
+        namespaceField = new TextFieldWidget(font, x, y, namespaceWidth, height, title);
         pathField =
                 new TextFieldWidget(
-                        font,
-                        x + namespaceWidth + pathPrefixWidth,
-                        y,
-                        pathWidth,
-                        height,
-                        StringTextComponent.EMPTY);
+                        font, x + namespaceWidth + pathPrefixWidth, y, pathWidth, height, title);
         openListButton =
-                new BetterImageButton(
+                new IconButton(
                         pathField.x + pathWidth + 2,
                         y,
                         20,
@@ -82,7 +76,7 @@ public class ResourceFieldWidget extends Widget {
                         64,
                         buttonAction,
                         buttonTooltip,
-                        StringTextComponent.EMPTY);
+                        buttonTitle);
 
         namespaceField.setResponder(n -> this.respondFields(n, pathField.getText()));
         namespaceField.setMaxStringLength(MAX_LENGTH / 2);
@@ -108,6 +102,20 @@ public class ResourceFieldWidget extends Widget {
 
     public void setChangeListener(@Nullable Runnable changeListener) {
         this.changeListener = changeListener;
+    }
+
+    public void setLocation(@Nullable String loc, boolean trimPathPrefix, boolean ignoreException) {
+        if (loc == null || loc.isEmpty()) {
+            this.setLocation(null, trimPathPrefix);
+        } else {
+            try {
+                this.setLocation(new ResourceLocation(loc), trimPathPrefix);
+            } catch (ResourceLocationException e) {
+                if (!ignoreException) {
+                    throw e;
+                }
+            }
+        }
     }
 
     public void setLocation(@Nullable ResourceLocation loc, boolean trimPathPrefix) {
