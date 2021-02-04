@@ -96,31 +96,31 @@ public class MovementButtons extends Widget implements ITickable {
                 break;
             case MOVE_AWAY:
                 final Vector3i forward = dir.getDirectionVec();
-                pos = pos.add(Vector3d.copy(forward).mul(speedMult, speedMult, speedMult));
+                pos = pos.add(Vector3d.copy(forward).scale(speedMult));
                 break;
             case ROTATE_CLOCKWISE:
                 yaw += angle;
                 break;
             case MOVE_LEFT:
                 final Vector3i left = dir.rotateYCCW().getDirectionVec();
-                pos = pos.add(Vector3d.copy(left).mul(speedMult, speedMult, speedMult));
+                pos = pos.add(Vector3d.copy(left).scale(speedMult));
                 break;
             case CENTER:
                 pos = new Vector3d(Math.floor(pos.x) + 0.5D, pos.y, Math.floor(pos.z) + 0.5D);
                 break;
             case MOVE_RIGHT:
                 final Vector3i right = dir.rotateY().getDirectionVec();
-                pos = pos.add(Vector3d.copy(right).mul(speedMult, speedMult, speedMult));
+                pos = pos.add(Vector3d.copy(right).scale(speedMult));
                 break;
             case MOVE_UP:
-                pos = pos.add(new Vector3d(0, 1, 0).mul(speedMult, speedMult, speedMult));
+                pos = pos.add(new Vector3d(0, 1, 0).scale(speedMult));
                 break;
             case MOVE_TOWARDS:
                 final Vector3i back = dir.getOpposite().getDirectionVec();
-                pos = pos.add(Vector3d.copy(back).mul(speedMult, speedMult, speedMult));
+                pos = pos.add(Vector3d.copy(back).scale(speedMult));
                 break;
             case MOVE_DOWN:
-                pos = pos.add(new Vector3d(0, -1, 0).mul(speedMult, speedMult, speedMult));
+                pos = pos.add(new Vector3d(0, -1, 0).scale(speedMult));
                 break;
         }
         MuseumNetworking.CHANNEL.sendToServer(new C2SMoveDummy(dummy.getUniqueID(), pos, yaw));

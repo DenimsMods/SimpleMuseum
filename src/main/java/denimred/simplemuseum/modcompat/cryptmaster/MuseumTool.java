@@ -4,11 +4,8 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
-import net.minecraft.potion.Effects;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Vector3d;
-
-import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;
 
@@ -24,25 +21,26 @@ import denimred.simplemuseum.common.init.MuseumNetworking;
 import denimred.simplemuseum.common.network.messages.c2s.C2SCryptMasterRemoveDummy;
 import denimred.simplemuseum.common.network.messages.c2s.C2SCryptMasterSpawnDummy;
 
-public class MuseumToolBehavior implements IUtilityToolInstance {
-    public static final UtilityTool TOOL_INSTANCE =
+public class MuseumTool implements IUtilityToolInstance {
+    public static final UtilityTool INSTANCE =
             new UtilityTool(
                     new ResourceLocation(SimpleMuseum.MOD_ID, "main"),
                     new ResourceLocation(SimpleMuseum.MOD_ID, "textures/item/curators_cane.png"),
-                    MuseumToolBehavior::new);
+                    MuseumTool::new);
 
-    @Nullable private MuseumDummyEntity dummy;
-    @Nullable private Vector3d spawnPos;
+    @Nullable
+    private Vector3d spawnPos;
 
     @Override
-    public void onScroll(double v) {}
+    public void onScroll(double v) {
+    }
 
     @Override
     public void render(MatrixStack matrixStack) {}
 
     @Override
     public void close() {
-        this.deselectDummy();
+        ClientUtil.deselectDummy(true);
         spawnPos = null;
     }
 
@@ -50,10 +48,10 @@ public class MuseumToolBehavior implements IUtilityToolInstance {
     public void onCursorMoved(ToolCursorState cursor) {
         final Entity entity = cursor.raycastToEntity();
         if (entity instanceof MuseumDummyEntity) {
-            this.selectDummy((MuseumDummyEntity) entity);
+            ClientUtil.selectDummy((MuseumDummyEntity) entity, true);
             spawnPos = null;
         } else {
-            this.deselectDummy();
+            ClientUtil.deselectDummy(true);
             spawnPos = cursor.raycastToBlock();
         }
     }
@@ -61,6 +59,7 @@ public class MuseumToolBehavior implements IUtilityToolInstance {
     @Override
     public void onMouseButton(MouseButton button, MouseButtonState state, ToolCursorState cursor) {
         if (state == MouseButtonState.PRESSED) {
+            final MuseumDummyEntity dummy = ClientUtil.getSelectedDummy();
             if (button == MouseButton.LEFT) {
                 if (dummy != null) {
                     ClientUtil.openDummyScreen(dummy, Minecraft.getInstance().currentScreen);
@@ -71,23 +70,6 @@ public class MuseumToolBehavior implements IUtilityToolInstance {
                 MuseumNetworking.CHANNEL.sendToServer(
                         new C2SCryptMasterRemoveDummy(dummy.getUniqueID()));
             }
-        }
-    }
-
-    private void selectDummy(MuseumDummyEntity newDummy) {
-        if (dummy != newDummy) {
-            this.deselectDummy();
-            ClientUtil.setCursor(GLFW.GLFW_HAND_CURSOR);
-            newDummy.setGlowing(true);
-            dummy = newDummy;
-        }
-    }
-
-    private void deselectDummy() {
-        if (dummy != null) {
-            ClientUtil.resetCursor();
-            dummy.setGlowing(dummy.isPotionActive(Effects.GLOWING));
-            dummy = null;
         }
     }
 }

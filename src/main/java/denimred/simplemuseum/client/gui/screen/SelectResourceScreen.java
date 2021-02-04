@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import denimred.simplemuseum.client.gui.widget.ResourceFieldWidget;
-import denimred.simplemuseum.client.util.ClientUtil;
+import denimred.simplemuseum.client.util.ResourceUtil;
 
 public class SelectResourceScreen extends SelectObjectScreen<ResourceLocation> {
     protected final ResourceFieldWidget caller;
@@ -39,6 +39,6 @@ public class SelectResourceScreen extends SelectObjectScreen<ResourceLocation> {
     @Override
     protected CompletableFuture<List<ResourceLocation>> getEntriesAsync() {
         final String path = caller.getPathPrefix().replaceFirst("/$", "");
-        return ClientUtil.getCachedResourcesAsync(path, caller::validate);
+        return ResourceUtil.getCachedResourcesAsync(path, caller::validate);
     }
 }

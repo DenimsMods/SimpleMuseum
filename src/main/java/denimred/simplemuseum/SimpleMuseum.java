@@ -9,7 +9,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import denimred.simplemuseum.client.util.ClientUtil;
+import denimred.simplemuseum.client.util.ResourceUtil;
 import denimred.simplemuseum.common.init.MuseumDataSerializers;
 import denimred.simplemuseum.common.init.MuseumEntities;
 import denimred.simplemuseum.common.init.MuseumItems;
@@ -30,6 +30,6 @@ public final class SimpleMuseum {
 
         MuseumNetworking.registerMessages();
 
-        DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> ClientUtil::registerResourceReloadListener);
+        DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> ResourceUtil::registerResourceReloadListener);
     }
 }

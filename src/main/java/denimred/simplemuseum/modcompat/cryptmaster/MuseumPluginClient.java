@@ -9,6 +9,6 @@ import cryptcraft.cryptmaster.api.client.UtilityTool;
 public class MuseumPluginClient implements ICryptMasterClientPlugin {
     @Override
     public List<UtilityTool> getUtilityTools() {
-        return Collections.singletonList(MuseumToolBehavior.TOOL_INSTANCE);
+        return Collections.singletonList(MuseumTool.INSTANCE);
     }
 }

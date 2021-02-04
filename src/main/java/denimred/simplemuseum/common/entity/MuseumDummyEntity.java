@@ -23,7 +23,6 @@ import net.minecraft.util.ResourceLocationException;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
@@ -34,6 +33,7 @@ import java.util.Collections;
 import javax.annotation.Nullable;
 
 import denimred.simplemuseum.SimpleMuseum;
+import denimred.simplemuseum.client.util.ClientUtil;
 import denimred.simplemuseum.common.init.MuseumDataSerializers;
 import denimred.simplemuseum.common.init.MuseumEntities;
 import denimred.simplemuseum.common.init.MuseumItems;
@@ -53,11 +53,11 @@ import static net.minecraftforge.common.util.Constants.NBT.TAG_STRING;
 // TODO: The specifics of this entity were just kind of thrown together; needs to be reviewed
 public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
     public static final ResourceLocation DEFAULT_MODEL_LOCATION =
-            new ResourceLocation(SimpleMuseum.MOD_ID, "geo/museum_dummy.geo.json");
+            new ResourceLocation(SimpleMuseum.MOD_ID, "geo/entity/museum_dummy.geo.json");
     public static final ResourceLocation DEFAULT_TEXTURE_LOCATION =
             new ResourceLocation(SimpleMuseum.MOD_ID, "textures/entity/museum_dummy.png");
     public static final ResourceLocation DEFAULT_ANIMATIONS_LOCATION =
-            new ResourceLocation(SimpleMuseum.MOD_ID, "animations/museum_dummy.json");
+            new ResourceLocation(SimpleMuseum.MOD_ID, "animations/entity/museum_dummy.json");
     public static final String DEFAULT_SELECTED_ANIMATION = "";
     public static final DataParameter<ResourceLocation> MODEL_LOCATION =
             EntityDataManager.createKey(
@@ -111,11 +111,8 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
 
     @Nullable
     public static MuseumDummyEntity spawn(
-            ServerWorld world, BlockPos pos, @Nullable PlayerEntity player) {
-        return spawn(
-                world,
-                new Vector3d(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5),
-                player != null ? player.getPositionVec() : null);
+            ServerWorld world, Vector3d pos, @Nullable Entity entity) {
+        return spawn(world, pos, entity != null ? entity.getPositionVec() : null);
     }
 
     @Nullable
@@ -400,6 +397,11 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
         return this.getBoundingBox().grow(10);
+    }
+
+    @Override
+    public boolean isGlowing() {
+        return super.isGlowing() || world.isRemote && ClientUtil.shouldDummyGlow(this);
     }
 
     public void clearAllCached() {
