@@ -57,7 +57,6 @@ public class MovementButtons extends Widget implements ITickable {
     }
 
     public static IFormattableTextComponent getName(int index) {
-        // TODO: Localize
         switch (index) {
             case ROTATE_COUNTER_CLOCKWISE:
                 return MuseumLang.GUI_MOVE_ROTATE_CCW.asText();
