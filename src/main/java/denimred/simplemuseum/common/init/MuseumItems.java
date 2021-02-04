@@ -22,5 +22,5 @@ public final class MuseumItems {
                                     new Item.Properties()
                                             .maxStackSize(1)
                                             .rarity(Rarity.UNCOMMON)
-                                            .group(ItemGroup.MISC)));
+                                            .group(ItemGroup.TOOLS)));
 }
