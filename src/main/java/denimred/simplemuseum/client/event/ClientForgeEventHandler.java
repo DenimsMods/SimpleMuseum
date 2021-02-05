@@ -23,7 +23,7 @@ public class ClientForgeEventHandler {
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.side.isClient()) {
             final PlayerEntity player = event.player;
-            if (!player.isSpectator()) {
+            if (player == ClientUtil.MC.player && !player.isSpectator()) {
                 final CuratorsCaneItem cane = MuseumItems.CURATORS_CANE.get();
                 if (player.getHeldItemMainhand().getItem() == cane
                         || player.getHeldItemOffhand().getItem() == cane) {
