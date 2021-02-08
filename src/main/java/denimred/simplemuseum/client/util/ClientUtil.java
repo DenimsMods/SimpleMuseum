@@ -19,6 +19,7 @@ import denimred.simplemuseum.client.gui.screen.ConfigureDummyScreen;
 import denimred.simplemuseum.client.gui.screen.MuseumDummyScreen;
 import denimred.simplemuseum.common.entity.MuseumDummyEntity;
 import denimred.simplemuseum.modcompat.ModCompatUtil;
+import denimred.simplemuseum.common.init.MuseumKeybinds;
 import it.unimi.dsi.fastutil.ints.Int2LongArrayMap;
 
 import static org.lwjgl.glfw.GLFW.GLFW_ARROW_CURSOR;
@@ -75,7 +76,7 @@ public class ClientUtil {
     public static boolean shouldDummyGlow(MuseumDummyEntity dummy) {
         return (MC.currentScreen == null || ModCompatUtil.isCryptMasterActive())
                 && holdingCane
-                && dummy == selectedDummy;
+                && (dummy == selectedDummy || MuseumKeybinds.GLOBAL_HIGHLIGHTS.isKeyDown());
     }
 
     @Nullable

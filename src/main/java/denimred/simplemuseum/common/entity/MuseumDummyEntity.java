@@ -37,6 +37,7 @@ import denimred.simplemuseum.client.util.ClientUtil;
 import denimred.simplemuseum.common.init.MuseumDataSerializers;
 import denimred.simplemuseum.common.init.MuseumEntities;
 import denimred.simplemuseum.common.init.MuseumItems;
+import denimred.simplemuseum.common.init.MuseumKeybinds;
 import denimred.simplemuseum.common.util.CheckedResource;
 import denimred.simplemuseum.common.util.MathUtil;
 import software.bernie.geckolib3.core.IAnimatable;
@@ -405,6 +406,13 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
     @Override
     public boolean isGlowing() {
         return super.isGlowing() || world.isRemote && ClientUtil.shouldDummyGlow(this);
+    }
+
+    @Override
+    public int getTeamColor() {
+        return MuseumKeybinds.GLOBAL_HIGHLIGHTS.isKeyDown() && ClientUtil.getSelectedDummy() != this
+                ? 0x3366FF
+                : super.getTeamColor();
     }
 
     public void clearAllCached() {

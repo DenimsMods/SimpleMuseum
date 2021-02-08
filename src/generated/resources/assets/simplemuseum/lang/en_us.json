@@ -33,5 +33,7 @@
   "gui.simplemuseum.move.up": "Move Up",
   "gui.simplemuseum.search": "Search",
   "gui.simplemuseum.tool.main": "Create/Edit Museum Dummy",
-  "item.simplemuseum.curators_cane": "Curator's Cane"
+  "item.simplemuseum.curators_cane": "Curator's Cane",
+  "key.simplemuseum.category": "Simple Museum",
+  "key.simplemuseum.global_highlights": "Toggle Global Highlights"
 }
