@@ -400,7 +400,7 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return this.getBoundingBox().grow(10);
+        return ClientUtil.getModelBounds(this);
     }
 
     @Override
@@ -411,8 +411,8 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
     @Override
     public int getTeamColor() {
         return MuseumKeybinds.GLOBAL_HIGHLIGHTS.isKeyDown() && ClientUtil.getSelectedDummy() != this
-                ? 0x3366FF
-                : super.getTeamColor();
+                ? super.getTeamColor()
+                : 0x00FFFF;
     }
 
     public void clearAllCached() {
