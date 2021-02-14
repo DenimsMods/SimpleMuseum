@@ -23,13 +23,16 @@ public final class SimpleMuseum {
 
     public SimpleMuseum() {
         final IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+        // Game object registry stuff
         MuseumDataSerializers.REGISTRY.register(bus);
         MuseumEntities.REGISTRY.register(bus);
         MuseumItems.REGISTRY.register(bus);
-        bus.addListener(ModCompatUtil::enqueueIMC);
-
+        // Networking stuff
         MuseumNetworking.registerMessages();
-
+        // Misc client stuff
         DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> ResourceUtil::registerResourceReloadListener);
+        // Mod compat stuff
+        bus.addListener(ModCompatUtil::enqueueIMC);
+        ModCompatUtil.registerCryptMasterPossession();
     }
 }

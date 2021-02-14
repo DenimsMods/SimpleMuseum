@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 import denimred.simplemuseum.client.gui.screen.ConfigureDummyScreen;
 import denimred.simplemuseum.client.gui.screen.MuseumDummyScreen;
 import denimred.simplemuseum.common.entity.MuseumDummyEntity;
+import denimred.simplemuseum.modcompat.ModCompatUtil;
 import it.unimi.dsi.fastutil.ints.Int2LongArrayMap;
 
 import static org.lwjgl.glfw.GLFW.GLFW_ARROW_CURSOR;
@@ -30,8 +31,8 @@ public class ClientUtil {
     private static final Int2LongArrayMap CURSORS = new Int2LongArrayMap(6);
     private static BiFunction<MuseumDummyEntity, Screen, ? extends MuseumDummyScreen>
             lastDummyScreen = ConfigureDummyScreen::new;
-    @Nullable
-    private static MuseumDummyEntity selectedDummy;
+    @Nullable private static MuseumDummyEntity selectedDummy;
+    private static boolean holdingCane;
 
     @Nullable
     public static MuseumDummyEntity getHoveredDummy(Entity entity) {
@@ -50,30 +51,31 @@ public class ClientUtil {
         return result != null ? (MuseumDummyEntity) result.getEntity() : null;
     }
 
+    public static void setHoldingCane(boolean holdingCane) {
+        ClientUtil.holdingCane = holdingCane;
+    }
+
     public static void selectDummy(@Nullable MuseumDummyEntity dummy, boolean changeCursor) {
-        if (dummy == null) {
-            deselectDummy(changeCursor);
-        } else if (selectedDummy != dummy) {
+        if (selectedDummy != dummy) {
             if (changeCursor) {
-                ClientUtil.setCursor(GLFW.GLFW_HAND_CURSOR);
+                if (dummy != null) {
+                    ClientUtil.setCursor(GLFW.GLFW_HAND_CURSOR);
+                } else {
+                    ClientUtil.resetCursor();
+                }
             }
             selectedDummy = dummy;
         }
     }
 
     public static void deselectDummy(boolean changeCursor) {
-        if (selectedDummy != null) {
-            if (changeCursor) {
-                ClientUtil.resetCursor();
-            }
-            selectedDummy = null;
-        }
+        selectDummy(null, changeCursor);
     }
 
     public static boolean shouldDummyGlow(MuseumDummyEntity dummy) {
-        final Entity renderer = MC.renderViewEntity;
-        return dummy == selectedDummy
-                && (MC.currentScreen == null || renderer != null && renderer.isSpectator());
+        return (MC.currentScreen == null || ModCompatUtil.isCryptMasterActive())
+                && holdingCane
+                && dummy == selectedDummy;
     }
 
     @Nullable

@@ -9,11 +9,14 @@ import net.minecraft.util.math.vector.Vector3d;
 
 import javax.annotation.Nullable;
 
+import cryptcraft.cryptgui.nodes.INode;
+import cryptcraft.cryptgui.nodes.ImageNode;
+import cryptcraft.cryptgui.nodes.ImageNodeProps;
 import cryptcraft.cryptgui.util.MouseButton;
 import cryptcraft.cryptgui.util.MouseButtonState;
-import cryptcraft.cryptmaster.api.client.IUtilityToolInstance;
-import cryptcraft.cryptmaster.api.client.ToolCursorState;
-import cryptcraft.cryptmaster.api.client.UtilityTool;
+import cryptcraft.cryptmaster.plugin.client.IUtilityToolInstance;
+import cryptcraft.cryptmaster.plugin.client.ToolCursorState;
+import cryptcraft.cryptmaster.plugin.client.UtilityTool;
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.client.util.ClientUtil;
 import denimred.simplemuseum.common.entity.MuseumDummyEntity;
@@ -25,21 +28,28 @@ public class MuseumTool implements IUtilityToolInstance {
     public static final UtilityTool INSTANCE =
             new UtilityTool(
                     new ResourceLocation(SimpleMuseum.MOD_ID, "main"),
-                    new ResourceLocation(SimpleMuseum.MOD_ID, "textures/item/curators_cane.png"),
+                    new ImageNode(
+                            new ImageNodeProps(
+                                    new ResourceLocation(
+                                            SimpleMuseum.MOD_ID, "textures/item/curators_cane.png"),
+                                    null)),
                     MuseumTool::new);
 
-    @Nullable
-    private Vector3d spawnPos;
+    @Nullable private Vector3d spawnPos;
+
+    private MuseumTool() {
+        ClientUtil.setHoldingCane(true);
+    }
 
     @Override
-    public void onScroll(double v) {
-    }
+    public void onMouseScrolled(double v) {}
 
     @Override
     public void render(MatrixStack matrixStack) {}
 
     @Override
     public void close() {
+        ClientUtil.setHoldingCane(false);
         ClientUtil.deselectDummy(true);
         spawnPos = null;
     }
@@ -71,5 +81,11 @@ public class MuseumTool implements IUtilityToolInstance {
                         new C2SCryptMasterRemoveDummy(dummy.getUniqueID()));
             }
         }
+    }
+
+    @Nullable
+    @Override
+    public INode renderSettingsPanel() {
+        return null;
     }
 }

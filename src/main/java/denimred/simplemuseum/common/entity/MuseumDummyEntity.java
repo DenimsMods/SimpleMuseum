@@ -375,12 +375,15 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
     }
 
     private <P extends IAnimatable> PlayState animationPredicate(AnimationEvent<P> event) {
-        final String selAnim =
-                ((MuseumDummyEntity) event.getAnimatable()).getSelectedAnimation().getSafe();
-        if (!selAnim.isEmpty()) {
+        final CheckedResource<String> sel =
+                ((MuseumDummyEntity) event.getAnimatable()).getSelectedAnimation();
+        final String selAnim = sel.getSafe();
+        if (sel.isInvalid() || selAnim.isEmpty()) {
+            return PlayState.STOP;
+        } else {
             event.getController().setAnimation(new AnimationBuilder().addAnimation(selAnim, true));
+            return PlayState.CONTINUE;
         }
-        return PlayState.CONTINUE;
     }
 
     @Override

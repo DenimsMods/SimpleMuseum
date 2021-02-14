@@ -34,8 +34,8 @@ versionRange="[3,)"
 ordering="AFTER"
 side = "BOTH"
 [[dependencies.simplemuseum]]
-modId="ccp-layl"
+modId="cryptmaster"
 mandatory=false
-versionRange="[0,)"
+versionRange="[0.3,)"
 ordering="AFTER"
 side = "BOTH"
