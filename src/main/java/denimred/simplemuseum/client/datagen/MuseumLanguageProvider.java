@@ -3,7 +3,7 @@ package denimred.simplemuseum.client.datagen;
 import net.minecraft.data.DataGenerator;
 import net.minecraftforge.common.data.LanguageProvider;
 
-import cryptcraft.cryptmaster.api.client.UtilityTool;
+import cryptcraft.cryptmaster.plugin.client.UtilityTool;
 import denimred.simplemuseum.common.init.MuseumEntities;
 import denimred.simplemuseum.common.init.MuseumItems;
 import denimred.simplemuseum.common.init.MuseumLang;

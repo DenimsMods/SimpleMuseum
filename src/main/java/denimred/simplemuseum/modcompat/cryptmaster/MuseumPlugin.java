@@ -2,8 +2,8 @@ package denimred.simplemuseum.modcompat.cryptmaster;
 
 import java.util.function.Supplier;
 
-import cryptcraft.cryptmaster.api.ICryptMasterPlugin;
-import cryptcraft.cryptmaster.api.client.ICryptMasterClientPlugin;
+import cryptcraft.cryptmaster.plugin.ICryptMasterPlugin;
+import cryptcraft.cryptmaster.plugin.client.ICryptMasterClientPlugin;
 
 public class MuseumPlugin implements ICryptMasterPlugin {
     @Override

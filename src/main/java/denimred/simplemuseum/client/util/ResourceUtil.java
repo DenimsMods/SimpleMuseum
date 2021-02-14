@@ -76,6 +76,7 @@ public class ResourceUtil {
                 value.clear();
             }
             RESOURCE_CACHE.clear();
+            ClientUtil.MODEL_RENDER_BOUNDS.clear();
 
             final ClientWorld world = ClientUtil.MC.world;
             if (world != null) {

@@ -10,7 +10,6 @@ import net.minecraftforge.fml.common.Mod;
 
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.client.util.ClientUtil;
-import denimred.simplemuseum.common.entity.MuseumDummyEntity;
 import denimred.simplemuseum.common.init.MuseumItems;
 import denimred.simplemuseum.common.item.CuratorsCaneItem;
 
@@ -21,17 +20,16 @@ import denimred.simplemuseum.common.item.CuratorsCaneItem;
 public class ClientForgeEventHandler {
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.side.isClient()) {
+        if (event.side.isClient() && ClientUtil.MC.currentScreen == null) {
             final PlayerEntity player = event.player;
             if (player == ClientUtil.MC.player && !player.isSpectator()) {
                 final CuratorsCaneItem cane = MuseumItems.CURATORS_CANE.get();
-                if (player.getHeldItemMainhand().getItem() == cane
-                        || player.getHeldItemOffhand().getItem() == cane) {
-                    final MuseumDummyEntity dummy = ClientUtil.getHoveredDummy(player);
-                    ClientUtil.selectDummy(dummy, false);
-                } else {
-                    ClientUtil.deselectDummy(false);
-                }
+                final boolean holdingCane =
+                        player.getHeldItemMainhand().getItem() == cane
+                                || player.getHeldItemOffhand().getItem() == cane;
+                ClientUtil.setHoldingCane(holdingCane);
+                ClientUtil.selectDummy(
+                        holdingCane ? ClientUtil.getHoveredDummy(player) : null, false);
             }
         }
     }
@@ -39,6 +37,7 @@ public class ClientForgeEventHandler {
     @SubscribeEvent
     public static void onClientPlayerChangeGameMode(ClientPlayerChangeGameModeEvent event) {
         if (event.getNewGameMode() == GameType.SPECTATOR) {
+            ClientUtil.setHoldingCane(false);
             ClientUtil.deselectDummy(false);
         }
     }

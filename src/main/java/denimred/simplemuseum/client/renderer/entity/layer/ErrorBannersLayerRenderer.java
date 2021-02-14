@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.OutlineLayerBuffer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Quaternion;
 import net.minecraft.util.math.vector.Vector3f;
@@ -116,7 +117,10 @@ public class ErrorBannersLayerRenderer extends GeoLayerRenderer<MuseumDummyEntit
             } else {
                 offsetY = yPos;
             }
-            final float offsetTime = -(time * (1.0F + (0.5F * i)));
+            final float yaw =
+                    MathHelper.interpolateAngle(
+                            partialTicks, dummy.prevRenderYawOffset, dummy.renderYawOffset);
+            final float offsetTime = -(time * (1.0F + (0.5F * i))) + (float) Math.toRadians(yaw);
 
             this.renderBanner(banners.get(i), offsetY, offsetTime, matrixStack, typeBuffer, type);
         }

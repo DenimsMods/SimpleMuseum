@@ -37,7 +37,9 @@ public enum MuseumLang {
     GUI_MOVE_ROTATE_CW("gui", "move.rotate.cw", "Rotate Clockwise"),
     GUI_MOVE_TOWARDS("gui", "move.towards", "Move Towards"),
     GUI_MOVE_UP("gui", "move.up", "Move Up"),
-    GUI_SEARCH("gui", "search", "Search");
+    GUI_SEARCH("gui", "search", "Search"),
+    KEY_CATEGORY("key", "category", "Simple Museum"),
+    KEY_GLOBAL_HIGHLIGHTS("key", "global_highlights", "Toggle Global Highlights");
 
     private final String key;
     private final String english;
@@ -51,6 +53,10 @@ public enum MuseumLang {
         for (MuseumLang lang : MuseumLang.values()) {
             provider.add(lang.key, lang.english);
         }
+    }
+
+    public String getKey() {
+        return key;
     }
 
     public TranslationTextComponent asText(Object... args) {

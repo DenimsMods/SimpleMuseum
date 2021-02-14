@@ -37,6 +37,7 @@ import denimred.simplemuseum.client.util.ClientUtil;
 import denimred.simplemuseum.common.init.MuseumDataSerializers;
 import denimred.simplemuseum.common.init.MuseumEntities;
 import denimred.simplemuseum.common.init.MuseumItems;
+import denimred.simplemuseum.common.init.MuseumKeybinds;
 import denimred.simplemuseum.common.util.CheckedResource;
 import denimred.simplemuseum.common.util.MathUtil;
 import software.bernie.geckolib3.core.IAnimatable;
@@ -375,12 +376,15 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
     }
 
     private <P extends IAnimatable> PlayState animationPredicate(AnimationEvent<P> event) {
-        final String selAnim =
-                ((MuseumDummyEntity) event.getAnimatable()).getSelectedAnimation().getSafe();
-        if (!selAnim.isEmpty()) {
+        final CheckedResource<String> sel =
+                ((MuseumDummyEntity) event.getAnimatable()).getSelectedAnimation();
+        final String selAnim = sel.getSafe();
+        if (sel.isInvalid() || selAnim.isEmpty()) {
+            return PlayState.STOP;
+        } else {
             event.getController().setAnimation(new AnimationBuilder().addAnimation(selAnim, true));
+            return PlayState.CONTINUE;
         }
-        return PlayState.CONTINUE;
     }
 
     @Override
@@ -396,12 +400,19 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
 
     @Override
     public AxisAlignedBB getRenderBoundingBox() {
-        return this.getBoundingBox().grow(10);
+        return ClientUtil.getModelBounds(this);
     }
 
     @Override
     public boolean isGlowing() {
         return super.isGlowing() || world.isRemote && ClientUtil.shouldDummyGlow(this);
+    }
+
+    @Override
+    public int getTeamColor() {
+        return MuseumKeybinds.GLOBAL_HIGHLIGHTS.isKeyDown() && ClientUtil.getSelectedDummy() != this
+                ? super.getTeamColor()
+                : 0x00FFFF;
     }
 
     public void clearAllCached() {
