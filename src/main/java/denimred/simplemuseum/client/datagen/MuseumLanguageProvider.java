@@ -17,12 +17,12 @@ public class MuseumLanguageProvider extends LanguageProvider {
     @Override
     protected void addTranslations() {
         // Lang for registry objects
-        this.addEntityType(MuseumEntities.MUSEUM_DUMMY, "Museum Dummy");
+        this.addEntityType(MuseumEntities.MUSEUM_PUPPET, "Museum Puppet");
         this.addItem(MuseumItems.CURATORS_CANE, "Curator's Cane");
         // Misc lang
         MuseumLang.provideFor(this);
         // Mod compat lang (datagen is done in dev, no need to worry about classloading)
-        this.addCryptMasterTool(MuseumTool.INSTANCE, "Create/Edit Museum Dummy");
+        this.addCryptMasterTool(MuseumTool.INSTANCE, "Create/Edit Museum Puppet");
     }
 
     @SuppressWarnings("SameParameterValue")

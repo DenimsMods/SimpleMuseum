@@ -11,9 +11,9 @@ import cryptcraft.cryptmaster.PossessableComponent;
 import cryptcraft.cryptmaster.PossessionUtil;
 import cryptcraft.cryptmaster.forge.CryptMasterForgeMod;
 import denimred.simplemuseum.client.util.ClientUtil;
-import denimred.simplemuseum.common.entity.MuseumDummyEntity;
-import denimred.simplemuseum.modcompat.cryptmaster.DummyPossessableBehavior;
+import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
 import denimred.simplemuseum.modcompat.cryptmaster.MuseumPlugin;
+import denimred.simplemuseum.modcompat.cryptmaster.PuppetPossessableBehavior;
 
 public class ModCompatUtil {
     public static void enqueueIMC(@SuppressWarnings("unused") final InterModEnqueueEvent event) {
@@ -29,17 +29,18 @@ public class ModCompatUtil {
                 && ClientUtil.MC.currentScreen instanceof CryptGuiScreen;
     }
 
-    public static boolean isCryptMasterPossessing(MuseumDummyEntity dummy) {
+    public static boolean isCryptMasterPossessing(MuseumPuppetEntity puppet) {
         return ModList.get().isLoaded(CryptMasterMod.MOD_ID)
-                && PossessionUtil.INSTANCE.isPossessed(dummy);
+                && PossessionUtil.INSTANCE.isPossessed(puppet);
     }
 
     public static void registerCryptMasterPossession() {
         if (ModList.get().isLoaded(CryptMasterMod.MOD_ID)) {
             EntityComponent.INSTANCE.registerInitializer(
-                    MuseumDummyEntity.class,
+                    MuseumPuppetEntity.class,
                     PossessableComponent.class,
-                    entity -> DummyPossessableBehavior.createComponent((MuseumDummyEntity) entity));
+                    entity ->
+                            PuppetPossessableBehavior.createComponent((MuseumPuppetEntity) entity));
         }
     }
 }

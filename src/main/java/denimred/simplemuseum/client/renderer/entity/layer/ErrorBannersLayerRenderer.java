@@ -20,11 +20,11 @@ import java.util.List;
 
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.client.renderer.MuseumRenderType;
-import denimred.simplemuseum.common.entity.MuseumDummyEntity;
+import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
 import software.bernie.geckolib3.renderers.geo.GeoLayerRenderer;
 import software.bernie.geckolib3.renderers.geo.IGeoRenderer;
 
-public class ErrorBannersLayerRenderer extends GeoLayerRenderer<MuseumDummyEntity> {
+public class ErrorBannersLayerRenderer extends GeoLayerRenderer<MuseumPuppetEntity> {
     protected static final ResourceLocation TEXTURE =
             new ResourceLocation(SimpleMuseum.MOD_ID, "textures/misc/error_banners.png");
     protected static final float TEX_HEIGHT = 0.25F;
@@ -33,7 +33,7 @@ public class ErrorBannersLayerRenderer extends GeoLayerRenderer<MuseumDummyEntit
     protected final int vertCount;
 
     public ErrorBannersLayerRenderer(
-            IGeoRenderer<MuseumDummyEntity> renderer, int resolution, double radius) {
+            IGeoRenderer<MuseumPuppetEntity> renderer, int resolution, double radius) {
         super(renderer);
         // Generate the meshes (I could technically concat these into one mesh but that's ugly)
         outerMesh = this.generateMesh(false, resolution, radius);
@@ -73,7 +73,7 @@ public class ErrorBannersLayerRenderer extends GeoLayerRenderer<MuseumDummyEntit
             MatrixStack matrixStack,
             IRenderTypeBuffer typeBuffer,
             int light,
-            MuseumDummyEntity dummy,
+            MuseumPuppetEntity puppet,
             float limbSwing,
             float limbSwingAmount,
             float partialTicks,
@@ -82,20 +82,21 @@ public class ErrorBannersLayerRenderer extends GeoLayerRenderer<MuseumDummyEntit
             float headPitch) {
         final RenderType type = MuseumRenderType.getErrorBanners(TEXTURE);
         final float time = (float) (ageInTicks * 0.04D);
-        final float yPos = (dummy.getHeight() / 2.0F) + 0.25F;
+        final float yPos = (puppet.getHeight() / 2.0F) + 0.25F;
 
         // Determine the banners that we need to display
         final List<Integer> banners = new ArrayList<>();
-        if (dummy.getModelLocation().isInvalid()) {
+        if (puppet.getModelLocation().isInvalid()) {
             banners.add(1);
         }
-        if (dummy.getTextureLocation().isInvalid()) {
+        if (puppet.getTextureLocation().isInvalid()) {
             banners.add(2);
         }
-        if (dummy.getAnimationsLocation().isInvalid() || dummy.getSelectedAnimation().isInvalid()) {
+        if (puppet.getAnimationsLocation().isInvalid()
+                || puppet.getSelectedAnimation().isInvalid()) {
             banners.add(3);
         }
-        if (banners.isEmpty() && dummy.doEasterEgg()) {
+        if (banners.isEmpty() && puppet.doEasterEgg()) {
             banners.add(4);
         }
 
@@ -119,7 +120,7 @@ public class ErrorBannersLayerRenderer extends GeoLayerRenderer<MuseumDummyEntit
             }
             final float yaw =
                     MathHelper.interpolateAngle(
-                            partialTicks, dummy.prevRenderYawOffset, dummy.renderYawOffset);
+                            partialTicks, puppet.prevRenderYawOffset, puppet.renderYawOffset);
             final float offsetTime = -(time * (1.0F + (0.5F * i))) + (float) Math.toRadians(yaw);
 
             this.renderBanner(banners.get(i), offsetY, offsetTime, matrixStack, typeBuffer, type);

@@ -21,15 +21,15 @@ import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.client.gui.widget.IconButton;
 import denimred.simplemuseum.client.gui.widget.ResourceFieldWidget;
 import denimred.simplemuseum.client.util.ClientUtil;
-import denimred.simplemuseum.common.entity.MuseumDummyEntity;
+import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
 import denimred.simplemuseum.common.init.MuseumLang;
 import denimred.simplemuseum.common.init.MuseumNetworking;
-import denimred.simplemuseum.common.network.messages.c2s.C2SConfigureDummy;
+import denimred.simplemuseum.common.network.messages.c2s.C2SConfigurePuppet;
 import denimred.simplemuseum.common.util.CheckedResource;
 import software.bernie.geckolib3.file.AnimationFile;
 import software.bernie.geckolib3.resource.GeckoLibCache;
 
-public class ConfigureDummyScreen extends MuseumDummyScreen {
+public class ConfigurePuppetScreen extends MuseumPuppetScreen {
     public static final ResourceLocation COPY_BUTTON_TEXTURE =
             new ResourceLocation(SimpleMuseum.MOD_ID, "textures/gui/copy_button.png");
     public static final ResourceLocation PASTE_BUTTON_TEXTURE =
@@ -50,14 +50,14 @@ public class ConfigureDummyScreen extends MuseumDummyScreen {
     private ResourceFieldWidget animationsWidget;
     private TextFieldWidget selectedAnimationField;
 
-    public ConfigureDummyScreen(MuseumDummyEntity dummy, @Nullable Screen parent) {
-        super(dummy, parent);
-        model = dummy.getModelLocation();
-        texture = dummy.getTextureLocation();
-        animations = dummy.getAnimationsLocation();
-        selectedAnimation = dummy.getSelectedAnimation();
+    public ConfigurePuppetScreen(MuseumPuppetEntity puppet, @Nullable Screen parent) {
+        super(puppet, parent);
+        model = puppet.getModelLocation();
+        texture = puppet.getTextureLocation();
+        animations = puppet.getAnimationsLocation();
+        selectedAnimation = puppet.getSelectedAnimation();
         state = new SavedState();
-        ClientUtil.setLastDummyScreen(ConfigureDummyScreen::new);
+        ClientUtil.setLastPuppetScreen(ConfigurePuppetScreen::new);
     }
 
     private static void drawTitle(MatrixStack matrixStack, FontRenderer font, Widget widget) {
@@ -138,8 +138,8 @@ public class ConfigureDummyScreen extends MuseumDummyScreen {
                                 modelFieldY,
                                 WIDTH,
                                 20,
-                                MuseumLang.GUI_DUMMY_CONFIG_MODEL.asText(),
-                                MuseumLang.GUI_DUMMY_CONFIG_MODEL_SELECT.asText(),
+                                MuseumLang.GUI_PUPPET_CONFIG_MODEL.asText(),
+                                MuseumLang.GUI_PUPPET_CONFIG_MODEL_SELECT.asText(),
                                 MODEL_PREFIX,
                                 model::validate,
                                 button ->
@@ -158,8 +158,8 @@ public class ConfigureDummyScreen extends MuseumDummyScreen {
                                 textureFieldY,
                                 WIDTH,
                                 20,
-                                MuseumLang.GUI_DUMMY_CONFIG_TEX.asText(),
-                                MuseumLang.GUI_DUMMY_CONFIG_TEX_SELECT.asText(),
+                                MuseumLang.GUI_PUPPET_CONFIG_TEX.asText(),
+                                MuseumLang.GUI_PUPPET_CONFIG_TEX_SELECT.asText(),
                                 TEXTURE_PREFIX,
                                 texture::validate,
                                 button ->
@@ -178,8 +178,8 @@ public class ConfigureDummyScreen extends MuseumDummyScreen {
                                 animationsFieldY,
                                 WIDTH,
                                 20,
-                                MuseumLang.GUI_DUMMY_CONFIG_ANIMS.asText(),
-                                MuseumLang.GUI_DUMMY_CONFIG_ANIMS_SELECT.asText(),
+                                MuseumLang.GUI_PUPPET_CONFIG_ANIMS.asText(),
+                                MuseumLang.GUI_PUPPET_CONFIG_ANIMS_SELECT.asText(),
                                 ANIMATIONS_PREFIX,
                                 animations::validate,
                                 button ->
@@ -188,7 +188,7 @@ public class ConfigureDummyScreen extends MuseumDummyScreen {
                                                         this, button, animationsWidget)),
                                 this::renderWidgetTooltip));
 
-        final ITextComponent selAnimFieldMsg = MuseumLang.GUI_DUMMY_CONFIG_ANIM.asText();
+        final ITextComponent selAnimFieldMsg = MuseumLang.GUI_PUPPET_CONFIG_ANIM.asText();
         final int selAnimFieldWidth = font.getStringPropertyWidth(selAnimFieldMsg);
         final int miscY = animationsFieldY + 20 + MARGIN * 3;
         this.addButton(
@@ -197,8 +197,8 @@ public class ConfigureDummyScreen extends MuseumDummyScreen {
                         miscY,
                         (WIDTH / 3) - (MARGIN / 2),
                         20,
-                        MuseumLang.GUI_DUMMY_MOVE.asText(),
-                        button -> mc.displayGuiScreen(new MoveDummyScreen(dummy, parent))));
+                        MuseumLang.GUI_PUPPET_MOVE.asText(),
+                        button -> mc.displayGuiScreen(new MovePuppetScreen(puppet, parent))));
         selectedAnimationField =
                 this.addListener(
                         new TextFieldWidget(
@@ -229,7 +229,7 @@ public class ConfigureDummyScreen extends MuseumDummyScreen {
                                                         selectedAnimationField,
                                                         () -> this.getAnimLoc().orElse(null))),
                                 this::renderWidgetTooltip,
-                                MuseumLang.GUI_DUMMY_CONFIG_ANIM_SELECT.asText()));
+                                MuseumLang.GUI_PUPPET_CONFIG_ANIM_SELECT.asText()));
 
         final int exitButtonsY = animationsFieldY + 40 + MARGIN * 5;
         doneButton =
@@ -309,7 +309,7 @@ public class ConfigureDummyScreen extends MuseumDummyScreen {
         drawCenteredString(
                 matrixStack,
                 font,
-                MuseumLang.GUI_DUMMY_CONFIG_TITLE.asText(title),
+                MuseumLang.GUI_PUPPET_CONFIG_TITLE.asText(title),
                 width / 2,
                 MARGIN * 2,
                 0xFFFFFF);
@@ -330,14 +330,14 @@ public class ConfigureDummyScreen extends MuseumDummyScreen {
     protected void saveAndClose() {
         try {
             MuseumNetworking.CHANNEL.sendToServer(
-                    new C2SConfigureDummy(
-                            dummy.getUniqueID(),
+                    new C2SConfigurePuppet(
+                            puppet.getUniqueID(),
                             this.getModelLoc().orElse(model.getDirect()),
                             this.getTexLoc().orElse(texture.getDirect()),
                             this.getAnimLoc().orElse(animations.getDirect()),
                             selectedAnimationField.getText()));
         } catch (ResourceLocationException e) {
-            SimpleMuseum.LOGGER.error("Failed to send dummy configuration to server", e);
+            SimpleMuseum.LOGGER.error("Failed to send puppet configuration to server", e);
         }
         this.closeScreen();
     }

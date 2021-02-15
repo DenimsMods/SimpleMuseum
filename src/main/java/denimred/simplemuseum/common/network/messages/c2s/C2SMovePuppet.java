@@ -12,26 +12,26 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-import denimred.simplemuseum.common.entity.MuseumDummyEntity;
+import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
 
-public class C2SMoveDummy {
+public class C2SMovePuppet {
     private final UUID uuid;
     private final Vector3d pos;
     private final float yaw;
 
-    public C2SMoveDummy(UUID uuid, Vector3d pos, float yaw) {
+    public C2SMovePuppet(UUID uuid, Vector3d pos, float yaw) {
         this.uuid = uuid;
         this.pos = pos;
         this.yaw = yaw;
     }
 
-    public static C2SMoveDummy decode(PacketBuffer buf) {
-        final UUID dummy = buf.readUniqueId();
+    public static C2SMovePuppet decode(PacketBuffer buf) {
+        final UUID puppet = buf.readUniqueId();
         final double x = buf.readDouble();
         final double y = buf.readDouble();
         final double z = buf.readDouble();
         final float yaw = buf.readFloat();
-        return new C2SMoveDummy(dummy, new Vector3d(x, y, z), yaw);
+        return new C2SMovePuppet(puppet, new Vector3d(x, y, z), yaw);
     }
 
     public void encode(PacketBuffer buf) {
@@ -54,14 +54,14 @@ public class C2SMoveDummy {
         if (sender != null) {
             final ServerWorld world = sender.getServerWorld();
             final Entity entity = world.getEntityByUuid(uuid);
-            if (entity instanceof MuseumDummyEntity) {
-                final MuseumDummyEntity dummy = (MuseumDummyEntity) entity;
-                if (dummy.isAlive()
-                        && world.isBlockLoaded(new BlockPos(dummy.getPositionVec()))
+            if (entity instanceof MuseumPuppetEntity) {
+                final MuseumPuppetEntity puppet = (MuseumPuppetEntity) entity;
+                if (puppet.isAlive()
+                        && world.isBlockLoaded(new BlockPos(puppet.getPositionVec()))
                         && world.isBlockLoaded(new BlockPos(pos))) {
                     // TODO: Do permissions check to avoid hacker griefing
-                    dummy.setLocationAndAngles(
-                            pos.x, pos.y, pos.z, MathHelper.wrapDegrees(yaw), dummy.rotationPitch);
+                    puppet.setLocationAndAngles(
+                            pos.x, pos.y, pos.z, MathHelper.wrapDegrees(yaw), puppet.rotationPitch);
                 }
             }
         }

@@ -8,7 +8,7 @@ import net.minecraft.util.ResourceLocation;
 import javax.annotation.Nullable;
 
 import denimred.simplemuseum.SimpleMuseum;
-import denimred.simplemuseum.common.entity.MuseumDummyEntity;
+import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
 import denimred.simplemuseum.common.util.CheckedResource;
 import denimred.simplemuseum.modcompat.ModCompatUtil;
 import software.bernie.geckolib3.core.IAnimatable;
@@ -21,9 +21,9 @@ import software.bernie.geckolib3.model.AnimatedGeoModel;
 import software.bernie.geckolib3.model.provider.data.EntityModelData;
 
 // I'm not proud of any of these "emergency fallback" fixes :/
-public class MuseumDummyModel extends AnimatedGeoModel<MuseumDummyEntity> {
+public class MuseumPuppetModel extends AnimatedGeoModel<MuseumPuppetEntity> {
     @Override
-    public ResourceLocation getModelLocation(MuseumDummyEntity entity) {
+    public ResourceLocation getModelLocation(MuseumPuppetEntity entity) {
         return entity.getModelLocation().getSafe();
     }
 
@@ -34,12 +34,12 @@ public class MuseumDummyModel extends AnimatedGeoModel<MuseumDummyEntity> {
         } catch (GeoModelException e) {
             // Emergency fallback for when we render while resources are reloading
             SimpleMuseum.LOGGER.debug("EMERGENCY FALLBACK: Model '{}'", location);
-            return super.getModel(MuseumDummyEntity.DEFAULT_MODEL_LOCATION);
+            return super.getModel(MuseumPuppetEntity.DEFAULT_MODEL_LOCATION);
         }
     }
 
     @Override
-    public ResourceLocation getTextureLocation(MuseumDummyEntity entity) {
+    public ResourceLocation getTextureLocation(MuseumPuppetEntity entity) {
         final CheckedResource<ResourceLocation> loc = entity.getTextureLocation();
         final ResourceLocation desired = loc.getSafe();
         final TextureManager textureManager = Minecraft.getInstance().getTextureManager();
@@ -54,7 +54,7 @@ public class MuseumDummyModel extends AnimatedGeoModel<MuseumDummyEntity> {
     }
 
     @Override
-    public ResourceLocation getAnimationFileLocation(MuseumDummyEntity entity) {
+    public ResourceLocation getAnimationFileLocation(MuseumPuppetEntity entity) {
         return entity.getAnimationsLocation().getSafe();
     }
 
@@ -72,7 +72,7 @@ public class MuseumDummyModel extends AnimatedGeoModel<MuseumDummyEntity> {
 
     @Override
     public void setLivingAnimations(
-            MuseumDummyEntity entity, Integer uniqueID, @Nullable AnimationEvent customPredicate) {
+            MuseumPuppetEntity entity, Integer uniqueID, @Nullable AnimationEvent customPredicate) {
         super.setLivingAnimations(entity, uniqueID, customPredicate);
         if (ModCompatUtil.isCryptMasterPossessing(entity) && customPredicate != null) {
             IBone head = this.getAnimationProcessor().getBone("head");

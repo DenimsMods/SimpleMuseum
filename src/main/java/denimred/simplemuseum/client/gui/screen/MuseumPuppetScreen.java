@@ -10,21 +10,21 @@ import net.minecraft.util.text.ITextComponent;
 
 import javax.annotation.Nullable;
 
-import denimred.simplemuseum.common.entity.MuseumDummyEntity;
+import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
 
 // Boy I sure do love inheritance :)
-public abstract class MuseumDummyScreen extends Screen {
+public abstract class MuseumPuppetScreen extends Screen {
     protected static final int MARGIN = 4;
     protected static final int TEXT_VALID = 0xe0e0e0;
     protected static final int TEXT_INVALID = 0xffff00;
     protected static final int TEXT_ERROR = 0xff0000;
     protected final Minecraft mc = Minecraft.getInstance(); // Parent's is nullable for some reason
-    protected final MuseumDummyEntity dummy;
+    protected final MuseumPuppetEntity puppet;
     @Nullable protected final Screen parent;
 
-    protected MuseumDummyScreen(MuseumDummyEntity dummy, @Nullable Screen parent) {
-        super(dummy.getDisplayName());
-        this.dummy = dummy;
+    protected MuseumPuppetScreen(MuseumPuppetEntity puppet, @Nullable Screen parent) {
+        super(puppet.getDisplayName());
+        this.puppet = puppet;
         this.parent = parent;
     }
 

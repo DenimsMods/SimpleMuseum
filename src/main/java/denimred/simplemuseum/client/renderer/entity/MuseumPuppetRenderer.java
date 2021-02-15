@@ -13,28 +13,28 @@ import net.minecraft.util.math.AxisAlignedBB;
 import javax.annotation.Nullable;
 
 import denimred.simplemuseum.client.renderer.entity.layer.ErrorBannersLayerRenderer;
-import denimred.simplemuseum.common.entity.MuseumDummyEntity;
+import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
 import software.bernie.geckolib3.renderers.geo.GeoEntityRenderer;
 
-public class MuseumDummyRenderer extends GeoEntityRenderer<MuseumDummyEntity> {
-    public MuseumDummyRenderer(EntityRendererManager renderManager) {
-        super(renderManager, new MuseumDummyModel());
+public class MuseumPuppetRenderer extends GeoEntityRenderer<MuseumPuppetEntity> {
+    public MuseumPuppetRenderer(EntityRendererManager renderManager) {
+        super(renderManager, new MuseumPuppetModel());
         this.addLayer(new ErrorBannersLayerRenderer(this, 16, 1.0D));
     }
 
     @Override
     public void render(
-            MuseumDummyEntity dummy,
+            MuseumPuppetEntity puppet,
             float entityYaw,
             float partialTicks,
             MatrixStack matrixStack,
             IRenderTypeBuffer typeBuffer,
             int packedLightIn) {
-        super.render(dummy, entityYaw, partialTicks, matrixStack, typeBuffer, packedLightIn);
+        super.render(puppet, entityYaw, partialTicks, matrixStack, typeBuffer, packedLightIn);
         if (renderManager.isDebugBoundingBox()) {
             matrixStack.push();
             final AxisAlignedBB aabb =
-                    dummy.getRenderBoundingBox().offset(dummy.getPositionVec().inverse());
+                    puppet.getRenderBoundingBox().offset(puppet.getPositionVec().inverse());
             final IVertexBuilder buffer = typeBuffer.getBuffer(RenderType.getLines());
             WorldRenderer.drawBoundingBox(matrixStack, buffer, aabb, 0.0F, 1.0F, 1.0F, 1.0F);
             matrixStack.pop();
@@ -43,7 +43,7 @@ public class MuseumDummyRenderer extends GeoEntityRenderer<MuseumDummyEntity> {
 
     @Override
     public RenderType getRenderType(
-            MuseumDummyEntity animatable,
+            MuseumPuppetEntity animatable,
             float partialTicks,
             MatrixStack stack,
             @Nullable IRenderTypeBuffer renderTypeBuffer,

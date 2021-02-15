@@ -19,10 +19,10 @@ import cryptcraft.cryptmaster.plugin.client.ToolCursorState;
 import cryptcraft.cryptmaster.plugin.client.UtilityTool;
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.client.util.ClientUtil;
-import denimred.simplemuseum.common.entity.MuseumDummyEntity;
+import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
 import denimred.simplemuseum.common.init.MuseumNetworking;
-import denimred.simplemuseum.common.network.messages.c2s.C2SCryptMasterRemoveDummy;
-import denimred.simplemuseum.common.network.messages.c2s.C2SCryptMasterSpawnDummy;
+import denimred.simplemuseum.common.network.messages.c2s.C2SCryptMasterRemovePuppet;
+import denimred.simplemuseum.common.network.messages.c2s.C2SCryptMasterSpawnPuppet;
 
 public class MuseumTool implements IUtilityToolInstance {
     public static final UtilityTool INSTANCE =
@@ -50,18 +50,18 @@ public class MuseumTool implements IUtilityToolInstance {
     @Override
     public void close() {
         ClientUtil.setHoldingCane(false);
-        ClientUtil.deselectDummy(true);
+        ClientUtil.deselectPuppet(true);
         spawnPos = null;
     }
 
     @Override
     public void onCursorMoved(ToolCursorState cursor) {
         final Entity entity = cursor.raycastToEntity();
-        if (entity instanceof MuseumDummyEntity) {
-            ClientUtil.selectDummy((MuseumDummyEntity) entity, true);
+        if (entity instanceof MuseumPuppetEntity) {
+            ClientUtil.selectPuppet((MuseumPuppetEntity) entity, true);
             spawnPos = null;
         } else {
-            ClientUtil.deselectDummy(true);
+            ClientUtil.deselectPuppet(true);
             spawnPos = cursor.raycastToBlock();
         }
     }
@@ -69,16 +69,16 @@ public class MuseumTool implements IUtilityToolInstance {
     @Override
     public void onMouseButton(MouseButton button, MouseButtonState state, ToolCursorState cursor) {
         if (state == MouseButtonState.PRESSED) {
-            final MuseumDummyEntity dummy = ClientUtil.getSelectedDummy();
+            final MuseumPuppetEntity puppet = ClientUtil.getSelectedPuppet();
             if (button == MouseButton.LEFT) {
-                if (dummy != null) {
-                    ClientUtil.openDummyScreen(dummy, Minecraft.getInstance().currentScreen);
+                if (puppet != null) {
+                    ClientUtil.openPuppetScreen(puppet, Minecraft.getInstance().currentScreen);
                 } else if (spawnPos != null) {
-                    MuseumNetworking.CHANNEL.sendToServer(new C2SCryptMasterSpawnDummy(spawnPos));
+                    MuseumNetworking.CHANNEL.sendToServer(new C2SCryptMasterSpawnPuppet(spawnPos));
                 }
-            } else if (button == MouseButton.RIGHT && dummy != null) {
+            } else if (button == MouseButton.RIGHT && puppet != null) {
                 MuseumNetworking.CHANNEL.sendToServer(
-                        new C2SCryptMasterRemoveDummy(dummy.getUniqueID()));
+                        new C2SCryptMasterRemovePuppet(puppet.getUniqueID()));
             }
         }
     }

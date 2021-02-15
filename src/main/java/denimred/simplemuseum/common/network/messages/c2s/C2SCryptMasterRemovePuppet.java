@@ -9,18 +9,18 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-import denimred.simplemuseum.common.entity.MuseumDummyEntity;
+import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
 
-public class C2SCryptMasterRemoveDummy {
+public class C2SCryptMasterRemovePuppet {
     private final UUID uuid;
 
-    public C2SCryptMasterRemoveDummy(UUID uuid) {
+    public C2SCryptMasterRemovePuppet(UUID uuid) {
         this.uuid = uuid;
     }
 
-    public static C2SCryptMasterRemoveDummy decode(PacketBuffer buf) {
+    public static C2SCryptMasterRemovePuppet decode(PacketBuffer buf) {
         final UUID uuid = buf.readUniqueId();
-        return new C2SCryptMasterRemoveDummy(uuid);
+        return new C2SCryptMasterRemovePuppet(uuid);
     }
 
     public void encode(PacketBuffer buf) {
@@ -39,7 +39,7 @@ public class C2SCryptMasterRemoveDummy {
         if (sender != null) {
             final ServerWorld world = sender.getServerWorld();
             final Entity entity = world.getEntityByUuid(uuid);
-            if (entity instanceof MuseumDummyEntity) {
+            if (entity instanceof MuseumPuppetEntity) {
                 if (world.isBlockLoaded(entity.getPosition()) && entity.isAlive()) {
                     // TODO: Do permissions check to avoid hacker griefing
                     entity.remove();

@@ -14,19 +14,19 @@ import net.minecraftforge.registries.ForgeRegistries;
 import javax.annotation.Nullable;
 
 import denimred.simplemuseum.SimpleMuseum;
-import denimred.simplemuseum.common.entity.MuseumDummyEntity;
+import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
 
 public final class MuseumEntities {
     public static final DeferredRegister<EntityType<?>> REGISTRY =
             DeferredRegister.create(ForgeRegistries.ENTITIES, SimpleMuseum.MOD_ID);
 
-    public static final RegistryObject<EntityType<MuseumDummyEntity>> MUSEUM_DUMMY =
+    public static final RegistryObject<EntityType<MuseumPuppetEntity>> MUSEUM_PUPPET =
             REGISTRY.register(
-                    "museum_dummy",
+                    "museum_puppet",
                     () ->
                             makeEntityType(
                                     EntityType.Builder.create(
-                                                    MuseumDummyEntity::new,
+                                                    MuseumPuppetEntity::new,
                                                     EntityClassification.MISC)
                                             .size(0.6F, 1.8F)
                                             .trackingRange(32),

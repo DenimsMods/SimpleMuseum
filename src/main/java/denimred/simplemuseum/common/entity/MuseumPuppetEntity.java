@@ -52,25 +52,28 @@ import software.bernie.geckolib3.resource.GeckoLibCache;
 import static net.minecraftforge.common.util.Constants.NBT.TAG_STRING;
 
 // TODO: The specifics of this entity were just kind of thrown together; needs to be reviewed
-public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
+public class MuseumPuppetEntity extends LivingEntity implements IAnimatable {
     public static final ResourceLocation DEFAULT_MODEL_LOCATION =
-            new ResourceLocation(SimpleMuseum.MOD_ID, "geo/entity/museum_dummy.geo.json");
+            new ResourceLocation(SimpleMuseum.MOD_ID, "geo/entity/museum_puppet.geo.json");
     public static final ResourceLocation DEFAULT_TEXTURE_LOCATION =
-            new ResourceLocation(SimpleMuseum.MOD_ID, "textures/entity/museum_dummy.png");
+            new ResourceLocation(SimpleMuseum.MOD_ID, "textures/entity/museum_puppet.png");
     public static final ResourceLocation DEFAULT_ANIMATIONS_LOCATION =
-            new ResourceLocation(SimpleMuseum.MOD_ID, "animations/entity/museum_dummy.json");
+            new ResourceLocation(SimpleMuseum.MOD_ID, "animations/entity/museum_puppet.json");
     public static final String DEFAULT_SELECTED_ANIMATION = "";
     public static final DataParameter<ResourceLocation> MODEL_LOCATION =
             EntityDataManager.createKey(
-                    MuseumDummyEntity.class, MuseumDataSerializers.getResourceLocationSerializer());
+                    MuseumPuppetEntity.class,
+                    MuseumDataSerializers.getResourceLocationSerializer());
     public static final DataParameter<ResourceLocation> TEXTURE_LOCATION =
             EntityDataManager.createKey(
-                    MuseumDummyEntity.class, MuseumDataSerializers.getResourceLocationSerializer());
+                    MuseumPuppetEntity.class,
+                    MuseumDataSerializers.getResourceLocationSerializer());
     public static final DataParameter<ResourceLocation> ANIMATIONS_LOCATION =
             EntityDataManager.createKey(
-                    MuseumDummyEntity.class, MuseumDataSerializers.getResourceLocationSerializer());
+                    MuseumPuppetEntity.class,
+                    MuseumDataSerializers.getResourceLocationSerializer());
     public static final DataParameter<String> SELECTED_ANIMATION =
-            EntityDataManager.createKey(MuseumDummyEntity.class, DataSerializers.STRING);
+            EntityDataManager.createKey(MuseumPuppetEntity.class, DataSerializers.STRING);
     public static final String MODEL_NBT = "Model";
     public static final String TEXTURE_NBT = "Texture";
     public static final String ANIMATIONS_NBT = "Animations";
@@ -106,26 +109,26 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
                         }
                     });
 
-    public MuseumDummyEntity(EntityType<? extends LivingEntity> type, World worldIn) {
+    public MuseumPuppetEntity(EntityType<? extends LivingEntity> type, World worldIn) {
         super(type, worldIn);
     }
 
     @Nullable
-    public static MuseumDummyEntity spawn(
+    public static MuseumPuppetEntity spawn(
             ServerWorld world, Vector3d pos, @Nullable Entity entity) {
         return spawn(world, pos, entity != null ? entity.getPositionVec() : null);
     }
 
     @Nullable
-    public static MuseumDummyEntity spawn(
+    public static MuseumPuppetEntity spawn(
             ServerWorld world, Vector3d pos, @Nullable Vector3d facing) {
-        final MuseumDummyEntity dummy = MuseumEntities.MUSEUM_DUMMY.get().create(world);
-        if (dummy != null) {
+        final MuseumPuppetEntity puppet = MuseumEntities.MUSEUM_PUPPET.get().create(world);
+        if (puppet != null) {
             final float yaw = facing != null ? MathUtil.angleBetween(pos, facing) : 0.0F;
-            dummy.setLocationAndAngles(pos.x, pos.y, pos.z, yaw, 0.0F);
-            world.func_242417_l(dummy);
+            puppet.setLocationAndAngles(pos.x, pos.y, pos.z, yaw, 0.0F);
+            world.func_242417_l(puppet);
         }
-        return dummy;
+        return puppet;
     }
 
     @Override
@@ -188,7 +191,7 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
                 this.setAnimationsLocation(new ResourceLocation(modTag.getString(ANIMATIONS_NBT)));
             }
         } catch (ResourceLocationException e) {
-            SimpleMuseum.LOGGER.error("Failed to load museum dummy file locations", e);
+            SimpleMuseum.LOGGER.error("Failed to load museum puppet file locations", e);
         }
         if (modTag.contains(SELECTED_ANIMATION_NBT, TAG_STRING)) {
             this.setSelectedAnimation(modTag.getString(SELECTED_ANIMATION_NBT));
@@ -377,7 +380,7 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
 
     private <P extends IAnimatable> PlayState animationPredicate(AnimationEvent<P> event) {
         final CheckedResource<String> sel =
-                ((MuseumDummyEntity) event.getAnimatable()).getSelectedAnimation();
+                ((MuseumPuppetEntity) event.getAnimatable()).getSelectedAnimation();
         final String selAnim = sel.getSafe();
         if (sel.isInvalid() || selAnim.isEmpty()) {
             return PlayState.STOP;
@@ -405,12 +408,13 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
 
     @Override
     public boolean isGlowing() {
-        return super.isGlowing() || world.isRemote && ClientUtil.shouldDummyGlow(this);
+        return super.isGlowing() || world.isRemote && ClientUtil.shouldPuppetGlow(this);
     }
 
     @Override
     public int getTeamColor() {
-        return MuseumKeybinds.GLOBAL_HIGHLIGHTS.isKeyDown() && ClientUtil.getSelectedDummy() != this
+        return MuseumKeybinds.GLOBAL_HIGHLIGHTS.isKeyDown()
+                        && ClientUtil.getSelectedPuppet() != this
                 ? super.getTeamColor()
                 : 0x00FFFF;
     }

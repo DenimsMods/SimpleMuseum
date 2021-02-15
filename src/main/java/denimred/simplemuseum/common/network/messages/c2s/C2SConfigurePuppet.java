@@ -10,16 +10,16 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-import denimred.simplemuseum.common.entity.MuseumDummyEntity;
+import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
 
-public class C2SConfigureDummy {
+public class C2SConfigurePuppet {
     private final UUID uuid;
     private final ResourceLocation modelLoc;
     private final ResourceLocation texLoc;
     private final ResourceLocation animLoc;
     private final String selAnim;
 
-    public C2SConfigureDummy(
+    public C2SConfigurePuppet(
             UUID uuid,
             ResourceLocation modelLoc,
             ResourceLocation texLoc,
@@ -32,13 +32,13 @@ public class C2SConfigureDummy {
         this.selAnim = selAnim;
     }
 
-    public static C2SConfigureDummy decode(PacketBuffer buf) {
-        final UUID dummy = buf.readUniqueId();
+    public static C2SConfigurePuppet decode(PacketBuffer buf) {
+        final UUID puppet = buf.readUniqueId();
         final ResourceLocation modelLoc = buf.readResourceLocation();
         final ResourceLocation texLoc = buf.readResourceLocation();
         final ResourceLocation animLoc = buf.readResourceLocation();
         final String selAnim = buf.readString(32767);
-        return new C2SConfigureDummy(dummy, modelLoc, texLoc, animLoc, selAnim);
+        return new C2SConfigurePuppet(puppet, modelLoc, texLoc, animLoc, selAnim);
     }
 
     public void encode(PacketBuffer buf) {
@@ -61,14 +61,14 @@ public class C2SConfigureDummy {
         if (sender != null) {
             final ServerWorld world = sender.getServerWorld();
             final Entity entity = world.getEntityByUuid(uuid);
-            if (entity instanceof MuseumDummyEntity) {
-                final MuseumDummyEntity dummy = (MuseumDummyEntity) entity;
-                if (world.isBlockLoaded(dummy.getPosition()) && dummy.isAlive()) {
+            if (entity instanceof MuseumPuppetEntity) {
+                final MuseumPuppetEntity puppet = (MuseumPuppetEntity) entity;
+                if (world.isBlockLoaded(puppet.getPosition()) && puppet.isAlive()) {
                     // TODO: Do permissions check to avoid hacker griefing
-                    dummy.setModelLocation(modelLoc);
-                    dummy.setTextureLocation(texLoc);
-                    dummy.setAnimationsLocation(animLoc);
-                    dummy.setSelectedAnimation(selAnim);
+                    puppet.setModelLocation(modelLoc);
+                    puppet.setTextureLocation(texLoc);
+                    puppet.setAnimationsLocation(animLoc);
+                    puppet.setSelectedAnimation(selAnim);
                 }
             }
         }

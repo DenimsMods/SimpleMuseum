@@ -9,20 +9,20 @@ import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-import denimred.simplemuseum.common.entity.MuseumDummyEntity;
+import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
 
-public class C2SCryptMasterSpawnDummy {
+public class C2SCryptMasterSpawnPuppet {
     private final Vector3d pos;
 
-    public C2SCryptMasterSpawnDummy(Vector3d pos) {
+    public C2SCryptMasterSpawnPuppet(Vector3d pos) {
         this.pos = pos;
     }
 
-    public static C2SCryptMasterSpawnDummy decode(PacketBuffer buf) {
+    public static C2SCryptMasterSpawnPuppet decode(PacketBuffer buf) {
         final double x = buf.readDouble();
         final double y = buf.readDouble();
         final double z = buf.readDouble();
-        return new C2SCryptMasterSpawnDummy(new Vector3d(x, y, z));
+        return new C2SCryptMasterSpawnPuppet(new Vector3d(x, y, z));
     }
 
     public void encode(PacketBuffer buf) {
@@ -44,7 +44,7 @@ public class C2SCryptMasterSpawnDummy {
             final ServerWorld world = sender.getServerWorld();
             if (world.isBlockLoaded(new BlockPos(pos))) {
                 // TODO: Do permissions check to avoid hacker griefing
-                MuseumDummyEntity.spawn(world, pos, sender.getPositionVec());
+                MuseumPuppetEntity.spawn(world, pos, sender.getPositionVec());
             }
         }
     }

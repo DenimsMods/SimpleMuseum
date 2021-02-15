@@ -21,9 +21,9 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import denimred.simplemuseum.client.gui.screen.ConfigureDummyScreen;
-import denimred.simplemuseum.client.gui.screen.MuseumDummyScreen;
-import denimred.simplemuseum.common.entity.MuseumDummyEntity;
+import denimred.simplemuseum.client.gui.screen.ConfigurePuppetScreen;
+import denimred.simplemuseum.client.gui.screen.MuseumPuppetScreen;
+import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
 import denimred.simplemuseum.common.init.MuseumKeybinds;
 import denimred.simplemuseum.common.util.CheckedResource;
 import denimred.simplemuseum.modcompat.ModCompatUtil;
@@ -41,17 +41,17 @@ import static org.lwjgl.glfw.GLFW.GLFW_VRESIZE_CURSOR;
 public class ClientUtil {
     public static final Minecraft MC =
             DatagenModLoader.isRunningDataGen() ? null : Minecraft.getInstance();
-    static final Object2ObjectMap<ResourceLocation, AxisAlignedBB>
-            MODEL_RENDER_BOUNDS = new Object2ObjectOpenHashMap<>();
+    static final Object2ObjectMap<ResourceLocation, AxisAlignedBB> MODEL_RENDER_BOUNDS =
+            new Object2ObjectOpenHashMap<>();
     private static final long WINDOW_HANDLE = MC != null ? MC.getMainWindow().getHandle() : 0L;
     private static final Int2LongMap CURSORS = new Int2LongArrayMap(6);
-    private static BiFunction<MuseumDummyEntity, Screen, ? extends MuseumDummyScreen>
-            lastDummyScreen = ConfigureDummyScreen::new;
-    @Nullable private static MuseumDummyEntity selectedDummy;
+    private static BiFunction<MuseumPuppetEntity, Screen, ? extends MuseumPuppetScreen>
+            lastPuppetScreen = ConfigurePuppetScreen::new;
+    @Nullable private static MuseumPuppetEntity selectedPuppet;
     private static boolean holdingCane;
 
     @Nullable
-    public static MuseumDummyEntity getHoveredDummy(Entity entity) {
+    public static MuseumPuppetEntity getHoveredPuppet(Entity entity) {
         final Vector3d eyes = entity.getEyePosition(1.0F);
         final double range = 100.0D;
         final Vector3d look = entity.getLook(1.0F).scale(range);
@@ -62,50 +62,50 @@ public class ClientUtil {
                         eyes,
                         eyes.add(look),
                         aabb,
-                        e -> e instanceof MuseumDummyEntity,
+                        e -> e instanceof MuseumPuppetEntity,
                         range * range);
-        return result != null ? (MuseumDummyEntity) result.getEntity() : null;
+        return result != null ? (MuseumPuppetEntity) result.getEntity() : null;
     }
 
     public static void setHoldingCane(boolean holdingCane) {
         ClientUtil.holdingCane = holdingCane;
     }
 
-    public static void selectDummy(@Nullable MuseumDummyEntity dummy, boolean changeCursor) {
-        if (selectedDummy != dummy) {
+    public static void selectPuppet(@Nullable MuseumPuppetEntity puppet, boolean changeCursor) {
+        if (selectedPuppet != puppet) {
             if (changeCursor) {
-                if (dummy != null) {
+                if (puppet != null) {
                     ClientUtil.setCursor(GLFW.GLFW_HAND_CURSOR);
                 } else {
                     ClientUtil.resetCursor();
                 }
             }
-            selectedDummy = dummy;
+            selectedPuppet = puppet;
         }
     }
 
-    public static void deselectDummy(boolean changeCursor) {
-        selectDummy(null, changeCursor);
+    public static void deselectPuppet(boolean changeCursor) {
+        selectPuppet(null, changeCursor);
     }
 
-    public static boolean shouldDummyGlow(MuseumDummyEntity dummy) {
+    public static boolean shouldPuppetGlow(MuseumPuppetEntity puppet) {
         return (MC.currentScreen == null || ModCompatUtil.isCryptMasterActive())
                 && holdingCane
-                && (dummy == selectedDummy || MuseumKeybinds.GLOBAL_HIGHLIGHTS.isKeyDown());
+                && (puppet == selectedPuppet || MuseumKeybinds.GLOBAL_HIGHLIGHTS.isKeyDown());
     }
 
     @Nullable
-    public static MuseumDummyEntity getSelectedDummy() {
-        return selectedDummy;
+    public static MuseumPuppetEntity getSelectedPuppet() {
+        return selectedPuppet;
     }
 
-    public static void setLastDummyScreen(
-            BiFunction<MuseumDummyEntity, Screen, ? extends MuseumDummyScreen> screenBuilder) {
-        lastDummyScreen = screenBuilder;
+    public static void setLastPuppetScreen(
+            BiFunction<MuseumPuppetEntity, Screen, ? extends MuseumPuppetScreen> screenBuilder) {
+        lastPuppetScreen = screenBuilder;
     }
 
-    public static void openDummyScreen(MuseumDummyEntity dummy, @Nullable Screen parent) {
-        MC.displayGuiScreen(lastDummyScreen.apply(dummy, parent));
+    public static void openPuppetScreen(MuseumPuppetEntity puppet, @Nullable Screen parent) {
+        MC.displayGuiScreen(lastPuppetScreen.apply(puppet, parent));
     }
 
     public static void setCursor(int shape) {
@@ -121,13 +121,13 @@ public class ClientUtil {
         GLFW.glfwSetCursor(WINDOW_HANDLE, 0L);
     }
 
-    public static AxisAlignedBB getModelBounds(MuseumDummyEntity dummy) {
-        final CheckedResource<ResourceLocation> modelLoc = dummy.getModelLocation();
+    public static AxisAlignedBB getModelBounds(MuseumPuppetEntity puppet) {
+        final CheckedResource<ResourceLocation> modelLoc = puppet.getModelLocation();
         if (!modelLoc.isInvalid()) {
             final ResourceLocation source = modelLoc.getSafe();
-            if (!source.equals(MuseumDummyEntity.DEFAULT_MODEL_LOCATION)) {
+            if (!source.equals(MuseumPuppetEntity.DEFAULT_MODEL_LOCATION)) {
                 if (MODEL_RENDER_BOUNDS.containsKey(source)) {
-                    return MODEL_RENDER_BOUNDS.get(source).offset(dummy.getPositionVec());
+                    return MODEL_RENDER_BOUNDS.get(source).offset(puppet.getPositionVec());
                 } else {
                     final GeoModel model = GeckoLibCache.getInstance().getGeoModels().get(source);
                     if (model != null) {
@@ -173,12 +173,12 @@ public class ClientUtil {
                                         new Vector3d(longest, maxY, longest));
 
                         MODEL_RENDER_BOUNDS.put(source, renderBounds);
-                        return renderBounds.offset(dummy.getPositionVec());
+                        return renderBounds.offset(puppet.getPositionVec());
                     }
                 }
             }
         }
-        return dummy.getBoundingBox();
+        return puppet.getBoundingBox();
     }
 
     private static List<GeoBone> flattenBones(List<GeoBone> bones) {

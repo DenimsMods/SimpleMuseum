@@ -22,10 +22,10 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 
 import denimred.simplemuseum.SimpleMuseum;
-import denimred.simplemuseum.common.entity.MuseumDummyEntity;
+import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
 import denimred.simplemuseum.common.init.MuseumLang;
 import denimred.simplemuseum.common.init.MuseumNetworking;
-import denimred.simplemuseum.common.network.messages.c2s.C2SMoveDummy;
+import denimred.simplemuseum.common.network.messages.c2s.C2SMovePuppet;
 
 public class MovementButtons extends Widget implements ITickable {
     public static final int ROTATE_COUNTER_CLOCKWISE = 0;
@@ -80,14 +80,14 @@ public class MovementButtons extends Widget implements ITickable {
         return new StringTextComponent("Unknown button index: " + index);
     }
 
-    public static void moveDummy(MuseumDummyEntity dummy, int index) {
+    public static void movePuppet(MuseumPuppetEntity puppet, int index) {
         final Minecraft mc = Minecraft.getInstance();
         final Entity viewer = mc.renderViewEntity;
         final Direction dir =
                 viewer != null ? viewer.getAdjustedHorizontalFacing() : Direction.NORTH;
-        Vector3d pos = dummy.getPositionVec();
+        Vector3d pos = puppet.getPositionVec();
         float speedMult = Screen.hasShiftDown() ? 0.25F : (Screen.hasControlDown() ? 1.0F : 0.5F);
-        float yaw = dummy.rotationYaw;
+        float yaw = puppet.rotationYaw;
         final float angle = 15.0F * (speedMult * 2.0F);
         switch (index) {
             case ROTATE_COUNTER_CLOCKWISE:
@@ -122,7 +122,7 @@ public class MovementButtons extends Widget implements ITickable {
                 pos = pos.add(new Vector3d(0, -1, 0).scale(speedMult));
                 break;
         }
-        MuseumNetworking.CHANNEL.sendToServer(new C2SMoveDummy(dummy.getUniqueID(), pos, yaw));
+        MuseumNetworking.CHANNEL.sendToServer(new C2SMovePuppet(puppet.getUniqueID(), pos, yaw));
     }
 
     @Nonnull

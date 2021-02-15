@@ -16,12 +16,12 @@ import denimred.simplemuseum.client.gui.widget.BoundTextFieldWidget;
 import denimred.simplemuseum.client.gui.widget.MovementButtons;
 import denimred.simplemuseum.client.util.ClientUtil;
 import denimred.simplemuseum.client.util.NumberUtil;
-import denimred.simplemuseum.common.entity.MuseumDummyEntity;
+import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
 import denimred.simplemuseum.common.init.MuseumLang;
 import denimred.simplemuseum.common.init.MuseumNetworking;
-import denimred.simplemuseum.common.network.messages.c2s.C2SMoveDummy;
+import denimred.simplemuseum.common.network.messages.c2s.C2SMovePuppet;
 
-public class MoveDummyScreen extends MuseumDummyScreen {
+public class MovePuppetScreen extends MuseumPuppetScreen {
     private static final int WIDTH = 100;
     private final SavedState state;
     public Button applyButton;
@@ -32,10 +32,10 @@ public class MoveDummyScreen extends MuseumDummyScreen {
     private BoundTextFieldWidget zField;
     private BoundTextFieldWidget yawField;
 
-    protected MoveDummyScreen(MuseumDummyEntity dummy, @Nullable Screen parent) {
-        super(dummy, parent);
+    protected MovePuppetScreen(MuseumPuppetEntity puppet, @Nullable Screen parent) {
+        super(puppet, parent);
         state = new SavedState();
-        ClientUtil.setLastDummyScreen(MoveDummyScreen::new);
+        ClientUtil.setLastPuppetScreen(MovePuppetScreen::new);
     }
 
     @Override
@@ -49,10 +49,10 @@ public class MoveDummyScreen extends MuseumDummyScreen {
                                 MARGIN,
                                 WIDTH,
                                 20,
-                                MuseumLang.GUI_DUMMY_CONFIG.asText(),
+                                MuseumLang.GUI_PUPPET_CONFIG.asText(),
                                 button ->
                                         mc.displayGuiScreen(
-                                                new ConfigureDummyScreen(dummy, parent))));
+                                                new ConfigurePuppetScreen(puppet, parent))));
         movementButtons =
                 this.addListener(
                         new MovementButtons(
@@ -60,9 +60,9 @@ public class MoveDummyScreen extends MuseumDummyScreen {
                                 backButton.y + backButton.getHeightRealms() + MARGIN,
                                 new StringTextComponent("todo"),
                                 MovementButtons::getName,
-                                i -> MovementButtons.moveDummy(dummy, i),
+                                i -> MovementButtons.movePuppet(puppet, i),
                                 this::renderWidgetTooltip));
-        final ITextComponent xMsg = MuseumLang.GUI_DUMMY_MOVE_X.asText();
+        final ITextComponent xMsg = MuseumLang.GUI_PUPPET_MOVE_X.asText();
         final int xMsgWidth = font.getStringPropertyWidth(xMsg);
         xField =
                 this.addListener(
@@ -73,8 +73,8 @@ public class MoveDummyScreen extends MuseumDummyScreen {
                                 WIDTH - xMsgWidth - MARGIN,
                                 20,
                                 xMsg,
-                                () -> NumberUtil.parseString(dummy.getPosX())));
-        final ITextComponent yMsg = MuseumLang.GUI_DUMMY_MOVE_Y.asText();
+                                () -> NumberUtil.parseString(puppet.getPosX())));
+        final ITextComponent yMsg = MuseumLang.GUI_PUPPET_MOVE_Y.asText();
         final int yMsgWidth = font.getStringPropertyWidth(yMsg);
         yField =
                 this.addListener(
@@ -85,8 +85,8 @@ public class MoveDummyScreen extends MuseumDummyScreen {
                                 WIDTH - yMsgWidth - MARGIN,
                                 20,
                                 yMsg,
-                                () -> NumberUtil.parseString(dummy.getPosY())));
-        final ITextComponent zMsg = MuseumLang.GUI_DUMMY_MOVE_Z.asText();
+                                () -> NumberUtil.parseString(puppet.getPosY())));
+        final ITextComponent zMsg = MuseumLang.GUI_PUPPET_MOVE_Z.asText();
         final int zMsgWidth = font.getStringPropertyWidth(zMsg);
         zField =
                 this.addListener(
@@ -97,8 +97,8 @@ public class MoveDummyScreen extends MuseumDummyScreen {
                                 WIDTH - zMsgWidth - MARGIN,
                                 20,
                                 zMsg,
-                                () -> NumberUtil.parseString(dummy.getPosZ())));
-        final ITextComponent yawMsg = MuseumLang.GUI_DUMMY_MOVE_YAW.asText();
+                                () -> NumberUtil.parseString(puppet.getPosZ())));
+        final ITextComponent yawMsg = MuseumLang.GUI_PUPPET_MOVE_YAW.asText();
         final int yawMsgWidth = font.getStringPropertyWidth(yawMsg);
         yawField =
                 this.addListener(
@@ -109,7 +109,7 @@ public class MoveDummyScreen extends MuseumDummyScreen {
                                 WIDTH - yawMsgWidth - MARGIN,
                                 20,
                                 yawMsg,
-                                () -> NumberUtil.parseString(dummy.rotationYaw)));
+                                () -> NumberUtil.parseString(puppet.rotationYaw)));
         final int buttonsY = yawField.y + yawField.getHeightRealms() + MARGIN;
         applyButton =
                 this.addButton(
@@ -118,9 +118,9 @@ public class MoveDummyScreen extends MuseumDummyScreen {
                                 buttonsY,
                                 (WIDTH / 2) - (MARGIN / 2),
                                 20,
-                                MuseumLang.GUI_DUMMY_MOVE_APPLY.asText(),
+                                MuseumLang.GUI_PUPPET_MOVE_APPLY.asText(),
                                 button -> {
-                                    final Vector3d pos = dummy.getPositionVec();
+                                    final Vector3d pos = puppet.getPositionVec();
                                     final double x =
                                             NumberUtil.parseDouble(xField.getText()).orElse(pos.x);
                                     final double y =
@@ -129,10 +129,10 @@ public class MoveDummyScreen extends MuseumDummyScreen {
                                             NumberUtil.parseDouble(zField.getText()).orElse(pos.z);
                                     final float yaw =
                                             NumberUtil.parseFloat(yawField.getText())
-                                                    .orElse(dummy.rotationYaw);
+                                                    .orElse(puppet.rotationYaw);
                                     MuseumNetworking.CHANNEL.sendToServer(
-                                            new C2SMoveDummy(
-                                                    dummy.getUniqueID(),
+                                            new C2SMovePuppet(
+                                                    puppet.getUniqueID(),
                                                     new Vector3d(x, y, z),
                                                     yaw));
                                     xField.reset();
@@ -147,7 +147,7 @@ public class MoveDummyScreen extends MuseumDummyScreen {
                                 buttonsY,
                                 applyButton.getWidth(),
                                 20,
-                                MuseumLang.GUI_DUMMY_MOVE_RESET.asText(),
+                                MuseumLang.GUI_PUPPET_MOVE_RESET.asText(),
                                 button -> {
                                     xField.reset();
                                     yField.reset();
@@ -172,7 +172,7 @@ public class MoveDummyScreen extends MuseumDummyScreen {
         drawCenteredString(
                 matrixStack,
                 font,
-                MuseumLang.GUI_DUMMY_MOVE_TITLE.asText(title),
+                MuseumLang.GUI_PUPPET_MOVE_TITLE.asText(title),
                 width / 2,
                 MARGIN * 2,
                 0xFFFFFF);
