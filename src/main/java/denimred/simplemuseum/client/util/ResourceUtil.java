@@ -83,7 +83,7 @@ public class ResourceUtil {
                 // This is stupid but it's simple and I'm lazy :)
                 for (Entity entity : world.getAllEntities()) {
                     if (entity instanceof MuseumPuppetEntity) {
-                        ((MuseumPuppetEntity) entity).clearAllCached();
+                        ((MuseumPuppetEntity) entity).clearCaches();
                     }
                 }
             }

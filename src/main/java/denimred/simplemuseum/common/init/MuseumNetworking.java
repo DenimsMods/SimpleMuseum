@@ -5,10 +5,13 @@ import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 
 import denimred.simplemuseum.SimpleMuseum;
+import denimred.simplemuseum.common.network.messages.bidirectional.CopyPastePuppetData;
 import denimred.simplemuseum.common.network.messages.c2s.C2SConfigurePuppet;
 import denimred.simplemuseum.common.network.messages.c2s.C2SCryptMasterRemovePuppet;
 import denimred.simplemuseum.common.network.messages.c2s.C2SCryptMasterSpawnPuppet;
 import denimred.simplemuseum.common.network.messages.c2s.C2SMovePuppet;
+import denimred.simplemuseum.common.network.messages.s2c.PlayPuppetAnimation;
+import denimred.simplemuseum.common.network.messages.s2c.ResurrectPuppetSync;
 
 public final class MuseumNetworking {
     private static final String PROTOCOL_VERSION = "2";
@@ -21,7 +24,7 @@ public final class MuseumNetworking {
 
     public static void registerMessages() {
         int id = -1;
-        // Client -> Server
+        // Server <-- Client
         CHANNEL.registerMessage(
                 ++id,
                 C2SConfigurePuppet.class,
@@ -46,5 +49,10 @@ public final class MuseumNetworking {
                 C2SCryptMasterRemovePuppet::encode,
                 C2SCryptMasterRemovePuppet::decode,
                 C2SCryptMasterRemovePuppet::handle);
+        // Server --> Client
+        PlayPuppetAnimation.register(CHANNEL, ++id);
+        ResurrectPuppetSync.register(CHANNEL, ++id);
+        // Server <-> Client
+        CopyPastePuppetData.register(CHANNEL, ++id);
     }
 }

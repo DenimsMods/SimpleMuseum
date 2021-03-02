@@ -43,7 +43,7 @@ public class C2SCryptMasterSpawnPuppet {
         if (sender != null) {
             final ServerWorld world = sender.getServerWorld();
             if (world.isBlockLoaded(new BlockPos(pos))) {
-                // TODO: Do permissions check to avoid hacker griefing
+                // TODO: Do permissions check?
                 MuseumPuppetEntity.spawn(world, pos, sender.getPositionVec());
             }
         }

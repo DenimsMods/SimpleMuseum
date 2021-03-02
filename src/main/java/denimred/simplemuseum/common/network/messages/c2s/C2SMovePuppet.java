@@ -59,7 +59,7 @@ public class C2SMovePuppet {
                 if (puppet.isAlive()
                         && world.isBlockLoaded(new BlockPos(puppet.getPositionVec()))
                         && world.isBlockLoaded(new BlockPos(pos))) {
-                    // TODO: Do permissions check to avoid hacker griefing
+                    // TODO: Do permissions check?
                     puppet.setLocationAndAngles(
                             pos.x, pos.y, pos.z, MathHelper.wrapDegrees(yaw), puppet.rotationPitch);
                 }

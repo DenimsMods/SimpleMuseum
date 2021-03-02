@@ -25,7 +25,6 @@ import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
 import denimred.simplemuseum.common.init.MuseumLang;
 import denimred.simplemuseum.common.init.MuseumNetworking;
 import denimred.simplemuseum.common.network.messages.c2s.C2SConfigurePuppet;
-import denimred.simplemuseum.common.util.CheckedResource;
 import software.bernie.geckolib3.file.AnimationFile;
 import software.bernie.geckolib3.resource.GeckoLibCache;
 
@@ -38,24 +37,16 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
     private static final String MODEL_PREFIX = "geo/";
     private static final String TEXTURE_PREFIX = "textures/";
     private static final String ANIMATIONS_PREFIX = "animations/";
-    private final CheckedResource<ResourceLocation> model;
-    private final CheckedResource<ResourceLocation> texture;
-    private final CheckedResource<ResourceLocation> animations;
-    private final CheckedResource<String> selectedAnimation;
     private final SavedState state;
     private IconButton copyButton;
     private Button doneButton;
     private ResourceFieldWidget modelWidget;
     private ResourceFieldWidget textureWidget;
     private ResourceFieldWidget animationsWidget;
-    private TextFieldWidget selectedAnimationField;
+    private TextFieldWidget idleAnimationField;
 
     public ConfigurePuppetScreen(MuseumPuppetEntity puppet, @Nullable Screen parent) {
         super(puppet, parent);
-        model = puppet.getModelLocation();
-        texture = puppet.getTextureLocation();
-        animations = puppet.getAnimationsLocation();
-        selectedAnimation = puppet.getSelectedAnimation();
         state = new SavedState();
         ClientUtil.setLastPuppetScreen(ConfigurePuppetScreen::new);
     }
@@ -75,7 +66,7 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
         joiner.add(this.getModelLoc().map(String::valueOf).orElse(""));
         joiner.add(this.getTexLoc().map(String::valueOf).orElse(""));
         joiner.add(this.getAnimLoc().map(String::valueOf).orElse(""));
-        joiner.add(selectedAnimationField.getText());
+        joiner.add(idleAnimationField.getText());
         mc.keyboardListener.setClipboardString(joiner.toString());
     }
 
@@ -86,7 +77,7 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
         if (length > 0) modelWidget.setLocation(split[0], true, true);
         if (length > 1) textureWidget.setLocation(split[1], true, true);
         if (length > 2) animationsWidget.setLocation(split[2], true, true);
-        if (length > 3) selectedAnimationField.setText(split[3]);
+        if (length > 3) idleAnimationField.setText(split[3]);
     }
 
     @Override
@@ -141,7 +132,7 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
                                 MuseumLang.GUI_PUPPET_CONFIG_MODEL.asText(),
                                 MuseumLang.GUI_PUPPET_CONFIG_MODEL_SELECT.asText(),
                                 MODEL_PREFIX,
-                                model::validate,
+                                puppet.sourceManager.model::validate,
                                 button ->
                                         mc.displayGuiScreen(
                                                 new SelectResourceScreen(
@@ -161,7 +152,7 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
                                 MuseumLang.GUI_PUPPET_CONFIG_TEX.asText(),
                                 MuseumLang.GUI_PUPPET_CONFIG_TEX_SELECT.asText(),
                                 TEXTURE_PREFIX,
-                                texture::validate,
+                                puppet.sourceManager.texture::validate,
                                 button ->
                                         mc.displayGuiScreen(
                                                 new SelectResourceScreen(
@@ -181,15 +172,15 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
                                 MuseumLang.GUI_PUPPET_CONFIG_ANIMS.asText(),
                                 MuseumLang.GUI_PUPPET_CONFIG_ANIMS_SELECT.asText(),
                                 ANIMATIONS_PREFIX,
-                                animations::validate,
+                                puppet.sourceManager.animations::validate,
                                 button ->
                                         mc.displayGuiScreen(
                                                 new SelectResourceScreen(
                                                         this, button, animationsWidget)),
                                 this::renderWidgetTooltip));
 
-        final ITextComponent selAnimFieldMsg = MuseumLang.GUI_PUPPET_CONFIG_ANIM.asText();
-        final int selAnimFieldWidth = font.getStringPropertyWidth(selAnimFieldMsg);
+        final ITextComponent idleAnimFieldMsg = MuseumLang.GUI_PUPPET_CONFIG_ANIM.asText();
+        final int idleAnimFieldWidth = font.getStringPropertyWidth(idleAnimFieldMsg);
         final int miscY = animationsFieldY + 20 + MARGIN * 3;
         this.addButton(
                 new Button(
@@ -199,20 +190,20 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
                         20,
                         MuseumLang.GUI_PUPPET_MOVE.asText(),
                         button -> mc.displayGuiScreen(new MovePuppetScreen(puppet, parent))));
-        selectedAnimationField =
+        idleAnimationField =
                 this.addListener(
                         new TextFieldWidget(
                                 font,
-                                left + (WIDTH / 3) + (MARGIN * 3) + selAnimFieldWidth,
+                                left + (WIDTH / 3) + (MARGIN * 3) + idleAnimFieldWidth,
                                 miscY,
-                                WIDTH - ((WIDTH / 3) + (MARGIN * 3) + selAnimFieldWidth) - 21,
+                                WIDTH - ((WIDTH / 3) + (MARGIN * 3) + idleAnimFieldWidth) - 21,
                                 20,
-                                selAnimFieldMsg));
+                                idleAnimFieldMsg));
         final IconButton selectAnimButton =
                 this.addButton(
                         new IconButton(
-                                selectedAnimationField.x + selectedAnimationField.getWidth() + 2,
-                                selectedAnimationField.y,
+                                idleAnimationField.x + idleAnimationField.getWidth() + 2,
+                                idleAnimationField.y,
                                 20,
                                 20,
                                 0,
@@ -226,7 +217,7 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
                                                 new SelectAnimationScreen(
                                                         this,
                                                         button,
-                                                        selectedAnimationField,
+                                                        idleAnimationField,
                                                         () -> this.getAnimLoc().orElse(null))),
                                 this::renderWidgetTooltip,
                                 MuseumLang.GUI_PUPPET_CONFIG_ANIM_SELECT.asText()));
@@ -258,11 +249,11 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
                 () -> {
                     this.checkAcceptableState();
                     // Triggers the responder
-                    selectedAnimationField.setText(selectedAnimationField.getText());
+                    idleAnimationField.setText(idleAnimationField.getText());
                 });
 
-        selectedAnimationField.setMaxStringLength(32500);
-        selectedAnimationField.setResponder(
+        idleAnimationField.setMaxStringLength(32500);
+        idleAnimationField.setResponder(
                 s -> {
                     // This is needed since selectedAnimation isn't set
                     // until the done button is pressed
@@ -272,14 +263,14 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
                                 GeckoLibCache.getInstance().getAnimations().get(animLoc.get());
                         final boolean fileExists = animFile != null;
                         if (fileExists && (s.isEmpty() || animFile.getAnimation(s) != null)) {
-                            selectedAnimationField.setTextColor(TEXT_VALID);
+                            idleAnimationField.setTextColor(TEXT_VALID);
                         } else {
-                            selectedAnimationField.setTextColor(TEXT_INVALID);
+                            idleAnimationField.setTextColor(TEXT_INVALID);
                         }
                         selectAnimButton.active = fileExists;
                     } else {
                         selectAnimButton.active = false;
-                        selectedAnimationField.setTextColor(TEXT_ERROR);
+                        idleAnimationField.setTextColor(TEXT_ERROR);
                     }
                 });
 
@@ -299,7 +290,7 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
         modelWidget.tick();
         textureWidget.tick();
         animationsWidget.tick();
-        selectedAnimationField.tick();
+        idleAnimationField.tick();
     }
 
     @Override
@@ -321,9 +312,8 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
         animationsWidget.render(matrixStack, mouseX, mouseY, partialTicks);
         drawTitle(matrixStack, font, animationsWidget);
 
-        drawStringLeft(
-                matrixStack, font, selectedAnimationField, selectedAnimationField.getMessage());
-        selectedAnimationField.render(matrixStack, mouseX, mouseY, partialTicks);
+        drawStringLeft(matrixStack, font, idleAnimationField, idleAnimationField.getMessage());
+        idleAnimationField.render(matrixStack, mouseX, mouseY, partialTicks);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
     }
 
@@ -332,10 +322,10 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
             MuseumNetworking.CHANNEL.sendToServer(
                     new C2SConfigurePuppet(
                             puppet.getUniqueID(),
-                            this.getModelLoc().orElse(model.getDirect()),
-                            this.getTexLoc().orElse(texture.getDirect()),
-                            this.getAnimLoc().orElse(animations.getDirect()),
-                            selectedAnimationField.getText()));
+                            this.getModelLoc().orElse(puppet.sourceManager.model.getDirect()),
+                            this.getTexLoc().orElse(puppet.sourceManager.texture.getDirect()),
+                            this.getAnimLoc().orElse(puppet.sourceManager.animations.getDirect()),
+                            idleAnimationField.getText()));
         } catch (ResourceLocationException e) {
             SimpleMuseum.LOGGER.error("Failed to send puppet configuration to server", e);
         }
@@ -358,27 +348,27 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
         protected ResourceLocation modelState;
         protected ResourceLocation texState;
         protected ResourceLocation animsState;
-        protected String selAnimState;
+        protected String idleAnimState;
 
         protected SavedState() {
-            modelState = model.getDirect();
-            texState = texture.getDirect();
-            animsState = animations.getDirect();
-            selAnimState = selectedAnimation.getDirect();
+            modelState = puppet.sourceManager.model.getDirect();
+            texState = puppet.sourceManager.texture.getDirect();
+            animsState = puppet.sourceManager.animations.getDirect();
+            idleAnimState = puppet.animationManager.idle.getDirect();
         }
 
         protected void save() {
             if (modelWidget != null) modelState = modelWidget.getLocation();
             if (textureWidget != null) texState = textureWidget.getLocation();
             if (animationsWidget != null) animsState = animationsWidget.getLocation();
-            if (selectedAnimationField != null) selAnimState = selectedAnimationField.getText();
+            if (idleAnimationField != null) idleAnimState = idleAnimationField.getText();
         }
 
         protected void load() {
             if (modelWidget != null) modelWidget.setLocation(modelState, true);
             if (textureWidget != null) textureWidget.setLocation(texState, true);
             if (animationsWidget != null) animationsWidget.setLocation(animsState, true);
-            if (selectedAnimationField != null) selectedAnimationField.setText(selAnimState);
+            if (idleAnimationField != null) idleAnimationField.setText(idleAnimState);
         }
     }
 }

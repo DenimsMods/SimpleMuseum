@@ -21,23 +21,35 @@ import java.util.List;
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.client.renderer.MuseumRenderType;
 import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
+import denimred.simplemuseum.common.entity.PuppetEasterEgg;
 import software.bernie.geckolib3.renderers.geo.GeoLayerRenderer;
 import software.bernie.geckolib3.renderers.geo.IGeoRenderer;
 
-public class ErrorBannersLayerRenderer extends GeoLayerRenderer<MuseumPuppetEntity> {
+public class PuppetBannersLayerRenderer extends GeoLayerRenderer<MuseumPuppetEntity> {
     protected static final ResourceLocation TEXTURE =
-            new ResourceLocation(SimpleMuseum.MOD_ID, "textures/misc/error_banners.png");
-    protected static final float TEX_HEIGHT = 0.25F;
+            new ResourceLocation(SimpleMuseum.MOD_ID, "textures/misc/puppet_banners.png");
+    protected static final int SOURCE_ERROR = 0;
+    protected static final int BEHAVIOR_ERROR = 1;
+    protected static final int AUDIO_ERROR = 2;
+    protected static final int ANIM_ERROR = 3;
+    protected static final int RENDER_ERROR = 4;
+    protected static final int MISSING_PACK = 5;
+    protected static final int DEAD = 6;
+    protected static final int HELLO_HOW_R_U = 7;
+    protected static final float TEX_HEIGHT = 0.125F;
     protected final List<Vector3f> outerMesh;
     protected final List<Vector3f> innerMesh;
+    protected final float meshHeight;
     protected final int vertCount;
 
-    public ErrorBannersLayerRenderer(
+    public PuppetBannersLayerRenderer(
             IGeoRenderer<MuseumPuppetEntity> renderer, int resolution, double radius) {
         super(renderer);
         // Generate the meshes (I could technically concat these into one mesh but that's ugly)
         outerMesh = this.generateMesh(false, resolution, radius);
         innerMesh = this.generateMesh(true, resolution, radius);
+        // Same as the step value in generateMesh, but whatever
+        meshHeight = (float) (Math.PI * 2.0D / resolution);
         // May as well save this for performance I guess ¯\_(ツ)_/¯
         vertCount = outerMesh.size();
     }
@@ -86,44 +98,37 @@ public class ErrorBannersLayerRenderer extends GeoLayerRenderer<MuseumPuppetEnti
 
         // Determine the banners that we need to display
         final List<Integer> banners = new ArrayList<>();
-        if (puppet.getModelLocation().isInvalid()) {
-            banners.add(1);
-        }
-        if (puppet.getTextureLocation().isInvalid()) {
-            banners.add(2);
-        }
-        if (puppet.getAnimationsLocation().isInvalid()
-                || puppet.getSelectedAnimation().isInvalid()) {
-            banners.add(3);
-        }
-        if (banners.isEmpty() && puppet.doEasterEgg()) {
-            banners.add(4);
+        if (puppet.renderManager.canRenderHiddenDeathEffects()) {
+            banners.add(DEAD);
+        } else {
+            if (puppet.renderManager.isErrorBanners()) {
+                if (!puppet.sourceManager.model.isValid()
+                        || !puppet.sourceManager.texture.isValid()
+                        || !puppet.sourceManager.animations.isValid()) {
+                    banners.add(SOURCE_ERROR);
+                }
+            }
+            if (puppet.renderManager.isEasterEggs()
+                    && banners.isEmpty()
+                    && PuppetEasterEgg.HELLO_HOW_R_U.isActive(puppet)) {
+                banners.add(HELLO_HOW_R_U);
+            }
         }
 
-        // Render the banners in the correct position
+        // Render the banners in the correct positions
         final int count = banners.size();
+        final float spacing = 0.05F;
+        final float height = meshHeight + spacing * 2.0F;
+        final float startY = count * height / 2.0F;
         for (int i = 0; i < count; i++) {
-            // Oh my god this is SUCH A MESS
-            final float offsetY;
-            if (count == 3) {
-                if (i == 0) {
-                    offsetY = yPos + 0.5F;
-                } else if (i == 1) {
-                    offsetY = yPos;
-                } else {
-                    offsetY = yPos - 0.5F;
-                }
-            } else if (count == 2) {
-                offsetY = i == 0 ? yPos + 0.25F : yPos - 0.25F;
-            } else {
-                offsetY = yPos;
-            }
             final float yaw =
                     MathHelper.interpolateAngle(
                             partialTicks, puppet.prevRenderYawOffset, puppet.renderYawOffset);
-            final float offsetTime = -(time * (1.0F + (0.5F * i))) + (float) Math.toRadians(yaw);
+            final float offsetTime = -(time * (1.5F + (0.25F * i))) + (float) Math.toRadians(yaw);
 
-            this.renderBanner(banners.get(i), offsetY, offsetTime, matrixStack, typeBuffer, type);
+            final float offsetY = startY + spacing - height * (i + 1);
+            this.renderBanner(
+                    banners.get(i), yPos + offsetY, offsetTime, matrixStack, typeBuffer, type);
         }
     }
 
@@ -155,11 +160,11 @@ public class ErrorBannersLayerRenderer extends GeoLayerRenderer<MuseumPuppetEnti
 
     protected void renderMesh(
             int index, float yPos, Matrix4f matrix4f, IVertexBuilder buffer, List<Vector3f> mesh) {
-        final Color color = index == 4 ? getRainbow() : Color.WHITE;
+        final Color color = index == HELLO_HOW_R_U ? getRainbow() : Color.WHITE;
         for (int i = 0; i < vertCount; i++) {
             final boolean top = (i & 1) == 0;
             final float u = (top ? i * TEX_HEIGHT - TEX_HEIGHT : (i - 1) * TEX_HEIGHT) / 2;
-            final float v = top ? (index - 1) * TEX_HEIGHT : index * TEX_HEIGHT;
+            final float v = index * TEX_HEIGHT + (top ? 0 : TEX_HEIGHT);
             final Vector3f vert = mesh.get(i);
             buffer.pos(matrix4f, vert.getX(), vert.getY() + yPos, vert.getZ())
                     .color(color.getRed(), color.getGreen(), color.getBlue(), 255)
