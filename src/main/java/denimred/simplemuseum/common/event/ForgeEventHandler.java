@@ -3,11 +3,13 @@ package denimred.simplemuseum.common.event;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import denimred.simplemuseum.SimpleMuseum;
+import denimred.simplemuseum.common.init.MuseumCommands;
 import denimred.simplemuseum.common.init.MuseumEntities;
 import denimred.simplemuseum.common.init.MuseumItems;
 
@@ -34,5 +36,10 @@ public final class ForgeEventHandler {
                 break; // Don't forget to remove this if we remap anything else
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void onRegisterCommands(RegisterCommandsEvent event) {
+        MuseumCommands.register(event.getDispatcher());
     }
 }

@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -25,9 +26,9 @@ import javax.annotation.Nullable;
 import denimred.simplemuseum.client.gui.screen.ConfigurePuppetScreen;
 import denimred.simplemuseum.client.gui.screen.MuseumPuppetScreen;
 import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
+import denimred.simplemuseum.common.entity.PuppetSourceManager;
 import denimred.simplemuseum.common.init.MuseumKeybinds;
-import denimred.simplemuseum.common.util.CheckedResource;
-import denimred.simplemuseum.modcompat.ModCompatUtil;
+import denimred.simplemuseum.modcompat.ModCompat;
 import it.unimi.dsi.fastutil.ints.Int2LongArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
@@ -68,6 +69,10 @@ public class ClientUtil {
         return result != null ? (MuseumPuppetEntity) result.getEntity() : null;
     }
 
+    public static boolean isHoldingCane() {
+        return holdingCane;
+    }
+
     public static void setHoldingCane(boolean holdingCane) {
         ClientUtil.holdingCane = holdingCane;
     }
@@ -90,9 +95,11 @@ public class ClientUtil {
     }
 
     public static boolean shouldPuppetGlow(MuseumPuppetEntity puppet) {
-        return (MC.currentScreen == null || ModCompatUtil.isCryptMasterActive())
-                && holdingCane
-                && (puppet == selectedPuppet || MuseumKeybinds.GLOBAL_HIGHLIGHTS.isKeyDown());
+        return puppet.renderManager.canRenderHiddenDeathEffects()
+                || (MC.currentScreen == null || ModCompat.isCryptMasterActive())
+                        && holdingCane
+                        && (puppet == selectedPuppet
+                                || MuseumKeybinds.GLOBAL_HIGHLIGHTS.isKeyDown());
     }
 
     @Nullable
@@ -122,13 +129,12 @@ public class ClientUtil {
         GLFW.glfwSetCursor(WINDOW_HANDLE, 0L);
     }
 
-    public static AxisAlignedBB getModelBounds(MuseumPuppetEntity puppet) {
-        final CheckedResource<ResourceLocation> modelLoc = puppet.getModelLocation();
-        if (!modelLoc.isInvalid()) {
-            final ResourceLocation source = modelLoc.getSafe();
-            if (!source.equals(MuseumPuppetEntity.DEFAULT_MODEL_LOCATION)) {
+    public static Optional<AxisAlignedBB> getModelBounds(MuseumPuppetEntity puppet) {
+        if (puppet.sourceManager.model.isValid()) {
+            final ResourceLocation source = puppet.sourceManager.model.getSafe();
+            if (!source.equals(PuppetSourceManager.MODEL_DEFAULT)) {
                 if (MODEL_RENDER_BOUNDS.containsKey(source)) {
-                    return MODEL_RENDER_BOUNDS.get(source).offset(puppet.getPositionVec());
+                    return Optional.of(MODEL_RENDER_BOUNDS.get(source));
                 } else {
                     final GeoModel model = GeckoLibCache.getInstance().getGeoModels().get(source);
                     if (model != null) {
@@ -176,12 +182,12 @@ public class ClientUtil {
                                         new Vector3d(longest, maxY, longest));
 
                         MODEL_RENDER_BOUNDS.put(source, renderBounds);
-                        return renderBounds.offset(puppet.getPositionVec());
+                        return Optional.of(renderBounds);
                     }
                 }
             }
         }
-        return puppet.getBoundingBox();
+        return Optional.empty();
     }
 
     private static List<GeoBone> flattenBones(List<GeoBone> bones) {

@@ -12,6 +12,7 @@ import java.util.function.Supplier;
 
 import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
 
+@Deprecated // Need to update the UI before we can get rid of this
 public class C2SConfigurePuppet {
     private final UUID uuid;
     private final ResourceLocation modelLoc;
@@ -55,7 +56,6 @@ public class C2SConfigurePuppet {
         ctx.setPacketHandled(true);
     }
 
-    @SuppressWarnings("deprecation") // Mojang >:I
     private void doWork(NetworkEvent.Context ctx) {
         final ServerPlayerEntity sender = ctx.getSender();
         if (sender != null) {
@@ -64,11 +64,10 @@ public class C2SConfigurePuppet {
             if (entity instanceof MuseumPuppetEntity) {
                 final MuseumPuppetEntity puppet = (MuseumPuppetEntity) entity;
                 if (world.isBlockLoaded(puppet.getPosition()) && puppet.isAlive()) {
-                    // TODO: Do permissions check to avoid hacker griefing
-                    puppet.setModelLocation(modelLoc);
-                    puppet.setTextureLocation(texLoc);
-                    puppet.setAnimationsLocation(animLoc);
-                    puppet.setSelectedAnimation(selAnim);
+                    puppet.sourceManager.model.set(modelLoc);
+                    puppet.sourceManager.texture.set(texLoc);
+                    puppet.sourceManager.animations.set(animLoc);
+                    puppet.animationManager.idle.set(selAnim);
                 }
             }
         }

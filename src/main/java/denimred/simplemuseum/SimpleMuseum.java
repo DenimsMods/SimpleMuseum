@@ -14,7 +14,7 @@ import denimred.simplemuseum.common.init.MuseumDataSerializers;
 import denimred.simplemuseum.common.init.MuseumEntities;
 import denimred.simplemuseum.common.init.MuseumItems;
 import denimred.simplemuseum.common.init.MuseumNetworking;
-import denimred.simplemuseum.modcompat.ModCompatUtil;
+import denimred.simplemuseum.modcompat.ModCompat;
 
 @Mod(SimpleMuseum.MOD_ID)
 public final class SimpleMuseum {
@@ -32,7 +32,7 @@ public final class SimpleMuseum {
         // Misc client stuff
         DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> ResourceUtil::registerResourceReloadListener);
         // Mod compat stuff
-        bus.addListener(ModCompatUtil::enqueueIMC);
-        ModCompatUtil.registerCryptMasterPossession();
+        bus.addListener(ModCompat::enqueueIMC);
+        ModCompat.registerCryptMasterPossession();
     }
 }
