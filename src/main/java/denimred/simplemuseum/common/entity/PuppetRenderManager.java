@@ -51,7 +51,8 @@ public class PuppetRenderManager extends PuppetManager {
     public static final int SCALE_DEFAULT = 100;
     public static final Color COLOR_DEFAULT = Color.WHITE;
     // Managed variables
-    private final IntPercent scale = new IntPercent(1, 1000).set(SCALE_DEFAULT);
+    public final IntPercent scale =
+            new IntPercent(1, 1000, SCALE_DEFAULT, i -> dataManager.set(SCALE_KEY, i));
     private boolean cull = CULL_DEFAULT;
     private boolean translucent = TRANSLUCENT_DEFAULT;
     private boolean lighting = LIGHTING_DEFAULT;
@@ -140,15 +141,6 @@ public class PuppetRenderManager extends PuppetManager {
         dataManager.set(ERROR_BANNERS_KEY, errorBanners);
     }
 
-    public float getScale() {
-        return scale.asFloat();
-    }
-
-    public void setScale(float s) {
-        scale.set(s);
-        dataManager.set(SCALE_KEY, scale.asInt());
-    }
-
     public Color getColor() {
         return color;
     }
@@ -177,7 +169,7 @@ public class PuppetRenderManager extends PuppetManager {
         else if (key.equals(EASTER_EGGS_KEY)) this.setEasterEggs(dataManager.get(EASTER_EGGS_KEY));
         else if (key.equals(ERROR_BANNERS_KEY))
             this.setErrorBanners(dataManager.get(ERROR_BANNERS_KEY));
-        else if (key.equals(SCALE_KEY)) this.setScale(dataManager.get(SCALE_KEY));
+        else if (key.equals(SCALE_KEY)) scale.set(dataManager.get(SCALE_KEY));
         else if (key.equals(COLOR_KEY)) this.setColor(dataManager.get(COLOR_KEY));
     }
 
@@ -191,7 +183,7 @@ public class PuppetRenderManager extends PuppetManager {
             this.setEasterEggs(tag.getBoolean(EASTER_EGGS_NBT));
         if (tag.contains(ERROR_BANNERS_NBT, TAG_BYTE))
             this.setErrorBanners(tag.getBoolean(ERROR_BANNERS_NBT));
-        if (tag.contains(SCALE_NBT, TAG_INT)) this.setScale(tag.getInt(SCALE_NBT));
+        if (tag.contains(SCALE_NBT, TAG_INT)) scale.set(tag.getInt(SCALE_NBT));
         if (tag.contains(COLOR_NBT, TAG_INT)) this.setColor(new Color(tag.getInt(COLOR_NBT), true));
     }
 
