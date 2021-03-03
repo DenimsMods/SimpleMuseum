@@ -217,7 +217,7 @@ public class MuseumPuppetRenderer extends GeoEntityRenderer<MuseumPuppetEntity> 
             IRenderTypeBuffer typeBuffer,
             int packedLightIn) {
         matrixStack.push();
-        final float scale = puppet.renderManager.getScale();
+        final float scale = puppet.renderManager.scale.asFloat();
         matrixStack.scale(scale, scale, scale);
         final int light = puppet.renderManager.isLighting() ? packedLightIn : 0xF000F0;
         super.render(puppet, entityYaw, partialTicks, matrixStack, typeBuffer, light);
