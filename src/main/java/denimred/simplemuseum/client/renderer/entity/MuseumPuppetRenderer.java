@@ -17,13 +17,9 @@ import javax.annotation.Nullable;
 import denimred.simplemuseum.client.renderer.entity.layer.PuppetBannersLayerRenderer;
 import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
 import software.bernie.geckolib3.geo.render.built.GeoBone;
-import software.bernie.geckolib3.geo.render.built.GeoCube;
 import software.bernie.geckolib3.geo.render.built.GeoModel;
 import software.bernie.geckolib3.renderers.geo.GeoEntityRenderer;
-import software.bernie.geckolib3.util.RenderUtils;
 
-// TODO: This is hardcoded to render slime bones as translucent, but it needs to be configurable and
-//       expandable (e.g. glowing texture layers, tinted layers, etc.)
 public class MuseumPuppetRenderer extends GeoEntityRenderer<MuseumPuppetEntity> {
     public MuseumPuppetRenderer(EntityRendererManager renderManager) {
         super(renderManager, new MuseumPuppetModel());
@@ -36,176 +32,42 @@ public class MuseumPuppetRenderer extends GeoEntityRenderer<MuseumPuppetEntity> 
             MuseumPuppetEntity puppet,
             float partialTicks,
             RenderType type,
-            MatrixStack matrixStackIn,
-            @Nullable IRenderTypeBuffer renderTypeBuffer,
+            MatrixStack stack,
+            @Nullable IRenderTypeBuffer typeBuffer,
             @Nullable IVertexBuilder vertexBuilder,
-            int packedLightIn,
-            int packedOverlayIn,
+            int light,
+            int overlay,
             float red,
             float green,
             float blue,
             float alpha) {
         this.renderEarly(
                 puppet,
-                matrixStackIn,
+                stack,
                 partialTicks,
-                renderTypeBuffer,
+                typeBuffer,
                 vertexBuilder,
-                packedLightIn,
-                packedOverlayIn,
+                light,
+                overlay,
                 red,
                 green,
                 blue,
                 alpha);
-
-        if (renderTypeBuffer != null) {
-            vertexBuilder = renderTypeBuffer.getBuffer(type);
-        }
-        this.renderLate(
-                puppet,
-                matrixStackIn,
-                partialTicks,
-                renderTypeBuffer,
-                vertexBuilder,
-                packedLightIn,
-                packedOverlayIn,
-                red,
-                green,
-                blue,
-                alpha);
-        // Render all top level bones
-        for (GeoBone bone : model.topLevelBones) {
-            this.renderRecursivelySolid(
-                    bone,
-                    matrixStackIn,
-                    vertexBuilder,
-                    packedLightIn,
-                    packedOverlayIn,
-                    red,
-                    green,
-                    blue,
-                    alpha);
-        }
-        IVertexBuilder translucent =
-                renderTypeBuffer != null
-                        ? renderTypeBuffer.getBuffer(
-                                RenderType.getEntityTranslucent(this.getTextureLocation(puppet)))
-                        : vertexBuilder;
-        // Render all top level bones
-        for (GeoBone bone : model.topLevelBones) {
-            this.renderRecursivelySlime(
-                    bone,
-                    matrixStackIn,
-                    translucent,
-                    packedLightIn,
-                    packedOverlayIn,
-                    red,
-                    green,
-                    blue,
-                    alpha);
-        }
-    }
-
-    private void renderRecursivelySolid(
-            GeoBone bone,
-            MatrixStack stack,
-            @Nullable IVertexBuilder bufferIn,
-            int packedLightIn,
-            int packedOverlayIn,
-            float red,
-            float green,
-            float blue,
-            float alpha) {
-        stack.push();
-        RenderUtils.translate(bone, stack);
-        RenderUtils.moveToPivot(bone, stack);
-        RenderUtils.rotate(bone, stack);
-        RenderUtils.scale(bone, stack);
-        RenderUtils.moveBackFromPivot(bone, stack);
-
-        if (!bone.isHidden) {
-            if (!bone.name.endsWith("_slime")) {
-                for (GeoCube cube : bone.childCubes) {
-                    stack.push();
-                    renderCube(
-                            cube,
+        if (typeBuffer != null) {
+            for (PuppetBoneLayer layer : PuppetBoneLayer.values()) {
+                final RenderType layerType = layer.getType(whTexture).orElse(type);
+                final IVertexBuilder buffer = typeBuffer.getBuffer(layerType);
+                for (GeoBone bone : model.topLevelBones) {
+                    layer.render(
                             stack,
-                            bufferIn,
-                            packedLightIn,
-                            packedOverlayIn,
-                            red,
-                            green,
-                            blue,
-                            alpha);
-                    stack.pop();
+                            bone,
+                            cube ->
+                                    this.renderCube(
+                                            cube, stack, buffer, light, overlay, red, green, blue,
+                                            alpha));
                 }
             }
-            for (GeoBone childBone : bone.childBones) {
-                renderRecursivelySolid(
-                        childBone,
-                        stack,
-                        bufferIn,
-                        packedLightIn,
-                        packedOverlayIn,
-                        red,
-                        green,
-                        blue,
-                        alpha);
-            }
         }
-
-        stack.pop();
-    }
-
-    private void renderRecursivelySlime(
-            GeoBone bone,
-            MatrixStack stack,
-            @Nullable IVertexBuilder bufferIn,
-            int packedLightIn,
-            int packedOverlayIn,
-            float red,
-            float green,
-            float blue,
-            float alpha) {
-        stack.push();
-        RenderUtils.translate(bone, stack);
-        RenderUtils.moveToPivot(bone, stack);
-        RenderUtils.rotate(bone, stack);
-        RenderUtils.scale(bone, stack);
-        RenderUtils.moveBackFromPivot(bone, stack);
-
-        if (!bone.isHidden) {
-            if (bone.name.endsWith("_slime")) {
-                for (GeoCube cube : bone.childCubes) {
-                    stack.push();
-                    renderCube(
-                            cube,
-                            stack,
-                            bufferIn,
-                            packedLightIn,
-                            packedOverlayIn,
-                            red,
-                            green,
-                            blue,
-                            alpha);
-                    stack.pop();
-                }
-            }
-            for (GeoBone childBone : bone.childBones) {
-                renderRecursivelySlime(
-                        childBone,
-                        stack,
-                        bufferIn,
-                        packedLightIn,
-                        packedOverlayIn,
-                        red,
-                        green,
-                        blue,
-                        alpha);
-            }
-        }
-
-        stack.pop();
     }
 
     @Override
