@@ -14,7 +14,7 @@ import denimred.simplemuseum.common.network.messages.s2c.PlayPuppetAnimation;
 import denimred.simplemuseum.common.network.messages.s2c.ResurrectPuppetSync;
 
 public final class MuseumNetworking {
-    private static final String PROTOCOL_VERSION = "2";
+    private static final String PROTOCOL_VERSION = "3";
     public static final SimpleChannel CHANNEL =
             NetworkRegistry.newSimpleChannel(
                     new ResourceLocation(SimpleMuseum.MOD_ID, "main"),
