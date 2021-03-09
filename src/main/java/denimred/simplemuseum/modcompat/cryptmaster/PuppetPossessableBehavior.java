@@ -2,6 +2,7 @@ package denimred.simplemuseum.modcompat.cryptmaster;
 
 import net.minecraft.entity.player.PlayerEntity;
 
+import cryptcraft.cryptcomp.entity.EntityComponent;
 import cryptcraft.cryptmaster.IPossessableBehavior;
 import cryptcraft.cryptmaster.PossessableComponent;
 import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
@@ -11,6 +12,14 @@ public class PuppetPossessableBehavior implements IPossessableBehavior {
 
     public PuppetPossessableBehavior(MuseumPuppetEntity puppet) {
         this.puppet = puppet;
+    }
+
+    public static void register() {
+        EntityComponent.INSTANCE.registerInitializer(
+                MuseumPuppetEntity.class,
+                PossessableComponent.class,
+                entity ->
+                        PuppetPossessableBehavior.createComponent((MuseumPuppetEntity) entity));
     }
 
     public static PossessableComponent createComponent(MuseumPuppetEntity puppet) {

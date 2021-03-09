@@ -4,10 +4,8 @@ import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 
-import cryptcraft.cryptcomp.entity.EntityComponent;
 import cryptcraft.cryptgui.CryptGuiScreen;
 import cryptcraft.cryptmaster.CryptMasterMod;
-import cryptcraft.cryptmaster.PossessableComponent;
 import cryptcraft.cryptmaster.PossessionUtil;
 import cryptcraft.cryptmaster.forge.CryptMasterForgeMod;
 import denimred.simplemuseum.client.util.ClientUtil;
@@ -38,11 +36,7 @@ public class ModCompat {
 
     public static void registerCryptMasterPossession() {
         if (isCryptMasterLoaded()) {
-            EntityComponent.INSTANCE.registerInitializer(
-                    MuseumPuppetEntity.class,
-                    PossessableComponent.class,
-                    entity ->
-                            PuppetPossessableBehavior.createComponent((MuseumPuppetEntity) entity));
+            PuppetPossessableBehavior.register();
         }
     }
 }
