@@ -275,7 +275,7 @@ public class MuseumPuppetEntity extends LivingEntity implements IAnimatable {
     }
 
     @Override
-    public void func_241841_a(ServerWorld p_241841_1_, LightningBoltEntity p_241841_2_) {}
+    public void causeLightningStrike(ServerWorld world, LightningBoltEntity lightning) {}
 
     @Override
     public boolean canBeHitWithPotion() {
