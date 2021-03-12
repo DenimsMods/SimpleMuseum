@@ -178,9 +178,9 @@ public class ResourceFieldWidget extends Widget {
     }
 
     @Override
-    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        namespaceField.renderButton(matrixStack, mouseX, mouseY, partialTicks);
-        pathField.renderButton(matrixStack, mouseX, mouseY, partialTicks);
+    public void renderWidget(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+        namespaceField.renderWidget(matrixStack, mouseX, mouseY, partialTicks);
+        pathField.renderWidget(matrixStack, mouseX, mouseY, partialTicks);
         font.drawStringWithShadow(
                 matrixStack,
                 pathPrefix,
