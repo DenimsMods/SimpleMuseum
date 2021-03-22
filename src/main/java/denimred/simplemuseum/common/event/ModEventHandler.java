@@ -9,6 +9,7 @@ import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.client.datagen.MuseumItemModelProvider;
 import denimred.simplemuseum.client.datagen.MuseumLanguageProvider;
+import denimred.simplemuseum.client.datagen.MuseumTextureProvider;
 
 @Mod.EventBusSubscriber(modid = SimpleMuseum.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public final class ModEventHandler {
@@ -21,6 +22,7 @@ public final class ModEventHandler {
         if (event.includeClient()) {
             gen.addProvider(new MuseumLanguageProvider(gen, modId, "en_us"));
             gen.addProvider(new MuseumItemModelProvider(gen, modId, existingFileHelper));
+            gen.addProvider(new MuseumTextureProvider(gen, modId));
         }
     }
 }
