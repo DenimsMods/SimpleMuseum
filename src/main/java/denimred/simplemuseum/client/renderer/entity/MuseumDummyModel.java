@@ -15,7 +15,7 @@ import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.builder.Animation;
 import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
 import software.bernie.geckolib3.core.processor.IBone;
-import software.bernie.geckolib3.geo.exception.GeoModelException;
+import software.bernie.geckolib3.geo.exception.GeckoLibException;
 import software.bernie.geckolib3.geo.render.built.GeoModel;
 import software.bernie.geckolib3.model.AnimatedGeoModel;
 import software.bernie.geckolib3.model.provider.data.EntityModelData;
@@ -31,7 +31,7 @@ public class MuseumDummyModel extends AnimatedGeoModel<MuseumDummyEntity> {
     public GeoModel getModel(ResourceLocation location) {
         try {
             return super.getModel(location);
-        } catch (GeoModelException e) {
+        } catch (GeckoLibException e) {
             // Emergency fallback for when we render while resources are reloading
             SimpleMuseum.LOGGER.debug("EMERGENCY FALLBACK: Model '{}'", location);
             return super.getModel(MuseumDummyEntity.DEFAULT_MODEL_LOCATION);
@@ -63,7 +63,7 @@ public class MuseumDummyModel extends AnimatedGeoModel<MuseumDummyEntity> {
     public Animation getAnimation(String name, IAnimatable animatable) {
         try {
             return super.getAnimation(name, animatable);
-        } catch (NullPointerException e) {
+        } catch (GeckoLibException e) {
             // Emergency fallback for when we render while resources are reloading
             SimpleMuseum.LOGGER.debug("EMERGENCY FALLBACK: Animation '{}'", name);
             return null;
