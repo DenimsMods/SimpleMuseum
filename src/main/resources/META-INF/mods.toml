@@ -30,7 +30,7 @@ side = "BOTH"
 [[dependencies.simplemuseum]]
 modId="geckolib3"
 mandatory=true
-versionRange="[3,)"
+versionRange="[3.0.15,)"
 ordering="AFTER"
 side = "BOTH"
 [[dependencies.simplemuseum]]
