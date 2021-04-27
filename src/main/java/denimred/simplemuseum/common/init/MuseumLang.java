@@ -18,6 +18,10 @@ public enum MuseumLang {
             "command", "feedback.puppet.paste", "Pasted data from clipboard onto %s"),
     COMMAND_FEEDBACK_PUPPET_RESURRECT(
             "command", "feedback.puppet.resurrect", "Resurrected %d dead puppet(s)"),
+    COMMAND_FEEDBACK_PUPPET_SET_INVULNERABILITY(
+            "command",
+            "feedback.puppet.set_invulnerability",
+            "Set invulnerability for %d puppet(s) to %b"),
     GUI_CLIPBOARD_COPY("gui", "clipboard.copy", "Copy to Clipboard"),
     GUI_CLIPBOARD_PASTE("gui", "clipboard.paste", "Paste from Clipboard"),
     GUI_ERROR("gui", "error", "Error, check log!"),

@@ -5,6 +5,7 @@
   "command.simplemuseum.feedback.puppet.copy": "Copied data from %s to clipboard",
   "command.simplemuseum.feedback.puppet.paste": "Pasted data from clipboard onto %s",
   "command.simplemuseum.feedback.puppet.resurrect": "Resurrected %d dead puppet(s)",
+  "command.simplemuseum.feedback.puppet.set_invulnerability": "Set invulnerability for %d puppet(s) to %b",
   "entity.simplemuseum.museum_puppet": "Museum Puppet",
   "gui.simplemuseum.clipboard.copy": "Copy to Clipboard",
   "gui.simplemuseum.clipboard.paste": "Paste from Clipboard",

@@ -1,6 +1,7 @@
 package denimred.simplemuseum.common.command;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -35,7 +36,8 @@ public final class PuppetCommand {
                 .then(cmdAnimate())
                 .then(cmdCopy())
                 .then(cmdPaste())
-                .then(cmdResurrect());
+                .then(cmdResurrect())
+                .then(cmdSetInvulnerability());
     }
 
     private static ArgumentBuilder<CommandSource, ?> cmdAnimate() {
@@ -112,6 +114,33 @@ public final class PuppetCommand {
                     return count;
                 };
         return Commands.literal("resurrect").then(puppetsArgument().executes(cmd));
+    }
+
+    private static ArgumentBuilder<CommandSource, ?> cmdSetInvulnerability() {
+        final String invulnerableArg = "invulnerable";
+        final Command<CommandSource> cmd =
+                ctx -> {
+                    final boolean invulnerable = ctx.getArgument(invulnerableArg, Boolean.class);
+                    int count = 0;
+                    for (MuseumPuppetEntity puppet : getPuppets(ctx)) {
+                        if (puppet.isInvulnerable() != invulnerable) {
+                            puppet.setInvulnerable(invulnerable);
+                            count++;
+                        }
+                    }
+                    ctx.getSource()
+                            .sendFeedback(
+                                    MuseumLang.COMMAND_FEEDBACK_PUPPET_SET_INVULNERABILITY.asText(
+                                            count, invulnerable),
+                                    true);
+                    return count;
+                };
+        return Commands.literal("setInvulnerability")
+                .then(
+                        puppetsArgument()
+                                .then(
+                                        Commands.argument(invulnerableArg, BoolArgumentType.bool())
+                                                .executes(cmd)));
     }
 
     private static RequiredArgumentBuilder<CommandSource, EntitySelector> puppetArgument() {
