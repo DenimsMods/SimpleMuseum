@@ -53,7 +53,7 @@ public abstract class MuseumDummyScreen extends Screen {
                 font,
                 text,
                 widget.x - font.getStringPropertyWidth(text) - MARGIN,
-                widget.y + widget.getHeightRealms() / 2 - font.FONT_HEIGHT / 2,
+                widget.y + widget.getHeight() / 2 - font.FONT_HEIGHT / 2,
                 color);
     }
 

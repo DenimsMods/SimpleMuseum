@@ -139,7 +139,7 @@ public class MovementButtons extends Widget implements ITickable {
     }
 
     @Override
-    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void renderWidget(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         for (final MoveButton button : buttons) {
             button.render(matrixStack, mouseX, mouseY, partialTicks);
         }
@@ -255,7 +255,7 @@ public class MovementButtons extends Widget implements ITickable {
 
         @SuppressWarnings("deprecation") // >:I Mojang
         @Override
-        public void renderButton(
+        public void renderWidget(
                 MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
             Minecraft minecraft = Minecraft.getInstance();
             minecraft.getTextureManager().bindTexture(MOVEMENT_BUTTONS_TEXTURE);

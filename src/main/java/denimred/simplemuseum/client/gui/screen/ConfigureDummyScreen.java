@@ -149,7 +149,7 @@ public class ConfigureDummyScreen extends MuseumDummyScreen {
                                 this::renderWidgetTooltip));
 
         final int textureFieldY =
-                modelFieldY + modelWidget.getHeightRealms() + font.FONT_HEIGHT + MARGIN * 3;
+                modelFieldY + modelWidget.getHeight() + font.FONT_HEIGHT + MARGIN * 3;
         textureWidget =
                 this.addListener(
                         new ResourceFieldWidget(
@@ -169,7 +169,7 @@ public class ConfigureDummyScreen extends MuseumDummyScreen {
                                 this::renderWidgetTooltip));
 
         final int animationsFieldY =
-                textureFieldY + textureWidget.getHeightRealms() + font.FONT_HEIGHT + MARGIN * 3;
+                textureFieldY + textureWidget.getHeight() + font.FONT_HEIGHT + MARGIN * 3;
         animationsWidget =
                 this.addListener(
                         new ResourceFieldWidget(

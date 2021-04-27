@@ -57,7 +57,7 @@ public class MoveDummyScreen extends MuseumDummyScreen {
                 this.addListener(
                         new MovementButtons(
                                 MARGIN + 20,
-                                backButton.y + backButton.getHeightRealms() + MARGIN,
+                                backButton.y + backButton.getHeight() + MARGIN,
                                 new StringTextComponent("todo"),
                                 MovementButtons::getName,
                                 i -> MovementButtons.moveDummy(dummy, i),
@@ -69,7 +69,7 @@ public class MoveDummyScreen extends MuseumDummyScreen {
                         new BoundTextFieldWidget(
                                 font,
                                 (MARGIN * 2) + xMsgWidth,
-                                movementButtons.y + movementButtons.getHeightRealms() + MARGIN,
+                                movementButtons.y + movementButtons.getHeight() + MARGIN,
                                 WIDTH - xMsgWidth - MARGIN,
                                 20,
                                 xMsg,
@@ -81,7 +81,7 @@ public class MoveDummyScreen extends MuseumDummyScreen {
                         new BoundTextFieldWidget(
                                 font,
                                 (MARGIN * 2) + yMsgWidth,
-                                xField.y + xField.getHeightRealms() + MARGIN,
+                                xField.y + xField.getHeight() + MARGIN,
                                 WIDTH - yMsgWidth - MARGIN,
                                 20,
                                 yMsg,
@@ -93,7 +93,7 @@ public class MoveDummyScreen extends MuseumDummyScreen {
                         new BoundTextFieldWidget(
                                 font,
                                 (MARGIN * 2) + zMsgWidth,
-                                yField.y + yField.getHeightRealms() + MARGIN,
+                                yField.y + yField.getHeight() + MARGIN,
                                 WIDTH - zMsgWidth - MARGIN,
                                 20,
                                 zMsg,
@@ -105,12 +105,12 @@ public class MoveDummyScreen extends MuseumDummyScreen {
                         new BoundTextFieldWidget(
                                 font,
                                 (MARGIN * 2) + yawMsgWidth,
-                                zField.y + zField.getHeightRealms() + MARGIN,
+                                zField.y + zField.getHeight() + MARGIN,
                                 WIDTH - yawMsgWidth - MARGIN,
                                 20,
                                 yawMsg,
                                 () -> NumberUtil.parseString(dummy.rotationYaw)));
-        final int buttonsY = yawField.y + yawField.getHeightRealms() + MARGIN;
+        final int buttonsY = yawField.y + yawField.getHeight() + MARGIN;
         applyButton =
                 this.addButton(
                         new Button(

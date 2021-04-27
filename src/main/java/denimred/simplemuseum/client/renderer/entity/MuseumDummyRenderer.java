@@ -42,6 +42,12 @@ public class MuseumDummyRenderer extends GeoEntityRenderer<MuseumDummyEntity> {
     }
 
     @Override
+    public ResourceLocation getEntityTexture(MuseumDummyEntity entity) {
+        // Uh... what?
+        return super.getTextureLocation(entity);
+    }
+
+    @Override
     public RenderType getRenderType(
             MuseumDummyEntity animatable,
             float partialTicks,

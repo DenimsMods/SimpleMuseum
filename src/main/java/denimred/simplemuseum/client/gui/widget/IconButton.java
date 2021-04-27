@@ -41,7 +41,7 @@ public class IconButton extends Button {
 
     @SuppressWarnings("deprecation") // >:I Mojang
     @Override
-    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void renderWidget(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         Minecraft.getInstance().getTextureManager().bindTexture(resourceLocation);
         int yTex = yTexStart;
         if (!active) {
