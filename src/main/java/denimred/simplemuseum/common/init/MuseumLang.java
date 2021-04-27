@@ -8,13 +8,16 @@ import denimred.simplemuseum.SimpleMuseum;
 public enum MuseumLang {
     COMMAND_EXCEPTION_NOT_A_PUPPET(
             "command", "exception.not_a_puppet", "Selected entity must be a Museum Puppet!"),
-    COMMAND_EXCEPTION_NOT_DEAD("command", "exception.not_dead", "Selected entity must be dead!"),
-    COMMAND_FEEDBACK_PUPPET_ANIMATE(
-            "command", "feedback.puppet.animate", "Trying to play [%s] on %s"),
+    COMMAND_FEEDBACK_PUPPET_ANIMATE_MULTIPLE(
+            "command", "feedback.puppet.animate.multiple", "Trying to play [%s] on %d puppet(s)"),
+    COMMAND_FEEDBACK_PUPPET_ANIMATE_SINGLE(
+            "command", "feedback.puppet.animate.single", "Trying to play [%s] on %s"),
     COMMAND_FEEDBACK_PUPPET_COPY(
             "command", "feedback.puppet.copy", "Copied data from %s to clipboard"),
     COMMAND_FEEDBACK_PUPPET_PASTE(
             "command", "feedback.puppet.paste", "Pasted data from clipboard onto %s"),
+    COMMAND_FEEDBACK_PUPPET_RESURRECT(
+            "command", "feedback.puppet.resurrect", "Resurrected %d dead puppet(s)"),
     GUI_CLIPBOARD_COPY("gui", "clipboard.copy", "Copy to Clipboard"),
     GUI_CLIPBOARD_PASTE("gui", "clipboard.paste", "Paste from Clipboard"),
     GUI_ERROR("gui", "error", "Error, check log!"),

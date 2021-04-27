@@ -89,7 +89,7 @@ public class PuppetAnimationManager extends PuppetManager {
     private <T extends IAnimatable> PlayState getAnimState(AnimationEvent<T> event) {
         final AnimationState state = controller.getAnimationState();
         // Death animation, overrides all
-        if (puppet.isDead() && this.playAnimInternal(death, false)) {
+        if (puppet.isDead() && !puppet.isCompletelyDead() && this.playAnimInternal(death, false)) {
             return PlayState.CONTINUE;
         }
         // Current animation is inaccurate when transitioning, so just continue until we're done

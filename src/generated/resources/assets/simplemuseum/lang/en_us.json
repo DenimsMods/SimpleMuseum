@@ -1,9 +1,10 @@
 {
   "command.simplemuseum.exception.not_a_puppet": "Selected entity must be a Museum Puppet!",
-  "command.simplemuseum.exception.not_dead": "Selected entity must be dead!",
-  "command.simplemuseum.feedback.puppet.animate": "Trying to play [%s] on %s",
+  "command.simplemuseum.feedback.puppet.animate.multiple": "Trying to play [%s] on %d puppet(s)",
+  "command.simplemuseum.feedback.puppet.animate.single": "Trying to play [%s] on %s",
   "command.simplemuseum.feedback.puppet.copy": "Copied data from %s to clipboard",
   "command.simplemuseum.feedback.puppet.paste": "Pasted data from clipboard onto %s",
+  "command.simplemuseum.feedback.puppet.resurrect": "Resurrected %d dead puppet(s)",
   "entity.simplemuseum.museum_puppet": "Museum Puppet",
   "gui.simplemuseum.clipboard.copy": "Copy to Clipboard",
   "gui.simplemuseum.clipboard.paste": "Paste from Clipboard",

@@ -74,7 +74,7 @@ public class MuseumPuppetModel extends AnimatedGeoModel<MuseumPuppetEntity> {
     public void setLivingAnimations(
             MuseumPuppetEntity entity, Integer uniqueID, @Nullable AnimationEvent customPredicate) {
         super.setLivingAnimations(entity, uniqueID, customPredicate);
-        if (ModCompat.isCryptMasterPossessing(entity) && customPredicate != null) {
+        if (ModCompat.CryptMaster.isPossessed(entity) && customPredicate != null) {
             final AnimationProcessor<?> processor = this.getAnimationProcessor();
             IBone head = processor.getBone("head");
             if (head == null) {

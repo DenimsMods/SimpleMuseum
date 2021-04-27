@@ -8,16 +8,16 @@ import javax.annotation.Nullable;
 public class CheckedResource<T> {
     private final T fallback;
     private final Predicate<T> validator;
-    private final Consumer<T> callback;
+    @Nullable private final Consumer<T> callback;
     private T direct;
     @Nullable private T cached;
     private boolean valid;
 
-    public CheckedResource(T fallback, Attempticate<T> validator, Consumer<T> callback) {
+    public CheckedResource(T fallback, Attempticate<T> validator, @Nullable Consumer<T> callback) {
         this(fallback, (Predicate<T>) validator, callback);
     }
 
-    public CheckedResource(T fallback, Predicate<T> validator, Consumer<T> callback) {
+    public CheckedResource(T fallback, Predicate<T> validator, @Nullable Consumer<T> callback) {
         this.fallback = fallback;
         this.validator = validator;
         this.callback = callback;
@@ -55,7 +55,7 @@ public class CheckedResource<T> {
     public void set(T t) {
         direct = t;
         cached = null;
-        callback.accept(t);
+        if (callback != null) callback.accept(t);
     }
 
     public boolean validate(T t) {

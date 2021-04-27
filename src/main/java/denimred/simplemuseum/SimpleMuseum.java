@@ -33,6 +33,6 @@ public final class SimpleMuseum {
         DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> ResourceUtil::registerResourceReloadListener);
         // Mod compat stuff
         bus.addListener(ModCompat::enqueueIMC);
-        ModCompat.registerCryptMasterPossession();
+        ModCompat.CryptMaster.registerPossession();
     }
 }

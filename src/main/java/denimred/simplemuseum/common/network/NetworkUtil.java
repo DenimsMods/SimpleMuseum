@@ -22,7 +22,7 @@ public final class NetworkUtil {
                 final Entity entity = world.getEntityByID(puppetId);
                 if (entity instanceof MuseumPuppetEntity
                         && world.isBlockLoaded(entity.getPosition())
-                        && entity.isAlive()) {
+                        && ((MuseumPuppetEntity) entity).exists()) {
                     return Optional.of((MuseumPuppetEntity) entity);
                 }
             }
