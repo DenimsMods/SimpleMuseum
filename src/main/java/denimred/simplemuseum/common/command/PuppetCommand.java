@@ -17,6 +17,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraftforge.fml.network.PacketDistributor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
 import denimred.simplemuseum.common.init.MuseumLang;
 import denimred.simplemuseum.common.init.MuseumNetworking;
@@ -26,8 +29,6 @@ import denimred.simplemuseum.common.network.messages.s2c.PlayPuppetAnimation;
 public final class PuppetCommand {
     public static final SimpleCommandExceptionType NOT_A_PUPPET =
             new SimpleCommandExceptionType(MuseumLang.COMMAND_EXCEPTION_NOT_A_PUPPET.asText());
-    public static final SimpleCommandExceptionType NOT_DEAD =
-            new SimpleCommandExceptionType(MuseumLang.COMMAND_EXCEPTION_NOT_DEAD.asText());
 
     public static LiteralArgumentBuilder<CommandSource> create() {
         return Commands.literal("puppet")
@@ -40,21 +41,31 @@ public final class PuppetCommand {
     private static ArgumentBuilder<CommandSource, ?> cmdAnimate() {
         final Command<CommandSource> cmd =
                 ctx -> {
-                    final MuseumPuppetEntity puppet = getPuppet(ctx);
+                    final List<MuseumPuppetEntity> puppets = getPuppets(ctx);
                     final String animation = StringArgumentType.getString(ctx, "animation");
-                    MuseumNetworking.CHANNEL.send(
-                            PacketDistributor.TRACKING_ENTITY.with(() -> puppet),
-                            new PlayPuppetAnimation(puppet.getEntityId(), animation));
-                    ctx.getSource()
-                            .sendFeedback(
-                                    MuseumLang.COMMAND_FEEDBACK_PUPPET_ANIMATE.asText(
-                                            animation, puppet.getDisplayName()),
-                                    true);
-                    return Command.SINGLE_SUCCESS;
+                    for (MuseumPuppetEntity puppet : puppets) {
+                        MuseumNetworking.CHANNEL.send(
+                                PacketDistributor.TRACKING_ENTITY.with(() -> puppet),
+                                new PlayPuppetAnimation(puppet.getEntityId(), animation));
+                    }
+                    final int count = puppets.size();
+                    final CommandSource source = ctx.getSource();
+                    if (count == 1) {
+                        source.sendFeedback(
+                                MuseumLang.COMMAND_FEEDBACK_PUPPET_ANIMATE_SINGLE.asText(
+                                        animation, puppets.get(0).getDisplayName()),
+                                true);
+                    } else {
+                        source.sendFeedback(
+                                MuseumLang.COMMAND_FEEDBACK_PUPPET_ANIMATE_MULTIPLE.asText(
+                                        animation, count),
+                                true);
+                    }
+                    return count;
                 };
         return Commands.literal("animate")
                 .then(
-                        puppetArgument()
+                        puppetsArgument()
                                 .then(
                                         Commands.argument("animation", StringArgumentType.word())
                                                 .executes(cmd)));
@@ -87,15 +98,20 @@ public final class PuppetCommand {
     private static ArgumentBuilder<CommandSource, ?> cmdResurrect() {
         final Command<CommandSource> cmd =
                 ctx -> {
-                    final MuseumPuppetEntity puppet = getPuppet(ctx);
-                    if (puppet.isDead()) {
-                        puppet.resurrect();
-                        return Command.SINGLE_SUCCESS;
-                    } else {
-                        throw NOT_DEAD.create();
+                    int count = 0;
+                    for (MuseumPuppetEntity puppet : getPuppets(ctx)) {
+                        if (puppet.isDead()) {
+                            puppet.resurrect();
+                            count++;
+                        }
                     }
+                    ctx.getSource()
+                            .sendFeedback(
+                                    MuseumLang.COMMAND_FEEDBACK_PUPPET_RESURRECT.asText(count),
+                                    true);
+                    return count;
                 };
-        return Commands.literal("resurrect").then(puppetArgument().executes(cmd));
+        return Commands.literal("resurrect").then(puppetsArgument().executes(cmd));
     }
 
     private static RequiredArgumentBuilder<CommandSource, EntitySelector> puppetArgument() {
@@ -110,5 +126,23 @@ public final class PuppetCommand {
         } else {
             return (MuseumPuppetEntity) entity;
         }
+    }
+
+    private static RequiredArgumentBuilder<CommandSource, EntitySelector> puppetsArgument() {
+        return Commands.argument("puppets", EntityArgument.entities());
+    }
+
+    private static List<MuseumPuppetEntity> getPuppets(CommandContext<CommandSource> ctx)
+            throws CommandSyntaxException {
+        final List<MuseumPuppetEntity> puppets = new ArrayList<>();
+        for (Entity entity : EntityArgument.getEntities(ctx, "puppets")) {
+            if (entity instanceof MuseumPuppetEntity) {
+                puppets.add((MuseumPuppetEntity) entity);
+            }
+        }
+        if (puppets.isEmpty()) {
+            throw EntityArgument.ENTITY_NOT_FOUND.create();
+        }
+        return puppets;
     }
 }

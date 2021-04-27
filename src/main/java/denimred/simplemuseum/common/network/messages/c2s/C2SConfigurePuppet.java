@@ -63,7 +63,7 @@ public class C2SConfigurePuppet {
             final Entity entity = world.getEntityByUuid(uuid);
             if (entity instanceof MuseumPuppetEntity) {
                 final MuseumPuppetEntity puppet = (MuseumPuppetEntity) entity;
-                if (world.isBlockLoaded(puppet.getPosition()) && puppet.isAlive()) {
+                if (world.isBlockLoaded(puppet.getPosition()) && puppet.exists()) {
                     puppet.sourceManager.model.set(modelLoc);
                     puppet.sourceManager.texture.set(texLoc);
                     puppet.sourceManager.animations.set(animLoc);

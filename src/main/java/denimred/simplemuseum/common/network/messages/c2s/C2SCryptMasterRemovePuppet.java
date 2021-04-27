@@ -40,7 +40,8 @@ public class C2SCryptMasterRemovePuppet {
             final ServerWorld world = sender.getServerWorld();
             final Entity entity = world.getEntityByUuid(uuid);
             if (entity instanceof MuseumPuppetEntity) {
-                if (world.isBlockLoaded(entity.getPosition()) && entity.isAlive()) {
+                if (world.isBlockLoaded(entity.getPosition())
+                        && ((MuseumPuppetEntity) entity).exists()) {
                     // TODO: Do permissions check?
                     entity.remove();
                 }

@@ -57,7 +57,8 @@ public abstract class TextureProvider implements IDataProvider {
         desiredSkins.put(profile, location);
     }
 
-    protected void downloadSkin(GameProfile profile, String location, DirectoryCache cache) throws IOException {
+    protected void downloadSkin(GameProfile profile, String location, DirectoryCache cache)
+            throws IOException {
         final MinecraftProfileTexture texture =
                 SESSION.getTextures(profile, true).get(MinecraftProfileTexture.Type.SKIN);
         if (texture != null) {
@@ -70,12 +71,14 @@ public abstract class TextureProvider implements IDataProvider {
         }
     }
 
-    protected void writeImage(DirectoryCache cache, String location, RenderedImage image) throws IOException {
+    protected void writeImage(DirectoryCache cache, String location, RenderedImage image)
+            throws IOException {
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ImageIO.write(image, "png", outputStream);
         final byte[] data = outputStream.toByteArray();
         final String hash = HASH_FUNCTION.hashBytes(data).toString();
-        final Path output = generator.getOutputFolder().resolve("assets/" + modId + "/textures/" + location);
+        final Path output =
+                generator.getOutputFolder().resolve("assets/" + modId + "/textures/" + location);
         if (!Files.exists(output) || !Objects.equals(cache.getPreviousHash(output), hash)) {
             Files.createDirectories(output.getParent());
             Files.write(output, data);

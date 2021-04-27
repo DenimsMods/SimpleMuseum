@@ -93,20 +93,12 @@ public class PuppetRenderManager extends PuppetManager {
     }
 
     public boolean canRenderHiddenDeathEffects() {
-        return puppet.isDead() && puppet.isInvisible() && ClientUtil.isHoldingCane();
-    }
-
-    public boolean isCull() {
-        return cull;
+        return puppet.isDead() && puppet.isCompletelyDead() && ClientUtil.isHoldingCane();
     }
 
     public void setCull(boolean cull) {
         this.cull = cull;
         dataManager.set(CULL_KEY, cull);
-    }
-
-    public boolean isTranslucent() {
-        return translucent;
     }
 
     public void setTranslucent(boolean translucent) {

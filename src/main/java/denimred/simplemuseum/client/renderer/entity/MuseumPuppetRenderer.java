@@ -78,6 +78,10 @@ public class MuseumPuppetRenderer extends GeoEntityRenderer<MuseumPuppetEntity> 
             MatrixStack matrixStack,
             IRenderTypeBuffer typeBuffer,
             int packedLightIn) {
+        if (puppet.isCompletelyDead() && !puppet.renderManager.canRenderHiddenDeathEffects()) {
+            // Don't render
+            return;
+        }
         matrixStack.push();
         final float scale = puppet.renderManager.scale.asFloat();
         matrixStack.scale(scale, scale, scale);
@@ -95,6 +99,12 @@ public class MuseumPuppetRenderer extends GeoEntityRenderer<MuseumPuppetEntity> 
     }
 
     @Override
+    public ResourceLocation getEntityTexture(MuseumPuppetEntity entity) {
+        // Uh... what?
+        return super.getTextureLocation(entity);
+    }
+
+    @Override
     public RenderType getRenderType(
             MuseumPuppetEntity puppet,
             float partialTicks,
@@ -103,7 +113,7 @@ public class MuseumPuppetRenderer extends GeoEntityRenderer<MuseumPuppetEntity> 
             @Nullable IVertexBuilder vertexBuilder,
             int packedLightIn,
             ResourceLocation textureLocation) {
-        if (puppet.isDead() && puppet.isInvisible()) {
+        if (puppet.renderManager.canRenderHiddenDeathEffects()) {
             return RenderType.getEntityTranslucent(textureLocation);
         }
         return puppet.renderManager.getRenderType(textureLocation);
@@ -117,20 +127,22 @@ public class MuseumPuppetRenderer extends GeoEntityRenderer<MuseumPuppetEntity> 
             @Nullable IRenderTypeBuffer renderTypeBuffer,
             @Nullable IVertexBuilder vertexBuilder,
             int packedLightIn) {
-        Color color = puppet.renderManager.getColor();
-        if (puppet.isDead() && puppet.isInvisible()) {
-            color =
-                    new Color(
-                            color.getRed(),
-                            color.getGreen(),
-                            color.getBlue(),
-                            color.getAlpha() / 4);
+        final Color color = puppet.renderManager.getColor();
+        if (puppet.renderManager.canRenderHiddenDeathEffects()) {
+            return new Color(
+                    color.getRed(),
+                    color.getGreen() / 3,
+                    color.getBlue() / 3,
+                    color.getAlpha() / 4);
         }
         return color;
     }
 
     @Override
     protected float getDeathMaxRotation(MuseumPuppetEntity puppet) {
-        return puppet.animationManager.hasDeathAnim() ? 0.0F : 90.0F;
+        return puppet.animationManager.hasDeathAnim()
+                        || puppet.renderManager.canRenderHiddenDeathEffects()
+                ? 0.0F
+                : 90.0F;
     }
 }

@@ -64,15 +64,6 @@ public class CuratorsCaneItem extends SimpleFoiledItem {
     }
 
     @Override
-    public boolean hitEntity(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        if (target instanceof MuseumPuppetEntity) {
-            target.remove();
-            return true;
-        }
-        return false;
-    }
-
-    @Override
     public boolean canPlayerBreakBlockWhileHolding(
             BlockState state, World worldIn, BlockPos pos, PlayerEntity player) {
         return !player.isCreative();

@@ -56,7 +56,7 @@ public class C2SMovePuppet {
             final Entity entity = world.getEntityByUuid(uuid);
             if (entity instanceof MuseumPuppetEntity) {
                 final MuseumPuppetEntity puppet = (MuseumPuppetEntity) entity;
-                if (puppet.isAlive()
+                if (puppet.exists()
                         && world.isBlockLoaded(new BlockPos(puppet.getPositionVec()))
                         && world.isBlockLoaded(new BlockPos(pos))) {
                     // TODO: Do permissions check?

@@ -22,10 +22,10 @@ public enum PuppetBoneLayer {
     TRANSLUCENT(bone -> bone.name.endsWith("_slime"), RenderType::getEntityTranslucent);
 
     private final Predicate<GeoBone> predicate;
-    private final @Nullable
-    Function<ResourceLocation, RenderType> type;
+    private final @Nullable Function<ResourceLocation, RenderType> type;
 
-    PuppetBoneLayer(Predicate<GeoBone> predicate, @Nullable Function<ResourceLocation, RenderType> type) {
+    PuppetBoneLayer(
+            Predicate<GeoBone> predicate, @Nullable Function<ResourceLocation, RenderType> type) {
         this.predicate = predicate;
         this.type = type;
     }

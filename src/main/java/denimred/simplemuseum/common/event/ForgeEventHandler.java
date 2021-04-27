@@ -27,7 +27,7 @@ public final class ForgeEventHandler {
     }
 
     @SubscribeEvent
-    public static void onEntityRegistryMissingMappings(
+    public static void onEntityTypeRegistryMissingMappings(
             RegistryEvent.MissingMappings<EntityType<?>> event) {
         for (RegistryEvent.MissingMappings.Mapping<EntityType<?>> mapping :
                 event.getAllMappings()) {

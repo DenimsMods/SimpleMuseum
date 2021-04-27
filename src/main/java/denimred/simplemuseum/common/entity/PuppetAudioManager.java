@@ -1,14 +1,9 @@
 package denimred.simplemuseum.common.entity;
 
-import net.minecraft.client.audio.ISound;
-import net.minecraft.client.audio.SimpleSound;
-import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.ResourceLocationException;
 import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.vector.Vector3d;
 
 import java.util.function.Predicate;
 
@@ -38,7 +33,7 @@ public class PuppetAudioManager extends PuppetManager {
     public final CheckedResource<ResourceLocation> ambient =
             new CheckedResource<>(
                     AMBIENT_DEFAULT,
-                    (Predicate<ResourceLocation>) this::validateSound,
+                    (Predicate<ResourceLocation>) PuppetAudioManager::isSoundValid,
                     loc -> dataManager.set(AMBIENT_KEY, loc));
     private SoundCategory category = CATEGORY_DEFAULT;
 
@@ -46,46 +41,30 @@ public class PuppetAudioManager extends PuppetManager {
         super(puppet, AUDIO_MANAGER_NBT);
     }
 
-    private boolean validateSound(ResourceLocation soundName) {
-        return soundName.getPath().isEmpty()
-                || ClientUtil.MC.getSoundHandler().getAvailableSounds().contains(soundName);
+    private static boolean isSoundValid(ResourceLocation soundName) {
+        return ClientUtil.MC.getSoundHandler().getAvailableSounds().contains(soundName);
     }
 
     public void playAmbientSound() {
         if (puppet.world.isRemote) {
-            this.playClientSound(ambient.getSafe());
+            // We don't use getSafe here since the default isn't technically valid either
+            final ResourceLocation ambientSound = ambient.getDirect();
+            if (isSoundValid(ambientSound)) {
+                this.playClientSound(ambientSound);
+            }
         }
     }
 
     public <T extends IAnimatable> void playAnimSound(SoundKeyframeEvent<T> event) {
-        try {
-            this.playClientSound(new ResourceLocation(event.sound));
-        } catch (ResourceLocationException ignored) {
-            // Failed, just no-op
+        final ResourceLocation soundName = ResourceLocation.tryCreate(event.sound);
+        if (soundName != null && isSoundValid(soundName)) {
+            this.playClientSound(soundName);
         }
     }
 
     private void playClientSound(ResourceLocation soundName) {
-        if (!soundName.getPath().isEmpty()) {
-            final SoundHandler soundHandler = ClientUtil.MC.getSoundHandler();
-            if (soundHandler.getAvailableSounds().contains(soundName)) {
-                final Vector3d pos = puppet.getBoundingBox().getCenter();
-                final SimpleSound sound =
-                        new SimpleSound(
-                                soundName,
-                                category,
-                                1.0F,
-                                1.0F,
-                                false,
-                                0,
-                                ISound.AttenuationType.LINEAR,
-                                pos.x,
-                                pos.y,
-                                pos.z,
-                                false);
-                soundHandler.play(sound);
-            }
-        }
+        ClientUtil.playArbitrarySound(
+                soundName, category, puppet.getBoundingBox().getCenter(), 1.0F, 1.0F);
     }
 
     public SoundCategory getCategory() {

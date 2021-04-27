@@ -1,14 +1,18 @@
 package denimred.simplemuseum.client.util;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.ISound;
+import net.minecraft.client.audio.SimpleSound;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.projectile.ProjectileHelper;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.EntityRayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3f;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.DatagenModLoader;
 
 import org.lwjgl.glfw.GLFW;
@@ -96,7 +100,7 @@ public class ClientUtil {
 
     public static boolean shouldPuppetGlow(MuseumPuppetEntity puppet) {
         return puppet.renderManager.canRenderHiddenDeathEffects()
-                || (MC.currentScreen == null || ModCompat.isCryptMasterActive())
+                || (MC.currentScreen == null || ModCompat.CryptMaster.isActive())
                         && holdingCane
                         && (puppet == selectedPuppet
                                 || MuseumKeybinds.GLOBAL_HIGHLIGHTS.isKeyDown());
@@ -197,5 +201,28 @@ public class ClientUtil {
             flat.addAll(flattenBones(bone.childBones));
         }
         return flat;
+    }
+
+    /** Plays a given sound by name. Primarily exists to suppress {@linkplain OnlyIn} exceptions. */
+    public static void playArbitrarySound(
+            ResourceLocation soundName,
+            SoundCategory category,
+            Vector3d pos,
+            float volume,
+            float pitch) {
+        final SimpleSound sound =
+                new SimpleSound(
+                        soundName,
+                        category,
+                        volume,
+                        pitch,
+                        false,
+                        0,
+                        ISound.AttenuationType.LINEAR,
+                        pos.x,
+                        pos.y,
+                        pos.z,
+                        false);
+        MC.getSoundHandler().play(sound);
     }
 }
