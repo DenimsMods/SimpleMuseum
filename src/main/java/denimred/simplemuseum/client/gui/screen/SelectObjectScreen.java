@@ -255,7 +255,7 @@ public abstract class SelectObjectScreen<T> extends Screen {
                 stack.push();
                 stack.scale(scale, scale, scale);
                 RenderSystem.enableBlend();
-                font.func_243246_a(stack, msg, x / scale, y / scale, a | 0xFFFFFF);
+                font.drawTextWithShadow(stack, msg, x / scale, y / scale, a | 0xFFFFFF);
                 RenderSystem.disableBlend();
                 stack.pop();
             }
