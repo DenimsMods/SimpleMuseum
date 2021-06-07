@@ -108,6 +108,7 @@ public class MuseumDummyEntity extends LivingEntity implements IAnimatable {
 
     public MuseumDummyEntity(EntityType<? extends LivingEntity> type, World worldIn) {
         super(type, worldIn);
+        this.setInvulnerable(true);
     }
 
     @Nullable

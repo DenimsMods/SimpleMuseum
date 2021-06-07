@@ -16,6 +16,7 @@ import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -140,6 +141,8 @@ public class ClientUtil {
                                 flattenBones(model.topLevelBones).stream()
                                         .flatMap(bone -> bone.childCubes.stream())
                                         .flatMap(cube -> Arrays.stream(cube.quads))
+                                        // Cubes with a 0 on any axis create null quads
+                                        .filter(Objects::nonNull)
                                         .flatMap(quad -> Arrays.stream(quad.vertices))
                                         .map(vertex -> vertex.position)
                                         .collect(Collectors.toList());
