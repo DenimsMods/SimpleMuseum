@@ -9,29 +9,28 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import java.util.Optional;
 
 import denimred.simplemuseum.client.util.ClientUtil;
-import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
+import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 
 public final class NetworkUtil {
     @SuppressWarnings("deprecation") // Mojang >:I
-    public static Optional<MuseumPuppetEntity> getValidPuppet(
-            NetworkEvent.Context ctx, int puppetId) {
+    public static Optional<PuppetEntity> getValidPuppet(NetworkEvent.Context ctx, int puppetId) {
         if (ctx.getDirection().getReceptionSide().isServer()) {
             final ServerPlayerEntity sender = ctx.getSender();
             if (sender != null) {
                 final ServerWorld world = sender.getServerWorld();
                 final Entity entity = world.getEntityByID(puppetId);
-                if (entity instanceof MuseumPuppetEntity
+                if (entity instanceof PuppetEntity
                         && world.isBlockLoaded(entity.getPosition())
-                        && ((MuseumPuppetEntity) entity).exists()) {
-                    return Optional.of((MuseumPuppetEntity) entity);
+                        && ((PuppetEntity) entity).exists()) {
+                    return Optional.of((PuppetEntity) entity);
                 }
             }
         } else {
             final ClientWorld world = ClientUtil.MC.world;
             if (world != null) {
                 final Entity entity = world.getEntityByID(puppetId);
-                if (entity instanceof MuseumPuppetEntity) {
-                    return Optional.of((MuseumPuppetEntity) entity);
+                if (entity instanceof PuppetEntity) {
+                    return Optional.of((PuppetEntity) entity);
                 }
             }
         }

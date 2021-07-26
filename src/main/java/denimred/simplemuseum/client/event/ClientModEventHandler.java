@@ -8,7 +8,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 import denimred.simplemuseum.SimpleMuseum;
-import denimred.simplemuseum.client.renderer.entity.MuseumPuppetRenderer;
+import denimred.simplemuseum.client.renderer.entity.PuppetRenderer;
 import denimred.simplemuseum.common.init.MuseumEntities;
 import denimred.simplemuseum.common.init.MuseumKeybinds;
 
@@ -20,7 +20,7 @@ public final class ClientModEventHandler {
     @SubscribeEvent
     public static void onFMLClientSetup(FMLClientSetupEvent event) {
         RenderingRegistry.registerEntityRenderingHandler(
-                MuseumEntities.MUSEUM_PUPPET.get(), MuseumPuppetRenderer::new);
+                MuseumEntities.MUSEUM_PUPPET.get(), PuppetRenderer::new);
         ClientRegistry.registerKeyBinding(MuseumKeybinds.GLOBAL_HIGHLIGHTS);
     }
 }

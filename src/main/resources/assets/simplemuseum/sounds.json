@@ -1,0 +1,16 @@
+{
+  "misc/tada": {
+    "sounds": [
+      {
+        "name": "simplemuseum:misc/tada"
+      }
+    ]
+  },
+  "misc/silence": {
+    "sounds": [
+      {
+        "name": "simplemuseum:misc/silence"
+      }
+    ]
+  }
+}

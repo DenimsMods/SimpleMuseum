@@ -8,7 +8,7 @@ import net.minecraftforge.fml.network.simple.SimpleChannel;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
+import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 import denimred.simplemuseum.common.network.NetworkUtil;
 
 public final class ResurrectPuppetSync {
@@ -44,6 +44,6 @@ public final class ResurrectPuppetSync {
     }
 
     private void doWork(NetworkEvent.Context ctx) {
-        NetworkUtil.getValidPuppet(ctx, puppetId).ifPresent(MuseumPuppetEntity::resurrect);
+        NetworkUtil.getValidPuppet(ctx, puppetId).ifPresent(PuppetEntity::resurrect);
     }
 }

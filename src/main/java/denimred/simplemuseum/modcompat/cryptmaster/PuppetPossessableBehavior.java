@@ -1,27 +1,28 @@
 package denimred.simplemuseum.modcompat.cryptmaster;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 
 import cryptcraft.cryptcomp.entity.EntityComponent;
 import cryptcraft.cryptmaster.IPossessableBehavior;
 import cryptcraft.cryptmaster.PossessableComponent;
-import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
+import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 
 public class PuppetPossessableBehavior implements IPossessableBehavior {
-    private final MuseumPuppetEntity puppet;
+    private final PuppetEntity puppet;
 
-    public PuppetPossessableBehavior(MuseumPuppetEntity puppet) {
+    public PuppetPossessableBehavior(PuppetEntity puppet) {
         this.puppet = puppet;
     }
 
     public static void register() {
         EntityComponent.INSTANCE.registerInitializer(
-                MuseumPuppetEntity.class,
+                PuppetEntity.class,
                 PossessableComponent.class,
-                entity -> PuppetPossessableBehavior.createComponent((MuseumPuppetEntity) entity));
+                entity -> PuppetPossessableBehavior.createComponent((PuppetEntity) entity));
     }
 
-    public static PossessableComponent createComponent(MuseumPuppetEntity puppet) {
+    public static PossessableComponent createComponent(PuppetEntity puppet) {
         final PossessableComponent comp = new PossessableComponent(puppet);
         comp.setBehavior(new PuppetPossessableBehavior(puppet));
         return comp;
@@ -31,16 +32,27 @@ public class PuppetPossessableBehavior implements IPossessableBehavior {
     public void startPossess() {}
 
     @Override
-    public void endPossess() {}
+    public void endPossess() {
+        final Entity old = puppet.getPossessor();
+        puppet.setPossessor(null);
+        if (old != null) {
+            old.recalculateSize();
+        }
+    }
 
     @Override
     public void applyActing(PlayerEntity player) {
+        if (puppet.getPossessor() != player) {
+            puppet.setPossessor(player);
+            player.recalculateSize();
+        }
         // While the puppet is dying, don't move it (makes it appear more seamless)
         if (!puppet.isDead() || puppet.isCompletelyDead()) {
             puppet.setPosition(player.getPosX(), player.getPosY(), player.getPosZ());
             puppet.setMotion(player.getMotion());
             puppet.setNoGravity(true);
             puppet.setSneaking(player.isSneaking());
+            puppet.setSprinting(player.isSprinting());
             puppet.setSwimming(player.isSwimming());
             puppet.setPose(player.getPose());
 

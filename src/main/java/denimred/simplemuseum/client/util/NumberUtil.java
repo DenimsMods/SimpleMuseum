@@ -20,6 +20,13 @@ public class NumberUtil {
     }
 
     public static boolean isValidDouble(String s) {
+        return isValidDouble(s, true);
+    }
+
+    public static boolean isValidDouble(String s, boolean allowNegative) {
+        if (s.startsWith("-") && !allowNegative) {
+            return false;
+        }
         if (s.isEmpty() || s.equals("+") || s.equals("-")) {
             return true;
         }
@@ -32,11 +39,37 @@ public class NumberUtil {
     }
 
     public static boolean isValidFloat(String s) {
+        return isValidFloat(s, true);
+    }
+
+    public static boolean isValidFloat(String s, boolean allowNegative) {
+        if (s.startsWith("-") && !allowNegative) {
+            return false;
+        }
         if (s.isEmpty() || s.equals("+") || s.equals("-")) {
             return true;
         }
         try {
             Float.parseFloat(s);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    public static boolean isValidInt(String s) {
+        return isValidFloat(s, true);
+    }
+
+    public static boolean isValidInt(String s, boolean allowNegative) {
+        if (s.startsWith("-") && !allowNegative) {
+            return false;
+        }
+        if (s.isEmpty() || s.equals("+") || s.equals("-")) {
+            return true;
+        }
+        try {
+            Integer.parseInt(s);
             return true;
         } catch (NumberFormatException e) {
             return false;
@@ -54,6 +87,14 @@ public class NumberUtil {
     public static Optional<Float> parseFloat(String s) {
         try {
             return Optional.of(Float.parseFloat(s));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
+    }
+
+    public static Optional<Integer> parseInt(String s) {
+        try {
+            return Optional.of(Integer.parseInt(s));
         } catch (NumberFormatException e) {
             return Optional.empty();
         }

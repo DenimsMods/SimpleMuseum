@@ -51,6 +51,22 @@ minecraft {
             args '--username', 'Alt'
         }
 
+        if (project.hasProperty('mc_username')) {
+            clientUser {
+                parent minecraft.runs.client
+                workingDirectory project.file('runs/' + name)
+                taskName 'ClientUser'
+                if (project.hasProperty('mc_uuid')) {
+                    args '--uuid', project.getProperty('mc_uuid')
+                }
+                if (project.hasProperty('mc_accessToken')) {
+                    args '--accessToken', project.getProperty('mc_accessToken')
+                }
+                args '--username', project.getProperty('mc_username')
+                args '--width', '1280', '--height', '720'
+            }
+        }
+
         server {
             workingDirectory project.file('runs/' + name)
             singleInstance true
@@ -97,22 +113,26 @@ sourceSets.main.resources {
 }
 
 repositories {
-    maven { url 'https://repo.repsy.io/mvn/gandiber/geckolib' }
+    maven { url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
     flatDir name: 'libs', dirs: 'libs'
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.16.5-36.1.1'
+    minecraft 'net.minecraftforge:forge:1.16.5-36.1.0'
     // GeckoLib
-    implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.16.5:3.0.31')
+    implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.16.5:3.0.39')
     // CryptMaster
     implementation fg.deobf('blank:cryptmaster:0.3.2-forge')
     runtimeOnly fg.deobf('blank:architectury:1.8.131-forge')
     runtimeOnly "org.jetbrains.kotlin:kotlin-stdlib:1.4.31"
+    // http://www.jhlabs.com/ip/filters/index.html (For wacky texture datagen)
+    implementation ":Filters:"
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..
 jar {
+    exclude '.cache/**', '**/*.bbmodel', '**/*.pdn'
+
     manifest {
         attributes([
                 "Specification-Title"     : "simplemuseum",

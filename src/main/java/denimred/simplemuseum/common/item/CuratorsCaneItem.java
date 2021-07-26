@@ -15,7 +15,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
 import denimred.simplemuseum.client.util.ClientUtil;
-import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
+import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 
 public class CuratorsCaneItem extends SimpleFoiledItem {
     public CuratorsCaneItem(Properties properties) {
@@ -25,11 +25,11 @@ public class CuratorsCaneItem extends SimpleFoiledItem {
     @Override
     public ActionResultType itemInteractionForEntity(
             ItemStack stack, PlayerEntity player, LivingEntity target, Hand hand) {
-        if (target instanceof MuseumPuppetEntity) {
+        if (target instanceof PuppetEntity) {
             if (!player.world.isRemote) {
                 return ActionResultType.CONSUME;
             } else {
-                ClientUtil.openPuppetScreen((MuseumPuppetEntity) target, null);
+                ClientUtil.openPuppetScreen((PuppetEntity) target, null);
                 return ActionResultType.SUCCESS;
             }
         }
@@ -44,7 +44,7 @@ public class CuratorsCaneItem extends SimpleFoiledItem {
         } else {
             final Vector3d pos = context.getHitVec();
             final PlayerEntity player = context.getPlayer();
-            MuseumPuppetEntity.spawn((ServerWorld) world, pos, player);
+            PuppetEntity.spawn((ServerWorld) world, pos, player);
 
             return ActionResultType.CONSUME;
         }
@@ -54,7 +54,7 @@ public class CuratorsCaneItem extends SimpleFoiledItem {
     public ActionResult<ItemStack> onItemRightClick(World world, PlayerEntity player, Hand hand) {
         final ItemStack stack = player.getHeldItem(hand);
         if (!(world instanceof ServerWorld)) {
-            final MuseumPuppetEntity puppet = ClientUtil.getSelectedPuppet();
+            final PuppetEntity puppet = ClientUtil.getSelectedPuppet();
             if (puppet != null) {
                 ClientUtil.openPuppetScreen(puppet, null);
                 return ActionResult.resultSuccess(stack);

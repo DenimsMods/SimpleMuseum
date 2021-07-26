@@ -6,31 +6,26 @@ import net.minecraftforge.fml.network.simple.SimpleChannel;
 
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.common.network.messages.bidirectional.CopyPastePuppetData;
-import denimred.simplemuseum.common.network.messages.c2s.C2SConfigurePuppet;
 import denimred.simplemuseum.common.network.messages.c2s.C2SCryptMasterRemovePuppet;
 import denimred.simplemuseum.common.network.messages.c2s.C2SCryptMasterSpawnPuppet;
 import denimred.simplemuseum.common.network.messages.c2s.C2SMovePuppet;
+import denimred.simplemuseum.common.network.messages.c2s.ConfigurePuppet;
 import denimred.simplemuseum.common.network.messages.s2c.PlayPuppetAnimation;
 import denimred.simplemuseum.common.network.messages.s2c.ResurrectPuppetSync;
 
 public final class MuseumNetworking {
-    private static final String PROTOCOL_VERSION = "3";
+    public static final String NETWORK_VERSION = "3";
     public static final SimpleChannel CHANNEL =
             NetworkRegistry.newSimpleChannel(
                     new ResourceLocation(SimpleMuseum.MOD_ID, "main"),
-                    () -> PROTOCOL_VERSION,
-                    PROTOCOL_VERSION::equals,
-                    PROTOCOL_VERSION::equals);
+                    () -> NETWORK_VERSION,
+                    NETWORK_VERSION::equals,
+                    NETWORK_VERSION::equals);
 
     public static void registerMessages() {
         int id = -1;
         // Server <-- Client
-        CHANNEL.registerMessage(
-                ++id,
-                C2SConfigurePuppet.class,
-                C2SConfigurePuppet::encode,
-                C2SConfigurePuppet::decode,
-                C2SConfigurePuppet::handle);
+        ConfigurePuppet.register(CHANNEL, ++id);
         CHANNEL.registerMessage(
                 ++id,
                 C2SMovePuppet.class,
