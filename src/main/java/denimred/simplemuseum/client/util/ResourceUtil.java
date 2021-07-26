@@ -17,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import denimred.simplemuseum.common.entity.MuseumDummyEntity;
+import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceOpenHashMap;
 
@@ -76,14 +76,14 @@ public class ResourceUtil {
                 value.clear();
             }
             RESOURCE_CACHE.clear();
-            ClientUtil.MODEL_RENDER_BOUNDS.clear();
+            ClientUtil.MODEL_BOUNDS.clear();
 
             final ClientWorld world = ClientUtil.MC.world;
             if (world != null) {
                 // This is stupid but it's simple and I'm lazy :)
                 for (Entity entity : world.getAllEntities()) {
-                    if (entity instanceof MuseumDummyEntity) {
-                        ((MuseumDummyEntity) entity).clearAllCached();
+                    if (entity instanceof PuppetEntity) {
+                        ((PuppetEntity) entity).invalidateCaches();
                     }
                 }
             }

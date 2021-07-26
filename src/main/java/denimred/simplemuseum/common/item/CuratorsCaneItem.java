@@ -15,7 +15,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
 import denimred.simplemuseum.client.util.ClientUtil;
-import denimred.simplemuseum.common.entity.MuseumDummyEntity;
+import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 
 public class CuratorsCaneItem extends SimpleFoiledItem {
     public CuratorsCaneItem(Properties properties) {
@@ -25,11 +25,11 @@ public class CuratorsCaneItem extends SimpleFoiledItem {
     @Override
     public ActionResultType itemInteractionForEntity(
             ItemStack stack, PlayerEntity player, LivingEntity target, Hand hand) {
-        if (target instanceof MuseumDummyEntity) {
+        if (target instanceof PuppetEntity) {
             if (!player.world.isRemote) {
                 return ActionResultType.CONSUME;
             } else {
-                ClientUtil.openDummyScreen((MuseumDummyEntity) target, null);
+                ClientUtil.openPuppetScreen((PuppetEntity) target, null);
                 return ActionResultType.SUCCESS;
             }
         }
@@ -44,7 +44,7 @@ public class CuratorsCaneItem extends SimpleFoiledItem {
         } else {
             final Vector3d pos = context.getHitVec();
             final PlayerEntity player = context.getPlayer();
-            MuseumDummyEntity.spawn((ServerWorld) world, pos, player);
+            PuppetEntity.spawn((ServerWorld) world, pos, player);
 
             return ActionResultType.CONSUME;
         }
@@ -54,22 +54,13 @@ public class CuratorsCaneItem extends SimpleFoiledItem {
     public ActionResult<ItemStack> onItemRightClick(World world, PlayerEntity player, Hand hand) {
         final ItemStack stack = player.getHeldItem(hand);
         if (!(world instanceof ServerWorld)) {
-            final MuseumDummyEntity dummy = ClientUtil.getSelectedDummy();
-            if (dummy != null) {
-                ClientUtil.openDummyScreen(dummy, null);
+            final PuppetEntity puppet = ClientUtil.getSelectedPuppet();
+            if (puppet != null) {
+                ClientUtil.openPuppetScreen(puppet, null);
                 return ActionResult.resultSuccess(stack);
             }
         }
         return ActionResult.resultConsume(stack);
-    }
-
-    @Override
-    public boolean hitEntity(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        if (target instanceof MuseumDummyEntity) {
-            target.remove();
-            return true;
-        }
-        return false;
     }
 
     @Override

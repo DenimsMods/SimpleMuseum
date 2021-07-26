@@ -9,6 +9,7 @@ import net.minecraft.util.text.Style;
 
 import java.util.function.Supplier;
 
+@Deprecated
 public class BoundTextFieldWidget extends TextFieldWidget {
     protected static final Color WHITE = Color.fromInt(0xFFFFFF);
     protected static final Color LIGHT_GREY = Color.fromInt(0xAAAAAA);

@@ -9,16 +9,19 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.UUID;
+
 import denimred.simplemuseum.client.util.ResourceUtil;
 import denimred.simplemuseum.common.init.MuseumDataSerializers;
 import denimred.simplemuseum.common.init.MuseumEntities;
 import denimred.simplemuseum.common.init.MuseumItems;
 import denimred.simplemuseum.common.init.MuseumNetworking;
-import denimred.simplemuseum.modcompat.ModCompatUtil;
+import denimred.simplemuseum.modcompat.ModCompat;
 
 @Mod(SimpleMuseum.MOD_ID)
 public final class SimpleMuseum {
     public static final String MOD_ID = "simplemuseum";
+    public static final UUID AUTHOR_UUID = UUID.fromString("2f6fe476-323e-4ede-945e-927a34d38fe9");
     public static final Logger LOGGER = LogManager.getLogger();
 
     public SimpleMuseum() {
@@ -32,7 +35,7 @@ public final class SimpleMuseum {
         // Misc client stuff
         DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> ResourceUtil::registerResourceReloadListener);
         // Mod compat stuff
-        bus.addListener(ModCompatUtil::enqueueIMC);
-        ModCompatUtil.registerCryptMasterPossession();
+        bus.addListener(ModCompat::enqueueIMC);
+        ModCompat.CryptMaster.registerPossession();
     }
 }

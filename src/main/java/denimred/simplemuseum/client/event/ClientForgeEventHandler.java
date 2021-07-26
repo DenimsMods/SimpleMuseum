@@ -28,8 +28,8 @@ public class ClientForgeEventHandler {
                         player.getHeldItemMainhand().getItem() == cane
                                 || player.getHeldItemOffhand().getItem() == cane;
                 ClientUtil.setHoldingCane(holdingCane);
-                ClientUtil.selectDummy(
-                        holdingCane ? ClientUtil.getHoveredDummy(player) : null, false);
+                ClientUtil.selectPuppet(
+                        holdingCane ? ClientUtil.getHoveredPuppet(player) : null, false);
             }
         }
     }
@@ -38,7 +38,7 @@ public class ClientForgeEventHandler {
     public static void onClientPlayerChangeGameMode(ClientPlayerChangeGameModeEvent event) {
         if (event.getNewGameMode() == GameType.SPECTATOR) {
             ClientUtil.setHoldingCane(false);
-            ClientUtil.deselectDummy(false);
+            ClientUtil.deselectPuppet(false);
         }
     }
 }
