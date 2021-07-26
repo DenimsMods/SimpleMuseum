@@ -21,14 +21,15 @@ import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.client.gui.widget.IconButton;
 import denimred.simplemuseum.client.gui.widget.ResourceFieldWidget;
 import denimred.simplemuseum.client.util.ClientUtil;
-import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
-import denimred.simplemuseum.common.init.MuseumLang;
+import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
+import denimred.simplemuseum.common.i18n.lang.GuiLang;
 import denimred.simplemuseum.common.init.MuseumNetworking;
-import denimred.simplemuseum.common.network.messages.c2s.C2SConfigurePuppet;
+import denimred.simplemuseum.common.network.messages.c2s.ConfigurePuppet;
 import software.bernie.geckolib3.file.AnimationFile;
 import software.bernie.geckolib3.resource.GeckoLibCache;
 
-public class ConfigurePuppetScreen extends MuseumPuppetScreen {
+@Deprecated
+public class ConfigurePuppetScreen extends PuppetScreen {
     public static final ResourceLocation COPY_BUTTON_TEXTURE =
             new ResourceLocation(SimpleMuseum.MOD_ID, "textures/gui/copy_button.png");
     public static final ResourceLocation PASTE_BUTTON_TEXTURE =
@@ -45,7 +46,7 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
     private ResourceFieldWidget animationsWidget;
     private TextFieldWidget idleAnimationField;
 
-    public ConfigurePuppetScreen(MuseumPuppetEntity puppet, @Nullable Screen parent) {
+    public ConfigurePuppetScreen(PuppetEntity puppet, @Nullable Screen parent) {
         super(puppet, parent);
         state = new SavedState();
         ClientUtil.setLastPuppetScreen(ConfigurePuppetScreen::new);
@@ -95,30 +96,30 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
                                 top,
                                 20,
                                 20,
-                                0,
-                                0,
-                                20,
                                 COPY_BUTTON_TEXTURE,
-                                32,
+                                0,
+                                0,
                                 64,
+                                32,
+                                20,
                                 button -> this.copy(),
                                 this::renderWidgetTooltip,
-                                MuseumLang.GUI_CLIPBOARD_COPY.asText()));
+                                GuiLang.CLIPBOARD_COPY.asText()));
         this.addButton(
                 new IconButton(
                         center + MARGIN,
                         top,
                         20,
                         20,
-                        0,
-                        0,
-                        20,
                         PASTE_BUTTON_TEXTURE,
-                        32,
+                        0,
+                        0,
                         64,
+                        32,
+                        20,
                         button -> this.paste(),
                         this::renderWidgetTooltip,
-                        MuseumLang.GUI_CLIPBOARD_PASTE.asText()));
+                        GuiLang.CLIPBOARD_PASTE.asText()));
 
         final int modelFieldY = top + 30 + MARGIN;
         modelWidget =
@@ -129,10 +130,10 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
                                 modelFieldY,
                                 WIDTH,
                                 20,
-                                MuseumLang.GUI_PUPPET_CONFIG_MODEL.asText(),
-                                MuseumLang.GUI_PUPPET_CONFIG_MODEL_SELECT.asText(),
+                                GuiLang.PUPPET_CONFIG_MODEL.asText(),
+                                GuiLang.PUPPET_CONFIG_MODEL_SELECT.asText(),
                                 MODEL_PREFIX,
-                                puppet.sourceManager.model::validate,
+                                puppet.sourceManager.model::test,
                                 button ->
                                         mc.displayGuiScreen(
                                                 new SelectResourceScreen(
@@ -149,10 +150,10 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
                                 textureFieldY,
                                 WIDTH,
                                 20,
-                                MuseumLang.GUI_PUPPET_CONFIG_TEX.asText(),
-                                MuseumLang.GUI_PUPPET_CONFIG_TEX_SELECT.asText(),
+                                GuiLang.PUPPET_CONFIG_TEX.asText(),
+                                GuiLang.PUPPET_CONFIG_TEX_SELECT.asText(),
                                 TEXTURE_PREFIX,
-                                puppet.sourceManager.texture::validate,
+                                puppet.sourceManager.texture::test,
                                 button ->
                                         mc.displayGuiScreen(
                                                 new SelectResourceScreen(
@@ -169,17 +170,17 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
                                 animationsFieldY,
                                 WIDTH,
                                 20,
-                                MuseumLang.GUI_PUPPET_CONFIG_ANIMS.asText(),
-                                MuseumLang.GUI_PUPPET_CONFIG_ANIMS_SELECT.asText(),
+                                GuiLang.PUPPET_CONFIG_ANIMS.asText(),
+                                GuiLang.PUPPET_CONFIG_ANIMS_SELECT.asText(),
                                 ANIMATIONS_PREFIX,
-                                puppet.sourceManager.animations::validate,
+                                puppet.sourceManager.animations::test,
                                 button ->
                                         mc.displayGuiScreen(
                                                 new SelectResourceScreen(
                                                         this, button, animationsWidget)),
                                 this::renderWidgetTooltip));
 
-        final ITextComponent idleAnimFieldMsg = MuseumLang.GUI_PUPPET_CONFIG_ANIM.asText();
+        final ITextComponent idleAnimFieldMsg = GuiLang.PUPPET_CONFIG_ANIM.asText();
         final int idleAnimFieldWidth = font.getStringPropertyWidth(idleAnimFieldMsg);
         final int miscY = animationsFieldY + 20 + MARGIN * 3;
         this.addButton(
@@ -188,7 +189,7 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
                         miscY,
                         (WIDTH / 3) - (MARGIN / 2),
                         20,
-                        MuseumLang.GUI_PUPPET_MOVE.asText(),
+                        GuiLang.PUPPET_MOVE.asText(),
                         button -> mc.displayGuiScreen(new MovePuppetScreen(puppet, parent))));
         idleAnimationField =
                 this.addListener(
@@ -206,12 +207,12 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
                                 idleAnimationField.y,
                                 20,
                                 20,
-                                0,
-                                0,
-                                20,
                                 ResourceFieldWidget.FOLDER_BUTTON_TEXTURE,
-                                32,
+                                0,
+                                0,
                                 64,
+                                32,
+                                20,
                                 button ->
                                         mc.displayGuiScreen(
                                                 new SelectAnimationScreen(
@@ -220,7 +221,7 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
                                                         idleAnimationField,
                                                         () -> this.getAnimLoc().orElse(null))),
                                 this::renderWidgetTooltip,
-                                MuseumLang.GUI_PUPPET_CONFIG_ANIM_SELECT.asText()));
+                                GuiLang.PUPPET_CONFIG_ANIM_SELECT.asText()));
 
         final int exitButtonsY = animationsFieldY + 40 + MARGIN * 5;
         doneButton =
@@ -300,7 +301,7 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
         drawCenteredString(
                 matrixStack,
                 font,
-                MuseumLang.GUI_PUPPET_CONFIG_TITLE.asText(title),
+                GuiLang.PUPPET_CONFIG_TITLE.asText(title),
                 width / 2,
                 MARGIN * 2,
                 0xFFFFFF);
@@ -319,13 +320,12 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
 
     protected void saveAndClose() {
         try {
-            MuseumNetworking.CHANNEL.sendToServer(
-                    new C2SConfigurePuppet(
-                            puppet.getUniqueID(),
-                            this.getModelLoc().orElse(puppet.sourceManager.model.getDirect()),
-                            this.getTexLoc().orElse(puppet.sourceManager.texture.getDirect()),
-                            this.getAnimLoc().orElse(puppet.sourceManager.animations.getDirect()),
-                            idleAnimationField.getText()));
+            ConfigurePuppet.of(puppet)
+                    .set(puppet.sourceManager.model, modelWidget.getLocation())
+                    .set(puppet.sourceManager.texture, textureWidget.getLocation())
+                    .set(puppet.sourceManager.animations, animationsWidget.getLocation())
+                    .set(puppet.animationManager.idle, idleAnimationField.getText())
+                    .send(MuseumNetworking.CHANNEL);
         } catch (ResourceLocationException e) {
             SimpleMuseum.LOGGER.error("Failed to send puppet configuration to server", e);
         }
@@ -351,10 +351,10 @@ public class ConfigurePuppetScreen extends MuseumPuppetScreen {
         protected String idleAnimState;
 
         protected SavedState() {
-            modelState = puppet.sourceManager.model.getDirect();
-            texState = puppet.sourceManager.texture.getDirect();
-            animsState = puppet.sourceManager.animations.getDirect();
-            idleAnimState = puppet.animationManager.idle.getDirect();
+            modelState = puppet.sourceManager.model.get();
+            texState = puppet.sourceManager.texture.get();
+            animsState = puppet.sourceManager.animations.get();
+            idleAnimState = puppet.animationManager.idle.get();
         }
 
         protected void save() {

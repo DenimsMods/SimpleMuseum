@@ -21,31 +21,31 @@ import net.minecraftforge.fml.network.PacketDistributor;
 import java.util.ArrayList;
 import java.util.List;
 
-import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
-import denimred.simplemuseum.common.init.MuseumLang;
+import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
+import denimred.simplemuseum.common.i18n.lang.MiscLang;
 import denimred.simplemuseum.common.init.MuseumNetworking;
 import denimred.simplemuseum.common.network.messages.bidirectional.CopyPastePuppetData;
 import denimred.simplemuseum.common.network.messages.s2c.PlayPuppetAnimation;
 
 public final class PuppetCommand {
     public static final SimpleCommandExceptionType NOT_A_PUPPET =
-            new SimpleCommandExceptionType(MuseumLang.COMMAND_EXCEPTION_NOT_A_PUPPET.asText());
+            new SimpleCommandExceptionType(MiscLang.COMMAND_EXCEPTION_NOT_A_PUPPET.asText());
 
     public static LiteralArgumentBuilder<CommandSource> create() {
         return Commands.literal("puppet")
                 .then(cmdAnimate())
                 .then(cmdCopy())
                 .then(cmdPaste())
-                .then(cmdResurrect())
-                .then(cmdSetInvulnerability());
+                .then(cmdResurrect());
+        //                .then(cmdSetInvulnerability());
     }
 
     private static ArgumentBuilder<CommandSource, ?> cmdAnimate() {
         final Command<CommandSource> cmd =
                 ctx -> {
-                    final List<MuseumPuppetEntity> puppets = getPuppets(ctx);
+                    final List<PuppetEntity> puppets = getPuppets(ctx);
                     final String animation = StringArgumentType.getString(ctx, "animation");
-                    for (MuseumPuppetEntity puppet : puppets) {
+                    for (PuppetEntity puppet : puppets) {
                         MuseumNetworking.CHANNEL.send(
                                 PacketDistributor.TRACKING_ENTITY.with(() -> puppet),
                                 new PlayPuppetAnimation(puppet.getEntityId(), animation));
@@ -54,12 +54,12 @@ public final class PuppetCommand {
                     final CommandSource source = ctx.getSource();
                     if (count == 1) {
                         source.sendFeedback(
-                                MuseumLang.COMMAND_FEEDBACK_PUPPET_ANIMATE_SINGLE.asText(
+                                MiscLang.COMMAND_FEEDBACK_PUPPET_ANIMATE_SINGLE.asText(
                                         animation, puppets.get(0).getDisplayName()),
                                 true);
                     } else {
                         source.sendFeedback(
-                                MuseumLang.COMMAND_FEEDBACK_PUPPET_ANIMATE_MULTIPLE.asText(
+                                MiscLang.COMMAND_FEEDBACK_PUPPET_ANIMATE_MULTIPLE.asText(
                                         animation, count),
                                 true);
                     }
@@ -101,7 +101,7 @@ public final class PuppetCommand {
         final Command<CommandSource> cmd =
                 ctx -> {
                     int count = 0;
-                    for (MuseumPuppetEntity puppet : getPuppets(ctx)) {
+                    for (PuppetEntity puppet : getPuppets(ctx)) {
                         if (puppet.isDead()) {
                             puppet.resurrect();
                             count++;
@@ -109,8 +109,7 @@ public final class PuppetCommand {
                     }
                     ctx.getSource()
                             .sendFeedback(
-                                    MuseumLang.COMMAND_FEEDBACK_PUPPET_RESURRECT.asText(count),
-                                    true);
+                                    MiscLang.COMMAND_FEEDBACK_PUPPET_RESURRECT.asText(count), true);
                     return count;
                 };
         return Commands.literal("resurrect").then(puppetsArgument().executes(cmd));
@@ -122,7 +121,7 @@ public final class PuppetCommand {
                 ctx -> {
                     final boolean invulnerable = ctx.getArgument(invulnerableArg, Boolean.class);
                     int count = 0;
-                    for (MuseumPuppetEntity puppet : getPuppets(ctx)) {
+                    for (PuppetEntity puppet : getPuppets(ctx)) {
                         if (puppet.isInvulnerable() != invulnerable) {
                             puppet.setInvulnerable(invulnerable);
                             count++;
@@ -130,7 +129,7 @@ public final class PuppetCommand {
                     }
                     ctx.getSource()
                             .sendFeedback(
-                                    MuseumLang.COMMAND_FEEDBACK_PUPPET_SET_INVULNERABILITY.asText(
+                                    MiscLang.COMMAND_FEEDBACK_PUPPET_SET_INVULNERABILITY.asText(
                                             count, invulnerable),
                                     true);
                     return count;
@@ -147,13 +146,13 @@ public final class PuppetCommand {
         return Commands.argument("puppet", EntityArgument.entity());
     }
 
-    private static MuseumPuppetEntity getPuppet(CommandContext<CommandSource> ctx)
+    private static PuppetEntity getPuppet(CommandContext<CommandSource> ctx)
             throws CommandSyntaxException {
         final Entity entity = EntityArgument.getEntity(ctx, "puppet");
-        if (!(entity instanceof MuseumPuppetEntity)) {
+        if (!(entity instanceof PuppetEntity)) {
             throw NOT_A_PUPPET.create();
         } else {
-            return (MuseumPuppetEntity) entity;
+            return (PuppetEntity) entity;
         }
     }
 
@@ -161,12 +160,12 @@ public final class PuppetCommand {
         return Commands.argument("puppets", EntityArgument.entities());
     }
 
-    private static List<MuseumPuppetEntity> getPuppets(CommandContext<CommandSource> ctx)
+    private static List<PuppetEntity> getPuppets(CommandContext<CommandSource> ctx)
             throws CommandSyntaxException {
-        final List<MuseumPuppetEntity> puppets = new ArrayList<>();
+        final List<PuppetEntity> puppets = new ArrayList<>();
         for (Entity entity : EntityArgument.getEntities(ctx, "puppets")) {
-            if (entity instanceof MuseumPuppetEntity) {
-                puppets.add((MuseumPuppetEntity) entity);
+            if (entity instanceof PuppetEntity) {
+                puppets.add((PuppetEntity) entity);
             }
         }
         if (puppets.isEmpty()) {

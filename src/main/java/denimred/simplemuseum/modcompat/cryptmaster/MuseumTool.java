@@ -19,7 +19,7 @@ import cryptcraft.cryptmaster.plugin.client.ToolCursorState;
 import cryptcraft.cryptmaster.plugin.client.UtilityTool;
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.client.util.ClientUtil;
-import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
+import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 import denimred.simplemuseum.common.init.MuseumNetworking;
 import denimred.simplemuseum.common.network.messages.c2s.C2SCryptMasterRemovePuppet;
 import denimred.simplemuseum.common.network.messages.c2s.C2SCryptMasterSpawnPuppet;
@@ -57,8 +57,8 @@ public class MuseumTool implements IUtilityToolInstance {
     @Override
     public void onCursorMoved(ToolCursorState cursor) {
         final Entity entity = cursor.raycastToEntity();
-        if (entity instanceof MuseumPuppetEntity) {
-            ClientUtil.selectPuppet((MuseumPuppetEntity) entity, true);
+        if (entity instanceof PuppetEntity) {
+            ClientUtil.selectPuppet((PuppetEntity) entity, true);
             spawnPos = null;
         } else {
             ClientUtil.deselectPuppet(true);
@@ -69,7 +69,7 @@ public class MuseumTool implements IUtilityToolInstance {
     @Override
     public void onMouseButton(MouseButton button, MouseButtonState state, ToolCursorState cursor) {
         if (state == MouseButtonState.PRESSED) {
-            final MuseumPuppetEntity puppet = ClientUtil.getSelectedPuppet();
+            final PuppetEntity puppet = ClientUtil.getSelectedPuppet();
             if (button == MouseButton.LEFT) {
                 if (puppet != null) {
                     ClientUtil.openPuppetScreen(puppet, Minecraft.getInstance().currentScreen);

@@ -22,8 +22,9 @@ import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 
 import denimred.simplemuseum.SimpleMuseum;
-import denimred.simplemuseum.common.init.MuseumLang;
+import denimred.simplemuseum.common.i18n.lang.GuiLang;
 
+@Deprecated
 public abstract class SelectObjectScreen<T> extends Screen {
     protected final Minecraft mc = Minecraft.getInstance();
     protected final Screen parent;
@@ -57,7 +58,7 @@ public abstract class SelectObjectScreen<T> extends Screen {
                         top + font.FONT_HEIGHT + 2,
                         remainingWidth,
                         20,
-                        MuseumLang.GUI_SEARCH.asText());
+                        GuiLang.SEARCH.asText());
 
         this.addButton(
                 new Button(
@@ -237,13 +238,13 @@ public abstract class SelectObjectScreen<T> extends Screen {
                 final int a;
                 if (loading) {
                     msg =
-                            MuseumLang.GUI_LOADING
+                            GuiLang.LOADING
                                     .asText()
                                     .mergeStyle(TextFormatting.ITALIC, TextFormatting.GRAY);
                     a = 0x66000000;
                 } else {
                     msg =
-                            MuseumLang.GUI_ERROR
+                            GuiLang.ERROR
                                     .asText()
                                     .mergeStyle(TextFormatting.ITALIC, TextFormatting.RED);
                     a = 0xFF000000;

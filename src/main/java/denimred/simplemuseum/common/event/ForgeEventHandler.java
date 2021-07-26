@@ -9,7 +9,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import denimred.simplemuseum.SimpleMuseum;
-import denimred.simplemuseum.common.init.MuseumCommands;
+import denimred.simplemuseum.common.command.PuppetCommand;
 import denimred.simplemuseum.common.init.MuseumEntities;
 import denimred.simplemuseum.common.init.MuseumItems;
 
@@ -40,6 +40,6 @@ public final class ForgeEventHandler {
 
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
-        MuseumCommands.register(event.getDispatcher());
+        event.getDispatcher().register(PuppetCommand.create());
     }
 }

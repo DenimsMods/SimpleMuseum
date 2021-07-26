@@ -20,12 +20,14 @@ import java.util.List;
 
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.client.renderer.MuseumRenderType;
-import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
-import denimred.simplemuseum.common.entity.PuppetEasterEgg;
+import denimred.simplemuseum.client.renderer.entity.PuppetRenderer;
+import denimred.simplemuseum.common.entity.puppet.PuppetEasterEggTracker;
+import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 import software.bernie.geckolib3.renderers.geo.GeoLayerRenderer;
-import software.bernie.geckolib3.renderers.geo.IGeoRenderer;
 
-public class PuppetBannersLayerRenderer extends GeoLayerRenderer<MuseumPuppetEntity> {
+import static denimred.simplemuseum.common.entity.puppet.PuppetEasterEggTracker.Egg.ERROR;
+
+public class PuppetBannersLayerRenderer extends GeoLayerRenderer<PuppetEntity> {
     protected static final ResourceLocation TEXTURE =
             new ResourceLocation(SimpleMuseum.MOD_ID, "textures/misc/puppet_banners.png");
     protected static final int SOURCE_ERROR = 0;
@@ -42,8 +44,7 @@ public class PuppetBannersLayerRenderer extends GeoLayerRenderer<MuseumPuppetEnt
     protected final float meshHeight;
     protected final int vertCount;
 
-    public PuppetBannersLayerRenderer(
-            IGeoRenderer<MuseumPuppetEntity> renderer, int resolution, double radius) {
+    public PuppetBannersLayerRenderer(PuppetRenderer renderer, int resolution, double radius) {
         super(renderer);
         // Generate the meshes (I could technically concat these into one mesh but that's ugly)
         outerMesh = this.generateMesh(false, resolution, radius);
@@ -85,7 +86,7 @@ public class PuppetBannersLayerRenderer extends GeoLayerRenderer<MuseumPuppetEnt
             MatrixStack matrixStack,
             IRenderTypeBuffer typeBuffer,
             int light,
-            MuseumPuppetEntity puppet,
+            PuppetEntity puppet,
             float limbSwing,
             float limbSwingAmount,
             float partialTicks,
@@ -95,22 +96,35 @@ public class PuppetBannersLayerRenderer extends GeoLayerRenderer<MuseumPuppetEnt
         final RenderType type = MuseumRenderType.getErrorBanners(TEXTURE);
         final float time = (float) (ageInTicks * 0.04D);
         final float yPos = (puppet.getHeight() / 2.0F) + 0.25F;
+        final boolean doError = puppet.easterEggs.isActive(ERROR);
+        if (doError) {
+            matrixStack.scale(1.6F, 1.0F, 1.0F);
+        }
 
         // Determine the banners that we need to display
         final List<Integer> banners = new ArrayList<>();
         if (puppet.renderManager.canRenderHiddenDeathEffects()) {
             banners.add(DEAD);
         } else {
-            if (puppet.renderManager.isErrorBanners()) {
-                if (!puppet.sourceManager.model.isValid()
-                        || !puppet.sourceManager.texture.isValid()
-                        || !puppet.sourceManager.animations.isValid()) {
+            if (!puppet.sourceManager.model.isValid()
+                    || !puppet.sourceManager.texture.isValid()
+                    || !puppet.sourceManager.animations.isValid()) {
+                if (!doError) {
                     banners.add(SOURCE_ERROR);
                 }
             }
-            if (puppet.renderManager.isEasterEggs()
-                    && banners.isEmpty()
-                    && PuppetEasterEgg.HELLO_HOW_R_U.isActive(puppet)) {
+            if (puppet.sourceManager.animations.isValid()
+                    && (!(puppet.animationManager.idle.isValid())
+                            || !puppet.animationManager.moving.isValid()
+                            || !puppet.animationManager.idleSneak.isValid()
+                            || !puppet.animationManager.movingSneak.isValid()
+                            || !puppet.animationManager.sprinting.isValid()
+                            || !puppet.animationManager.sitting.isValid()
+                            || !puppet.animationManager.death.isValid())) {
+                banners.add(ANIM_ERROR);
+            }
+            if (banners.isEmpty()
+                    && puppet.easterEggs.isActive(PuppetEasterEggTracker.Egg.HELLO_HOW_R_U)) {
                 banners.add(HELLO_HOW_R_U);
             }
         }

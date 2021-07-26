@@ -12,16 +12,19 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
+import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 
+@Deprecated
 public class C2SMovePuppet {
     private final UUID uuid;
     private final Vector3d pos;
+    private final float pitch;
     private final float yaw;
 
-    public C2SMovePuppet(UUID uuid, Vector3d pos, float yaw) {
+    public C2SMovePuppet(UUID uuid, Vector3d pos, float pitch, float yaw) {
         this.uuid = uuid;
         this.pos = pos;
+        this.pitch = pitch;
         this.yaw = yaw;
     }
 
@@ -30,8 +33,9 @@ public class C2SMovePuppet {
         final double x = buf.readDouble();
         final double y = buf.readDouble();
         final double z = buf.readDouble();
+        final float pitch = buf.readFloat();
         final float yaw = buf.readFloat();
-        return new C2SMovePuppet(puppet, new Vector3d(x, y, z), yaw);
+        return new C2SMovePuppet(puppet, new Vector3d(x, y, z), pitch, yaw);
     }
 
     public void encode(PacketBuffer buf) {
@@ -39,6 +43,7 @@ public class C2SMovePuppet {
         buf.writeDouble(pos.x);
         buf.writeDouble(pos.y);
         buf.writeDouble(pos.z);
+        buf.writeFloat(pitch);
         buf.writeFloat(yaw);
     }
 
@@ -54,14 +59,18 @@ public class C2SMovePuppet {
         if (sender != null) {
             final ServerWorld world = sender.getServerWorld();
             final Entity entity = world.getEntityByUuid(uuid);
-            if (entity instanceof MuseumPuppetEntity) {
-                final MuseumPuppetEntity puppet = (MuseumPuppetEntity) entity;
+            if (entity instanceof PuppetEntity) {
+                final PuppetEntity puppet = (PuppetEntity) entity;
                 if (puppet.exists()
                         && world.isBlockLoaded(new BlockPos(puppet.getPositionVec()))
                         && world.isBlockLoaded(new BlockPos(pos))) {
                     // TODO: Do permissions check?
                     puppet.setLocationAndAngles(
-                            pos.x, pos.y, pos.z, MathHelper.wrapDegrees(yaw), puppet.rotationPitch);
+                            pos.x, pos.y, pos.z, MathHelper.wrapDegrees(yaw), pitch);
+                    puppet.prevRotationYaw = puppet.rotationYaw;
+                    puppet.prevRotationPitch = puppet.rotationPitch;
+                    puppet.setRotationYawHead(puppet.rotationYaw);
+                    puppet.setRenderYawOffset(puppet.rotationYaw);
                 }
             }
         }

@@ -22,8 +22,8 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 
 import denimred.simplemuseum.SimpleMuseum;
-import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
-import denimred.simplemuseum.common.init.MuseumLang;
+import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
+import denimred.simplemuseum.common.i18n.lang.GuiLang;
 import denimred.simplemuseum.common.init.MuseumNetworking;
 import denimred.simplemuseum.common.network.messages.c2s.C2SMovePuppet;
 
@@ -59,28 +59,28 @@ public class MovementButtons extends Widget implements ITickable {
     public static IFormattableTextComponent getName(int index) {
         switch (index) {
             case ROTATE_COUNTER_CLOCKWISE:
-                return MuseumLang.GUI_MOVE_ROTATE_CCW.asText();
+                return GuiLang.MOVE_ROTATE_CCW.asText();
             case MOVE_AWAY:
-                return MuseumLang.GUI_MOVE_AWAY.asText();
+                return GuiLang.MOVE_AWAY.asText();
             case ROTATE_CLOCKWISE:
-                return MuseumLang.GUI_MOVE_ROTATE_CW.asText();
+                return GuiLang.MOVE_ROTATE_CW.asText();
             case MOVE_LEFT:
-                return MuseumLang.GUI_MOVE_LEFT.asText();
+                return GuiLang.MOVE_LEFT.asText();
             case CENTER:
-                return MuseumLang.GUI_MOVE_CENTER.asText();
+                return GuiLang.MOVE_CENTER.asText();
             case MOVE_RIGHT:
-                return MuseumLang.GUI_MOVE_RIGHT.asText();
+                return GuiLang.MOVE_RIGHT.asText();
             case MOVE_UP:
-                return MuseumLang.GUI_MOVE_UP.asText();
+                return GuiLang.MOVE_UP.asText();
             case MOVE_TOWARDS:
-                return MuseumLang.GUI_MOVE_TOWARDS.asText();
+                return GuiLang.MOVE_TOWARDS.asText();
             case MOVE_DOWN:
-                return MuseumLang.GUI_MOVE_DOWN.asText();
+                return GuiLang.MOVE_DOWN.asText();
         }
         return new StringTextComponent("Unknown button index: " + index);
     }
 
-    public static void movePuppet(MuseumPuppetEntity puppet, int index) {
+    public static void movePuppet(PuppetEntity puppet, int index) {
         final Minecraft mc = Minecraft.getInstance();
         final Entity viewer = mc.renderViewEntity;
         final Direction dir =
@@ -122,7 +122,8 @@ public class MovementButtons extends Widget implements ITickable {
                 pos = pos.add(new Vector3d(0, -1, 0).scale(speedMult));
                 break;
         }
-        MuseumNetworking.CHANNEL.sendToServer(new C2SMovePuppet(puppet.getUniqueID(), pos, yaw));
+        MuseumNetworking.CHANNEL.sendToServer(
+                new C2SMovePuppet(puppet.getUniqueID(), pos, puppet.rotationPitch, yaw));
     }
 
     @Nonnull

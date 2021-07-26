@@ -14,8 +14,8 @@ import net.minecraftforge.fml.network.simple.SimpleChannel;
 import java.util.function.Supplier;
 
 import denimred.simplemuseum.client.util.ClientUtil;
-import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
-import denimred.simplemuseum.common.init.MuseumLang;
+import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
+import denimred.simplemuseum.common.i18n.lang.MiscLang;
 import denimred.simplemuseum.common.init.MuseumNetworking;
 import denimred.simplemuseum.common.network.NetworkUtil;
 
@@ -37,11 +37,11 @@ public final class CopyPastePuppetData {
         this.clipboard = clipboard;
     }
 
-    public static CopyPastePuppetData copy(MuseumPuppetEntity puppet) {
+    public static CopyPastePuppetData copy(PuppetEntity puppet) {
         return new CopyPastePuppetData(puppet.getEntityId(), REQUEST_COPY);
     }
 
-    public static CopyPastePuppetData paste(MuseumPuppetEntity puppet) {
+    public static CopyPastePuppetData paste(PuppetEntity puppet) {
         return new CopyPastePuppetData(puppet.getEntityId(), REQUEST_PASTE);
     }
 
@@ -79,7 +79,7 @@ public final class CopyPastePuppetData {
         NetworkUtil.getValidPuppet(ctx, puppetId).ifPresent(puppet -> processPuppet(ctx, puppet));
     }
 
-    private void processPuppet(NetworkEvent.Context ctx, MuseumPuppetEntity puppet) {
+    private void processPuppet(NetworkEvent.Context ctx, PuppetEntity puppet) {
         if (puppet.world.isRemote) {
             if (state == REQUEST_COPY) {
                 final CompoundNBT tag = new CompoundNBT();
@@ -90,7 +90,7 @@ public final class CopyPastePuppetData {
                             .player
                             .getCommandSource()
                             .sendFeedback(
-                                    MuseumLang.COMMAND_FEEDBACK_PUPPET_COPY.asText(
+                                    MiscLang.COMMAND_FEEDBACK_PUPPET_COPY.asText(
                                             puppet.getDisplayName()),
                                     false);
                 }
@@ -106,8 +106,7 @@ public final class CopyPastePuppetData {
                 try {
                     puppet.readModTag(JsonToNBT.getTagFromJson(clipboard));
                     source.sendFeedback(
-                            MuseumLang.COMMAND_FEEDBACK_PUPPET_PASTE.asText(
-                                    puppet.getDisplayName()),
+                            MiscLang.COMMAND_FEEDBACK_PUPPET_PASTE.asText(puppet.getDisplayName()),
                             true);
                 } catch (CommandSyntaxException e) {
                     source.sendErrorMessage(new StringTextComponent(e.getMessage()));

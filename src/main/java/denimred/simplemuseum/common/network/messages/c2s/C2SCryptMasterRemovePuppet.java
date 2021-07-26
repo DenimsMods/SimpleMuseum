@@ -9,7 +9,7 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
+import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 
 public class C2SCryptMasterRemovePuppet {
     private final UUID uuid;
@@ -39,9 +39,8 @@ public class C2SCryptMasterRemovePuppet {
         if (sender != null) {
             final ServerWorld world = sender.getServerWorld();
             final Entity entity = world.getEntityByUuid(uuid);
-            if (entity instanceof MuseumPuppetEntity) {
-                if (world.isBlockLoaded(entity.getPosition())
-                        && ((MuseumPuppetEntity) entity).exists()) {
+            if (entity instanceof PuppetEntity) {
+                if (world.isBlockLoaded(entity.getPosition()) && ((PuppetEntity) entity).exists()) {
                     // TODO: Do permissions check?
                     entity.remove();
                 }

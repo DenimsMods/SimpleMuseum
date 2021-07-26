@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 
 import denimred.simplemuseum.SimpleMuseum;
 
+@Deprecated
 public class ResourceFieldWidget extends Widget {
     public static final int MARGIN = 4;
     public static final int MAX_LENGTH = 0x7FFF;
@@ -68,12 +69,12 @@ public class ResourceFieldWidget extends Widget {
                         y,
                         20,
                         20,
-                        0,
-                        0,
-                        20,
                         FOLDER_BUTTON_TEXTURE,
-                        32,
+                        0,
+                        0,
                         64,
+                        32,
+                        20,
                         buttonAction,
                         buttonTooltip,
                         buttonTitle);

@@ -8,17 +8,21 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import denimred.simplemuseum.SimpleMuseum;
-import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
+import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
+
+import static denimred.simplemuseum.common.entity.puppet.manager.PuppetBehaviorManager.PHYSICAL_SIZE;
 
 public final class MuseumEntities {
     public static final DeferredRegister<EntityType<?>> REGISTRY =
             DeferredRegister.create(ForgeRegistries.ENTITIES, SimpleMuseum.MOD_ID);
 
-    public static final RegistryObject<EntityType<MuseumPuppetEntity>> MUSEUM_PUPPET =
+    public static final RegistryObject<EntityType<PuppetEntity>> MUSEUM_PUPPET =
             register(
-                    "museum_puppet",
-                    EntityType.Builder.create(MuseumPuppetEntity::new, EntityClassification.MISC)
-                            .size(0.6F, 1.8F)
+                    "museum_dummy", // TODO: Change to museum_puppet after CnC showcase
+                    EntityType.Builder.create(PuppetEntity::new, EntityClassification.MISC)
+                            .size(
+                                    PHYSICAL_SIZE.defaultValue.width,
+                                    PHYSICAL_SIZE.defaultValue.height)
                             .trackingRange(32));
 
     private static <T extends Entity> RegistryObject<EntityType<T>> register(

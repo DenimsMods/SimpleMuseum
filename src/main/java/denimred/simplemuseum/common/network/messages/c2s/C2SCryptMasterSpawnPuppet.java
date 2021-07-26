@@ -9,7 +9,7 @@ import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
+import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 
 public class C2SCryptMasterSpawnPuppet {
     private final Vector3d pos;
@@ -44,7 +44,7 @@ public class C2SCryptMasterSpawnPuppet {
             final ServerWorld world = sender.getServerWorld();
             if (world.isBlockLoaded(new BlockPos(pos))) {
                 // TODO: Do permissions check?
-                MuseumPuppetEntity.spawn(world, pos, sender.getPositionVec());
+                PuppetEntity.spawn(world, pos, sender.getPositionVec());
             }
         }
     }

@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import software.bernie.geckolib3.file.AnimationFile;
 import software.bernie.geckolib3.resource.GeckoLibCache;
 
+@Deprecated
 public class SelectAnimationScreen extends SelectObjectScreen<String> {
     protected final TextFieldWidget caller;
     private final Supplier<ResourceLocation> fileLocSupplier;

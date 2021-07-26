@@ -16,12 +16,13 @@ import denimred.simplemuseum.client.gui.widget.BoundTextFieldWidget;
 import denimred.simplemuseum.client.gui.widget.MovementButtons;
 import denimred.simplemuseum.client.util.ClientUtil;
 import denimred.simplemuseum.client.util.NumberUtil;
-import denimred.simplemuseum.common.entity.MuseumPuppetEntity;
-import denimred.simplemuseum.common.init.MuseumLang;
+import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
+import denimred.simplemuseum.common.i18n.lang.GuiLang;
 import denimred.simplemuseum.common.init.MuseumNetworking;
 import denimred.simplemuseum.common.network.messages.c2s.C2SMovePuppet;
 
-public class MovePuppetScreen extends MuseumPuppetScreen {
+@Deprecated
+public class MovePuppetScreen extends PuppetScreen {
     private static final int WIDTH = 100;
     private final SavedState state;
     public Button applyButton;
@@ -30,9 +31,10 @@ public class MovePuppetScreen extends MuseumPuppetScreen {
     private BoundTextFieldWidget xField;
     private BoundTextFieldWidget yField;
     private BoundTextFieldWidget zField;
+    private BoundTextFieldWidget pitchField;
     private BoundTextFieldWidget yawField;
 
-    protected MovePuppetScreen(MuseumPuppetEntity puppet, @Nullable Screen parent) {
+    public MovePuppetScreen(PuppetEntity puppet, @Nullable Screen parent) {
         super(puppet, parent);
         state = new SavedState();
         ClientUtil.setLastPuppetScreen(MovePuppetScreen::new);
@@ -49,10 +51,8 @@ public class MovePuppetScreen extends MuseumPuppetScreen {
                                 MARGIN,
                                 WIDTH,
                                 20,
-                                MuseumLang.GUI_PUPPET_CONFIG.asText(),
-                                button ->
-                                        mc.displayGuiScreen(
-                                                new ConfigurePuppetScreen(puppet, parent))));
+                                GuiLang.PUPPET_CONFIG.asText(),
+                                button -> mc.displayGuiScreen(parent)));
         movementButtons =
                 this.addListener(
                         new MovementButtons(
@@ -62,7 +62,7 @@ public class MovePuppetScreen extends MuseumPuppetScreen {
                                 MovementButtons::getName,
                                 i -> MovementButtons.movePuppet(puppet, i),
                                 this::renderWidgetTooltip));
-        final ITextComponent xMsg = MuseumLang.GUI_PUPPET_MOVE_X.asText();
+        final ITextComponent xMsg = GuiLang.PUPPET_MOVE_X.asText();
         final int xMsgWidth = font.getStringPropertyWidth(xMsg);
         xField =
                 this.addListener(
@@ -74,7 +74,7 @@ public class MovePuppetScreen extends MuseumPuppetScreen {
                                 20,
                                 xMsg,
                                 () -> NumberUtil.parseString(puppet.getPosX())));
-        final ITextComponent yMsg = MuseumLang.GUI_PUPPET_MOVE_Y.asText();
+        final ITextComponent yMsg = GuiLang.PUPPET_MOVE_Y.asText();
         final int yMsgWidth = font.getStringPropertyWidth(yMsg);
         yField =
                 this.addListener(
@@ -86,7 +86,7 @@ public class MovePuppetScreen extends MuseumPuppetScreen {
                                 20,
                                 yMsg,
                                 () -> NumberUtil.parseString(puppet.getPosY())));
-        final ITextComponent zMsg = MuseumLang.GUI_PUPPET_MOVE_Z.asText();
+        final ITextComponent zMsg = GuiLang.PUPPET_MOVE_Z.asText();
         final int zMsgWidth = font.getStringPropertyWidth(zMsg);
         zField =
                 this.addListener(
@@ -98,14 +98,26 @@ public class MovePuppetScreen extends MuseumPuppetScreen {
                                 20,
                                 zMsg,
                                 () -> NumberUtil.parseString(puppet.getPosZ())));
-        final ITextComponent yawMsg = MuseumLang.GUI_PUPPET_MOVE_YAW.asText();
+        final ITextComponent pitchMsg = GuiLang.PUPPET_MOVE_PITCH.asText();
+        final int pitchMsgWidth = font.getStringPropertyWidth(pitchMsg);
+        pitchField =
+                this.addListener(
+                        new BoundTextFieldWidget(
+                                font,
+                                (MARGIN * 2) + pitchMsgWidth,
+                                zField.y + zField.getHeight() + MARGIN,
+                                WIDTH - pitchMsgWidth - MARGIN,
+                                20,
+                                pitchMsg,
+                                () -> NumberUtil.parseString(puppet.rotationPitch)));
+        final ITextComponent yawMsg = GuiLang.PUPPET_MOVE_YAW.asText();
         final int yawMsgWidth = font.getStringPropertyWidth(yawMsg);
         yawField =
                 this.addListener(
                         new BoundTextFieldWidget(
                                 font,
                                 (MARGIN * 2) + yawMsgWidth,
-                                zField.y + zField.getHeight() + MARGIN,
+                                pitchField.y + pitchField.getHeight() + MARGIN,
                                 WIDTH - yawMsgWidth - MARGIN,
                                 20,
                                 yawMsg,
@@ -118,7 +130,7 @@ public class MovePuppetScreen extends MuseumPuppetScreen {
                                 buttonsY,
                                 (WIDTH / 2) - (MARGIN / 2),
                                 20,
-                                MuseumLang.GUI_PUPPET_MOVE_APPLY.asText(),
+                                GuiLang.PUPPET_MOVE_APPLY.asText(),
                                 button -> {
                                     final Vector3d pos = puppet.getPositionVec();
                                     final double x =
@@ -127,6 +139,9 @@ public class MovePuppetScreen extends MuseumPuppetScreen {
                                             NumberUtil.parseDouble(yField.getText()).orElse(pos.y);
                                     final double z =
                                             NumberUtil.parseDouble(zField.getText()).orElse(pos.z);
+                                    final float pitch =
+                                            NumberUtil.parseFloat(pitchField.getText())
+                                                    .orElse(puppet.rotationPitch);
                                     final float yaw =
                                             NumberUtil.parseFloat(yawField.getText())
                                                     .orElse(puppet.rotationYaw);
@@ -134,10 +149,12 @@ public class MovePuppetScreen extends MuseumPuppetScreen {
                                             new C2SMovePuppet(
                                                     puppet.getUniqueID(),
                                                     new Vector3d(x, y, z),
+                                                    pitch,
                                                     yaw));
                                     xField.reset();
                                     yField.reset();
                                     zField.reset();
+                                    pitchField.reset();
                                     yawField.reset();
                                 }));
         resetButton =
@@ -147,17 +164,19 @@ public class MovePuppetScreen extends MuseumPuppetScreen {
                                 buttonsY,
                                 applyButton.getWidth(),
                                 20,
-                                MuseumLang.GUI_PUPPET_MOVE_RESET.asText(),
+                                GuiLang.PUPPET_MOVE_RESET.asText(),
                                 button -> {
                                     xField.reset();
                                     yField.reset();
                                     zField.reset();
+                                    pitchField.reset();
                                     yawField.reset();
                                 }));
 
         xField.setValidator(NumberUtil::isValidDouble);
         yField.setValidator(NumberUtil::isValidDouble);
         zField.setValidator(NumberUtil::isValidDouble);
+        pitchField.setValidator(NumberUtil::isValidFloat);
         yawField.setValidator(NumberUtil::isValidFloat);
         applyButton.active = false;
         resetButton.active = false;
@@ -172,7 +191,7 @@ public class MovePuppetScreen extends MuseumPuppetScreen {
         drawCenteredString(
                 matrixStack,
                 font,
-                MuseumLang.GUI_PUPPET_MOVE_TITLE.asText(title),
+                GuiLang.PUPPET_MOVE_TITLE.asText(title),
                 width / 2,
                 MARGIN * 2,
                 0xFFFFFF);
@@ -183,6 +202,9 @@ public class MovePuppetScreen extends MuseumPuppetScreen {
         drawStringLeft(matrixStack, font, yField, yField.getMessage(), yField.isPaused());
         zField.render(matrixStack, mouseX, mouseY, partialTicks);
         drawStringLeft(matrixStack, font, zField, zField.getMessage(), zField.isPaused());
+        pitchField.render(matrixStack, mouseX, mouseY, partialTicks);
+        drawStringLeft(
+                matrixStack, font, pitchField, pitchField.getMessage(), pitchField.isPaused());
         yawField.render(matrixStack, mouseX, mouseY, partialTicks);
         drawStringLeft(matrixStack, font, yawField, yawField.getMessage(), yawField.isPaused());
 
@@ -204,8 +226,13 @@ public class MovePuppetScreen extends MuseumPuppetScreen {
         xField.tick();
         yField.tick();
         zField.tick();
+        pitchField.tick();
         yawField.tick();
-        if (xField.isPaused() || yField.isPaused() || zField.isPaused() || yawField.isPaused()) {
+        if (xField.isPaused()
+                || yField.isPaused()
+                || zField.isPaused()
+                || pitchField.isPaused()
+                || yawField.isPaused()) {
             applyButton.active = true;
             resetButton.active = true;
         } else {
@@ -225,12 +252,14 @@ public class MovePuppetScreen extends MuseumPuppetScreen {
         protected String xState;
         protected String yState;
         protected String zState;
+        protected String pitchState;
         protected String yawState;
 
         protected void save() {
             if (xField != null) xState = xField.getText();
             if (yField != null) yState = yField.getText();
             if (zField != null) zState = zField.getText();
+            if (pitchField != null) pitchState = pitchField.getText();
             if (yawField != null) yawState = yawField.getText();
         }
 
@@ -238,6 +267,7 @@ public class MovePuppetScreen extends MuseumPuppetScreen {
             if (xState != null) xField.setText(xState);
             if (yState != null) yField.setText(yState);
             if (zState != null) zField.setText(zState);
+            if (pitchState != null) pitchField.setText(pitchState);
             if (yawState != null) yawField.setText(yawState);
         }
     }
