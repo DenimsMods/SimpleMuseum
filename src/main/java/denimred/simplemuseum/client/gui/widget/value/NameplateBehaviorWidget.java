@@ -8,8 +8,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import denimred.simplemuseum.client.gui.screen.test.PuppetConfigScreen;
-import denimred.simplemuseum.client.gui.screen.test.SelectScreen;
+import denimred.simplemuseum.client.gui.screen.PuppetConfigScreen;
+import denimred.simplemuseum.client.gui.screen.SelectScreen;
 import denimred.simplemuseum.common.entity.puppet.manager.PuppetRenderManager.NameplateBehavior;
 import denimred.simplemuseum.common.entity.puppet.manager.value.PuppetValue;
 

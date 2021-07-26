@@ -4,7 +4,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.StringTextComponent;
 
 import denimred.simplemuseum.SimpleMuseum;
-import denimred.simplemuseum.client.gui.screen.test.PuppetConfigScreen;
+import denimred.simplemuseum.client.gui.screen.PuppetConfigScreen;
 import denimred.simplemuseum.common.i18n.lang.GuiLang;
 
 public class CopyPasteButtons extends NestedWidget {

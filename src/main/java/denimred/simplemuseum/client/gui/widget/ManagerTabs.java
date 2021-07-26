@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import denimred.simplemuseum.SimpleMuseum;
-import denimred.simplemuseum.client.gui.screen.test.PuppetConfigScreen;
+import denimred.simplemuseum.client.gui.screen.PuppetConfigScreen;
 import denimred.simplemuseum.common.entity.puppet.manager.PuppetSourceManager;
 import denimred.simplemuseum.common.entity.puppet.manager.PuppetValueManager;
 import denimred.simplemuseum.common.i18n.Descriptive;

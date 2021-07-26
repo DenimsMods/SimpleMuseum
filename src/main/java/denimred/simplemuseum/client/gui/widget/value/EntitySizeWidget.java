@@ -11,7 +11,7 @@ import net.minecraft.util.text.TextFormatting;
 
 import java.util.Optional;
 
-import denimred.simplemuseum.client.gui.screen.test.PuppetConfigScreen;
+import denimred.simplemuseum.client.gui.screen.PuppetConfigScreen;
 import denimred.simplemuseum.client.gui.widget.BetterTextFieldWidget;
 import denimred.simplemuseum.client.gui.widget.DescriptiveButton;
 import denimred.simplemuseum.client.util.ClientUtil;

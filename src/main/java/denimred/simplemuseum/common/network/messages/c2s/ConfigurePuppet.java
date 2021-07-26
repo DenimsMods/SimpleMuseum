@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import denimred.simplemuseum.client.util.ClientChangeList;
 import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 import denimred.simplemuseum.common.entity.puppet.manager.value.PuppetKey;
 import denimred.simplemuseum.common.entity.puppet.manager.value.PuppetValue;
@@ -27,11 +26,6 @@ import io.netty.handler.codec.EncoderException;
 public class ConfigurePuppet {
     private final int puppetId;
     private final List<Pair<PuppetKey, ?>> changes;
-
-    public ConfigurePuppet(PuppetEntity puppet, ClientChangeList list) {
-        this.puppetId = puppet.getEntityId();
-        this.changes = list.compile();
-    }
 
     private ConfigurePuppet(int puppetId, List<Pair<PuppetKey, ?>> changes) {
         this.puppetId = puppetId;

@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import denimred.simplemuseum.SimpleMuseum;
-import denimred.simplemuseum.client.gui.screen.test.PuppetConfigScreen;
-import denimred.simplemuseum.client.gui.screen.test.SelectScreen;
+import denimred.simplemuseum.client.gui.screen.PuppetConfigScreen;
+import denimred.simplemuseum.client.gui.screen.SelectScreen;
 import denimred.simplemuseum.client.gui.widget.BetterTextFieldWidget;
 import denimred.simplemuseum.client.gui.widget.IconButton;
 import denimred.simplemuseum.client.util.ResourceUtil;

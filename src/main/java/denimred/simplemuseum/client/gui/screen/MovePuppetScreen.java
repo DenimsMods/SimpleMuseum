@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 
 import denimred.simplemuseum.client.gui.widget.BoundTextFieldWidget;
 import denimred.simplemuseum.client.gui.widget.MovementButtons;
-import denimred.simplemuseum.client.util.ClientUtil;
 import denimred.simplemuseum.client.util.NumberUtil;
 import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 import denimred.simplemuseum.common.i18n.lang.GuiLang;
@@ -37,7 +36,6 @@ public class MovePuppetScreen extends PuppetScreen {
     public MovePuppetScreen(PuppetEntity puppet, @Nullable Screen parent) {
         super(puppet, parent);
         state = new SavedState();
-        ClientUtil.setLastPuppetScreen(MovePuppetScreen::new);
     }
 
     @Override

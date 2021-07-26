@@ -6,7 +6,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.fml.client.gui.widget.ExtendedButton;
 
-import denimred.simplemuseum.client.gui.screen.test.PuppetConfigScreen;
+import denimred.simplemuseum.client.gui.screen.PuppetConfigScreen;
 import denimred.simplemuseum.common.entity.puppet.manager.value.PuppetValue;
 
 public final class BoolWidget extends ValueWidget<Boolean, PuppetValue<Boolean, ?>> {

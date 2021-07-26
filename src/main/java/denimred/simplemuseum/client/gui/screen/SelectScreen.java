@@ -24,8 +24,7 @@ import javax.annotation.Nullable;
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.common.i18n.lang.GuiLang;
 
-@Deprecated
-public abstract class SelectObjectScreen<T> extends Screen {
+public abstract class SelectScreen<T> extends Screen {
     protected final Minecraft mc = Minecraft.getInstance();
     protected final Screen parent;
     @Nullable protected ListWidget.Entry selected;
@@ -33,7 +32,7 @@ public abstract class SelectObjectScreen<T> extends Screen {
     protected TextFieldWidget search;
     protected String lastSearchText = "";
 
-    protected SelectObjectScreen(Screen parent, ITextComponent title) {
+    protected SelectScreen(Screen parent, ITextComponent title) {
         super(title);
         this.parent = parent;
     }
@@ -84,6 +83,7 @@ public abstract class SelectObjectScreen<T> extends Screen {
                         list.refreshList();
                         selected = null;
                         list.setSelected(null);
+                        list.setScrollAmount(0.0D);
                     }
                 });
         children.add(search);
@@ -180,13 +180,7 @@ public abstract class SelectObjectScreen<T> extends Screen {
         protected boolean errored;
 
         public ListWidget(int top, int bottom, int width) {
-            super(
-                    mc,
-                    width,
-                    bottom - top,
-                    top,
-                    bottom,
-                    SelectObjectScreen.this.font.FONT_HEIGHT + 6);
+            super(mc, width, bottom - top, top, bottom, SelectScreen.this.font.FONT_HEIGHT + 6);
             this.listWidth = width;
             this.refreshList();
         }
@@ -202,32 +196,34 @@ public abstract class SelectObjectScreen<T> extends Screen {
         }
 
         public void refreshList() {
-            errored = false;
-            loading = true;
-            this.clearEntries();
-            SelectObjectScreen.this
-                    .getEntriesAsync()
-                    .exceptionally(
-                            t -> {
-                                errored = true;
-                                SimpleMuseum.LOGGER.error("Exception while refreshing list", t);
-                                return Collections.emptyList();
-                            })
-                    .thenAccept(
-                            entries -> {
-                                for (T entry : entries) {
-                                    if (SelectObjectScreen.this.matchesSearch(entry)) {
-                                        this.addEntry(new Entry(entry));
+            if (!loading) {
+                errored = false;
+                loading = true;
+                this.clearEntries();
+                SelectScreen.this
+                        .getEntriesAsync()
+                        .exceptionally(
+                                t -> {
+                                    errored = true;
+                                    SimpleMuseum.LOGGER.error("Exception while refreshing list", t);
+                                    return Collections.emptyList();
+                                })
+                        .thenAccept(
+                                entries -> {
+                                    this.clearEntries();
+                                    for (T entry : entries) {
+                                        if (SelectScreen.this.matchesSearch(entry)) {
+                                            this.addEntry(new Entry(entry));
+                                        }
                                     }
-                                }
-                                loading = false;
-                            });
+                                    loading = false;
+                                });
+            }
         }
 
         @Override
         protected void renderBackground(MatrixStack matrixStack) {
-            SelectObjectScreen.this.fillGradient(
-                    matrixStack, x0, y0, x1, y1, 0xc0101010, 0xd0101010);
+            SelectScreen.this.fillGradient(matrixStack, x0, y0, x1, y1, 0xc0101010, 0xd0101010);
         }
 
         @Override
@@ -262,8 +258,8 @@ public abstract class SelectObjectScreen<T> extends Screen {
             }
         }
 
-        protected class Entry extends ExtendedList.AbstractListEntry<Entry> {
-            protected final T value;
+        public class Entry extends ExtendedList.AbstractListEntry<Entry> {
+            public final T value;
 
             public Entry(T value) {
                 this.value = value;
@@ -296,7 +292,7 @@ public abstract class SelectObjectScreen<T> extends Screen {
             @Override
             public boolean mouseClicked(
                     double p_mouseClicked_1_, double p_mouseClicked_3_, int p_mouseClicked_5_) {
-                SelectObjectScreen.this.setSelected(this);
+                SelectScreen.this.setSelected(this);
                 ListWidget.this.setSelected(this);
                 return false;
             }

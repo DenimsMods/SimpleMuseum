@@ -12,21 +12,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import denimred.simplemuseum.SimpleMuseum;
-import denimred.simplemuseum.client.gui.screen.test.PuppetConfigScreen;
+import denimred.simplemuseum.client.gui.screen.PuppetConfigScreen;
 import denimred.simplemuseum.client.gui.widget.IconButton;
 import denimred.simplemuseum.client.gui.widget.LabelWidget;
 import denimred.simplemuseum.client.gui.widget.LabelWidget.AnchorX;
 import denimred.simplemuseum.client.gui.widget.LabelWidget.AnchorY;
 import denimred.simplemuseum.client.gui.widget.NestedWidget;
 import denimred.simplemuseum.client.util.ClientUtil;
-import denimred.simplemuseum.client.util.ISavable;
 import denimred.simplemuseum.client.util.LazyUtil;
 import denimred.simplemuseum.common.entity.puppet.manager.value.PuppetValue;
 import denimred.simplemuseum.common.i18n.Descriptive;
 import denimred.simplemuseum.common.i18n.I18nUtil;
 
 public abstract class ValueWidget<T, V extends PuppetValue<T, ?>> extends NestedWidget
-        implements Descriptive, ISavable<T> {
+        implements Descriptive {
     protected static final Minecraft MC = ClientUtil.MC;
     protected static final ResourceLocation BUTTONS_TEXTURE =
             new ResourceLocation(SimpleMuseum.MOD_ID, "textures/gui/value_buttons.png");
@@ -40,7 +39,7 @@ public abstract class ValueWidget<T, V extends PuppetValue<T, ?>> extends Nested
     protected final IconButton deleteButton;
     protected final List<IFormattableTextComponent> description = new ArrayList<>();
     protected final List<IFormattableTextComponent> advancedDescription = new ArrayList<>();
-    protected T original;
+    protected final T original;
     protected boolean changed;
     protected int heightMargin = 0;
 
@@ -198,16 +197,5 @@ public abstract class ValueWidget<T, V extends PuppetValue<T, ?>> extends Nested
     @Override
     public boolean hideDescription() {
         return false;
-    }
-
-    @Override
-    public T save() {
-        return original;
-    }
-
-    @Override
-    public void load(T t) {
-        original = t;
-        this.detectAndSync();
     }
 }

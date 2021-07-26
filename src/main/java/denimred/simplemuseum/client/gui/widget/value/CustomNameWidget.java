@@ -3,7 +3,7 @@ package denimred.simplemuseum.client.gui.widget.value;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 
-import denimred.simplemuseum.client.gui.screen.test.PuppetConfigScreen;
+import denimred.simplemuseum.client.gui.screen.PuppetConfigScreen;
 import denimred.simplemuseum.client.gui.widget.BetterTextFieldWidget;
 import denimred.simplemuseum.common.entity.puppet.manager.value.PuppetValue;
 import denimred.simplemuseum.common.entity.puppet.manager.value.vanilla.CustomNameValue;

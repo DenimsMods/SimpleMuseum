@@ -28,15 +28,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
 import denimred.simplemuseum.SimpleMuseum;
-import denimred.simplemuseum.client.gui.screen.ConfigurePuppetScreen;
-import denimred.simplemuseum.client.gui.screen.PuppetScreen;
-import denimred.simplemuseum.client.gui.screen.test.PuppetConfigScreen;
+import denimred.simplemuseum.client.gui.screen.PuppetConfigScreen;
 import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 import denimred.simplemuseum.common.entity.puppet.manager.PuppetRenderManager;
 import denimred.simplemuseum.common.init.MuseumKeybinds;
@@ -59,8 +56,6 @@ public class ClientUtil {
             MODEL_BOUNDS = new Object2ReferenceOpenHashMap<>();
     private static final long WINDOW_HANDLE = MC != null ? MC.getMainWindow().getHandle() : 0L;
     private static final Int2LongMap CURSORS = new Int2LongArrayMap(6);
-    private static BiFunction<PuppetEntity, Screen, ? extends PuppetScreen> lastPuppetScreen =
-            ConfigurePuppetScreen::new;
     @Nullable private static PuppetEntity selectedPuppet;
     private static boolean holdingCane;
 
@@ -119,14 +114,8 @@ public class ClientUtil {
         return selectedPuppet;
     }
 
-    public static void setLastPuppetScreen(
-            BiFunction<PuppetEntity, Screen, ? extends PuppetScreen> screenBuilder) {
-        lastPuppetScreen = screenBuilder;
-    }
-
     public static void openPuppetScreen(PuppetEntity puppet, @Nullable Screen parent) {
         MC.displayGuiScreen(new PuppetConfigScreen(puppet, parent));
-        //                MC.displayGuiScreen(lastPuppetScreen.apply(puppet, parent));
     }
 
     public static void setCursor(int shape) {

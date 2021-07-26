@@ -1,4 +1,4 @@
-package denimred.simplemuseum.client.gui.screen.test;
+package denimred.simplemuseum.client.gui.screen;
 
 import com.google.common.collect.Multimap;
 import com.mojang.blaze3d.matrix.MatrixStack;
@@ -27,7 +27,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import denimred.simplemuseum.SimpleMuseum;
-import denimred.simplemuseum.client.gui.screen.MovePuppetScreen;
 import denimred.simplemuseum.client.gui.widget.BetterButton;
 import denimred.simplemuseum.client.gui.widget.ConfirmPopupWidget;
 import denimred.simplemuseum.client.gui.widget.CopyPasteButtons;
@@ -58,7 +57,7 @@ public class PuppetConfigScreen extends Screen {
     protected CopyPasteButtons copyPaste;
     protected IconButton move;
     protected ManagerTabs tabs;
-    protected Multimap<PuppetValueManager, ValueWidget<?, ?>> valueWidgets;
+    protected final Multimap<PuppetValueManager, ValueWidget<?, ?>> valueWidgets;
     protected WidgetList<PuppetConfigScreen> list;
     protected BetterButton doneButton;
     protected BetterButton cancelButton;

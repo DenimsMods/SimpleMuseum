@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import denimred.simplemuseum.SimpleMuseum;
-import denimred.simplemuseum.client.gui.screen.test.PuppetConfigScreen;
+import denimred.simplemuseum.client.gui.screen.PuppetConfigScreen;
 import denimred.simplemuseum.client.util.PlayerRotationHelper;
 import denimred.simplemuseum.client.util.ScissorUtil;
 import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
@@ -56,10 +56,10 @@ public class PuppetPreviewWidget extends Widget {
     protected float previewPitch;
     protected float previewX;
     protected float previewY;
-    protected int originalX;
-    protected int originalY;
-    protected int originalWidth;
-    protected int originalHeight;
+    protected final int originalX;
+    protected final int originalY;
+    protected final int originalWidth;
+    protected final int originalHeight;
     protected float fullscreenness;
     protected boolean fullscreen;
     protected boolean transitioning;

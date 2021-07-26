@@ -26,7 +26,7 @@ import net.minecraftforge.common.util.Constants.NBT;
 import java.util.LinkedList;
 import java.util.Map;
 
-import denimred.simplemuseum.client.gui.screen.test.PuppetConfigScreen;
+import denimred.simplemuseum.client.gui.screen.PuppetConfigScreen;
 import denimred.simplemuseum.client.gui.widget.LabelWidget;
 import denimred.simplemuseum.client.gui.widget.value.AnimationWidget;
 import denimred.simplemuseum.client.gui.widget.value.BoolWidget;

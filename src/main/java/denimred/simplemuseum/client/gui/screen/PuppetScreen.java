@@ -15,9 +15,6 @@ import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 @Deprecated // Boy I sure do love inheritance :)
 public abstract class PuppetScreen extends Screen {
     protected static final int MARGIN = 4;
-    protected static final int TEXT_VALID = 0xe0e0e0;
-    protected static final int TEXT_INVALID = 0xffff00;
-    protected static final int TEXT_ERROR = 0xff0000;
     protected final Minecraft mc = Minecraft.getInstance(); // Parent's is nullable for some reason
     protected final PuppetEntity puppet;
     @Nullable protected final Screen parent;
@@ -26,11 +23,6 @@ public abstract class PuppetScreen extends Screen {
         super(puppet.getDisplayName());
         this.puppet = puppet;
         this.parent = parent;
-    }
-
-    protected static void drawStringLeft(
-            MatrixStack matrixStack, FontRenderer font, Widget widget, ITextComponent text) {
-        drawStringLeft(matrixStack, font, widget, text, 0xA0A0A0);
     }
 
     protected static void drawStringLeft(
