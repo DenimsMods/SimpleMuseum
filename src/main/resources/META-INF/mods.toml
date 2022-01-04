@@ -29,7 +29,7 @@ side = "BOTH"
 [[dependencies."${mod_id}"]]
 modId = "geckolib3"
 mandatory = true
-versionRange = "[3.0.15,)"
+versionRange = "[3.0.50,)"
 ordering = "AFTER"
 side = "BOTH"
 [[dependencies."${mod_id}"]]

@@ -20,11 +20,11 @@ import software.bernie.geckolib3.core.processor.AnimationProcessor;
 import software.bernie.geckolib3.core.processor.IBone;
 import software.bernie.geckolib3.geo.exception.GeckoLibException;
 import software.bernie.geckolib3.geo.render.built.GeoModel;
-import software.bernie.geckolib3.model.AnimatedGeoModel;
+import software.bernie.geckolib3.model.AnimatedTickingGeoModel;
 import software.bernie.geckolib3.model.provider.data.EntityModelData;
 
 // I'm not proud of any of these "emergency fallback" fixes :/
-public class PuppetModel extends AnimatedGeoModel<PuppetEntity> {
+public class PuppetModel extends AnimatedTickingGeoModel<PuppetEntity> {
     @Override
     public ResourceLocation getModelLocation(PuppetEntity puppet) {
         return puppet.sourceManager.model.getSafe();

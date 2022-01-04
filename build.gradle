@@ -82,11 +82,11 @@ dependencies {
     forge "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
     // GeckoLib
-    modImplementation "software.bernie.geckolib:geckolib-forge-1.16.5:3.0.57"
+    modImplementation "software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}"
     // CryptMaster
-    modImplementation "blank:cryptmaster:0.3.2-forge"
-    modRuntimeOnly "blank:architectury:1.8.131-forge"
-    runtimeOnly "org.jetbrains.kotlin:kotlin-stdlib:1.4.31"
+    modImplementation "blank:cryptmaster:${cryptmaster_version}-forge"
+    modRuntimeOnly "blank:architectury:${architectury_version}-forge"
+    runtimeOnly "org.jetbrains.kotlin:kotlin-stdlib:${kotlin_stdlib_version}"
     // http://www.jhlabs.com/ip/filters/index.html (For wacky texture datagen)
     implementation ":Filters:"
 }

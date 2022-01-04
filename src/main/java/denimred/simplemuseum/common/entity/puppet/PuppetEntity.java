@@ -59,10 +59,11 @@ import denimred.simplemuseum.common.util.IValueSerializer;
 import denimred.simplemuseum.common.util.MathUtil;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceLinkedOpenHashMap;
 import software.bernie.geckolib3.core.IAnimatable;
+import software.bernie.geckolib3.core.IAnimationTickable;
 import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 
-public final class PuppetEntity extends LivingEntity implements IAnimatable {
+public final class PuppetEntity extends LivingEntity implements IAnimatable, IAnimationTickable {
     public static final EntityDataAccessor<OptionalInt> POSSESSOR_ID =
             SynchedEntityData.defineId(
                     PuppetEntity.class, EntityDataSerializers.OPTIONAL_UNSIGNED_INT);
@@ -572,5 +573,10 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable {
             if (possessor != null) possessor.refreshDimensions();
             if (prev != null) prev.refreshDimensions();
         }
+    }
+
+    @Override
+    public int tickTimer() {
+        return tickCount;
     }
 }
