@@ -1,12 +1,12 @@
 package denimred.simplemuseum.common.network.messages.c2s;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.UUID;
@@ -17,29 +17,29 @@ import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 @Deprecated
 public class C2SMovePuppet {
     private final UUID uuid;
-    private final Vector3d pos;
+    private final Vec3 pos;
     private final float pitch;
     private final float yaw;
 
-    public C2SMovePuppet(UUID uuid, Vector3d pos, float pitch, float yaw) {
+    public C2SMovePuppet(UUID uuid, Vec3 pos, float pitch, float yaw) {
         this.uuid = uuid;
         this.pos = pos;
         this.pitch = pitch;
         this.yaw = yaw;
     }
 
-    public static C2SMovePuppet decode(PacketBuffer buf) {
-        final UUID puppet = buf.readUniqueId();
+    public static C2SMovePuppet decode(FriendlyByteBuf buf) {
+        final UUID puppet = buf.readUUID();
         final double x = buf.readDouble();
         final double y = buf.readDouble();
         final double z = buf.readDouble();
         final float pitch = buf.readFloat();
         final float yaw = buf.readFloat();
-        return new C2SMovePuppet(puppet, new Vector3d(x, y, z), pitch, yaw);
+        return new C2SMovePuppet(puppet, new Vec3(x, y, z), pitch, yaw);
     }
 
-    public void encode(PacketBuffer buf) {
-        buf.writeUniqueId(uuid);
+    public void encode(FriendlyByteBuf buf) {
+        buf.writeUUID(uuid);
         buf.writeDouble(pos.x);
         buf.writeDouble(pos.y);
         buf.writeDouble(pos.z);
@@ -55,22 +55,21 @@ public class C2SMovePuppet {
 
     @SuppressWarnings("deprecation") // Mojang >:I
     private void doWork(NetworkEvent.Context ctx) {
-        final ServerPlayerEntity sender = ctx.getSender();
+        final ServerPlayer sender = ctx.getSender();
         if (sender != null) {
-            final ServerWorld world = sender.getServerWorld();
-            final Entity entity = world.getEntityByUuid(uuid);
+            final ServerLevel world = sender.getLevel();
+            final Entity entity = world.getEntity(uuid);
             if (entity instanceof PuppetEntity) {
                 final PuppetEntity puppet = (PuppetEntity) entity;
                 if (puppet.exists()
-                        && world.isBlockLoaded(new BlockPos(puppet.getPositionVec()))
-                        && world.isBlockLoaded(new BlockPos(pos))) {
+                        && world.hasChunkAt(new BlockPos(puppet.position()))
+                        && world.hasChunkAt(new BlockPos(pos))) {
                     // TODO: Do permissions check?
-                    puppet.setLocationAndAngles(
-                            pos.x, pos.y, pos.z, MathHelper.wrapDegrees(yaw), pitch);
-                    puppet.prevRotationYaw = puppet.rotationYaw;
-                    puppet.prevRotationPitch = puppet.rotationPitch;
-                    puppet.setRotationYawHead(puppet.rotationYaw);
-                    puppet.setRenderYawOffset(puppet.rotationYaw);
+                    puppet.moveTo(pos.x, pos.y, pos.z, Mth.wrapDegrees(yaw), pitch);
+                    puppet.yRotO = puppet.yRot;
+                    puppet.xRotO = puppet.xRot;
+                    puppet.setYHeadRot(puppet.yRot);
+                    puppet.setYBodyRot(puppet.yRot);
                 }
             }
         }

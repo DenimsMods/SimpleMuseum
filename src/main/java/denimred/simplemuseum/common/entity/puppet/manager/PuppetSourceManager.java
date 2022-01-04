@@ -1,7 +1,7 @@
 package denimred.simplemuseum.common.entity.puppet.manager;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
@@ -49,17 +49,17 @@ public final class PuppetSourceManager extends PuppetValueManager {
     }
 
     private static boolean validateModel(PuppetEntity puppet, ResourceLocation val) {
-        return !puppet.world.isRemote
+        return !puppet.level.isClientSide
                 || GeckoLibCache.getInstance().getGeoModels().get(val) != null;
     }
 
     private static boolean validateTexture(PuppetEntity puppet, ResourceLocation val) {
-        return !puppet.world.isRemote
+        return !puppet.level.isClientSide
                 || Minecraft.getInstance().getResourceManager().hasResource(val);
     }
 
     private static boolean validateAnimations(PuppetEntity puppet, ResourceLocation val) {
-        return !puppet.world.isRemote
+        return !puppet.level.isClientSide
                 || GeckoLibCache.getInstance().getAnimations().get(val) != null;
     }
 }

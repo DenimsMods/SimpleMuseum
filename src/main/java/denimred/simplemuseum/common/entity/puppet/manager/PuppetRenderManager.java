@@ -3,8 +3,8 @@ package denimred.simplemuseum.common.entity.puppet.manager;
 import com.mojang.datafixers.util.Pair;
 
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.AABB;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -28,7 +28,11 @@ public final class PuppetRenderManager extends PuppetValueManager {
 
     public static final FloatProvider SCALE =
             new FloatProvider(
-                    key("Scale"), 1.0F, (puppet, scale) -> puppet.recalculateSize(), 0.01F, 100.0F);
+                    key("Scale"),
+                    1.0F,
+                    (puppet, scale) -> puppet.refreshDimensions(),
+                    0.01F,
+                    100.0F);
     //    public static final BasicProvider<RenderLayer> DEFAULT_RENDER_LAYER =
     //            new BasicProvider<>(
     //                    key("DefaultRenderLayer"), RenderLayer.CUTOUT, RenderLayer.SERIALIZER);
@@ -62,28 +66,28 @@ public final class PuppetRenderManager extends PuppetValueManager {
         return new PuppetKey(NBT_KEY, provider);
     }
 
-    public AxisAlignedBB getRenderBounds() {
-        final AxisAlignedBB bounds =
+    public AABB getRenderBounds() {
+        final AABB bounds =
                 ClientUtil.getPuppetBounds(puppet)
                         .map(Pair::getSecond)
                         .orElseGet(this::getOffsetPuppetBounds);
-        final float scale = puppet.getRenderScale();
-        return new AxisAlignedBB(
+        final float scale = puppet.getScale();
+        return new AABB(
                         bounds.minX * scale,
                         bounds.minY * scale,
                         bounds.minZ * scale,
                         bounds.maxX * scale,
                         bounds.maxY * scale,
                         bounds.maxZ * scale)
-                .offset(puppet.getPositionVec());
+                .move(puppet.position());
     }
 
-    private AxisAlignedBB getOffsetPuppetBounds() {
-        return puppet.getBoundingBox().offset(puppet.getPositionVec().inverse());
+    private AABB getOffsetPuppetBounds() {
+        return puppet.getBoundingBox().move(puppet.position().reverse());
     }
 
     public RenderType getRenderType(ResourceLocation texture) {
-        return RenderType.getEntityCutoutNoCull(
+        return RenderType.entityCutoutNoCull(
                 texture); // ClientUtil.typeFromLayer(defaultRenderLayer.get(), texture);
     }
 

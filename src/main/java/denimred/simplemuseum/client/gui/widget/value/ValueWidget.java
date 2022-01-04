@@ -1,12 +1,12 @@
 package denimred.simplemuseum.client.gui.widget.value;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,32 +32,27 @@ public abstract class ValueWidget<T, V extends PuppetValue<T, ?>> extends Nested
     protected static final int HEIGHT_MARGIN = 8;
     protected static final int TITLE_OFFSET = 15;
     public final PuppetConfigScreen parent;
-    protected final V value;
+    protected final V valueRef;
     protected final LabelWidget titleLabel;
     protected final IconButton revertButton;
     protected final IconButton resetButton;
     protected final IconButton deleteButton;
-    protected final List<IFormattableTextComponent> description = new ArrayList<>();
-    protected final List<IFormattableTextComponent> advancedDescription = new ArrayList<>();
+    protected final List<MutableComponent> description = new ArrayList<>();
+    protected final List<MutableComponent> advancedDescription = new ArrayList<>();
     protected final T original;
     protected boolean changed;
     protected int heightMargin = 0;
 
-    public ValueWidget(PuppetConfigScreen parent, int x, int y, int width, int height, V value) {
-        super(x, y, width, height, new TranslationTextComponent(value.provider.translationKey));
+    public ValueWidget(PuppetConfigScreen parent, int x, int y, int width, int height, V valueRef) {
+        super(x, y, width, height, new TranslatableComponent(valueRef.provider.translationKey));
         this.parent = parent;
-        this.value = value;
-        this.original = value.get();
+        this.valueRef = valueRef;
+        this.original = valueRef.get();
         this.prepareText();
         this.titleLabel =
                 this.addChild(
                         new LabelWidget(
-                                x + width / 2,
-                                y,
-                                MC.fontRenderer,
-                                AnchorX.CENTER,
-                                AnchorY.TOP,
-                                message));
+                                x + width / 2, y, MC.font, AnchorX.CENTER, AnchorY.TOP, message));
         titleLabel.setTooltip((lw, ms, mx, my) -> parent.renderWidgetTooltip(this, ms, mx, my));
         revertButton =
                 this.addChild(
@@ -74,7 +69,7 @@ public abstract class ValueWidget<T, V extends PuppetValue<T, ?>> extends Nested
                                 20,
                                 this::revert,
                                 parent::renderWidgetTooltip,
-                                new StringTextComponent("Revert Changes")));
+                                new TextComponent("Revert Changes")));
         resetButton =
                 this.addChild(
                         new IconButton(
@@ -90,7 +85,7 @@ public abstract class ValueWidget<T, V extends PuppetValue<T, ?>> extends Nested
                                 20,
                                 this::reset,
                                 parent::renderWidgetTooltip,
-                                new StringTextComponent("Reset To Default")));
+                                new TextComponent("Reset To Default")));
         deleteButton =
                 this.addChild(
                         new IconButton(
@@ -106,7 +101,7 @@ public abstract class ValueWidget<T, V extends PuppetValue<T, ?>> extends Nested
                                 20,
                                 this::delete,
                                 parent::renderWidgetTooltip,
-                                new StringTextComponent("Delete/Clear")));
+                                new TextComponent("Delete/Clear")));
         deleteButton.visible = false;
     }
 
@@ -118,18 +113,20 @@ public abstract class ValueWidget<T, V extends PuppetValue<T, ?>> extends Nested
 
     protected void prepareText() {
         description.add(
-                new TranslationTextComponent(I18nUtil.desc(value.provider.translationKey))
-                        .mergeStyle(TextFormatting.GRAY));
+                new TranslatableComponent(I18nUtil.desc(valueRef.provider.translationKey))
+                        .withStyle(ChatFormatting.GRAY));
         advancedDescription.add(
-                new StringTextComponent(value.provider.key.toString())
-                        .mergeStyle(TextFormatting.DARK_GRAY));
+                new TextComponent(valueRef.provider.key.toString())
+                        .withStyle(ChatFormatting.DARK_GRAY));
         advancedDescription.add(
-                new StringTextComponent(
-                                "- " + LazyUtil.getNbtTagName(value.provider.serializer.getTagId()))
-                        .mergeStyle(TextFormatting.DARK_GRAY));
+                new TextComponent(
+                                "- "
+                                        + LazyUtil.getNbtTagName(
+                                                valueRef.provider.serializer.getTagId()))
+                        .withStyle(ChatFormatting.DARK_GRAY));
         advancedDescription.add(
-                new StringTextComponent("- " + value.provider.serializer.getType().getSimpleName())
-                        .mergeStyle(TextFormatting.DARK_GRAY));
+                new TextComponent("- " + valueRef.provider.serializer.getType().getSimpleName())
+                        .withStyle(ChatFormatting.DARK_GRAY));
     }
 
     protected void setChangeButtonsPos(int x, int y) {
@@ -142,12 +139,12 @@ public abstract class ValueWidget<T, V extends PuppetValue<T, ?>> extends Nested
     }
 
     protected void revert(Button button) {
-        value.set(original);
+        valueRef.set(original);
         this.detectAndSync();
     }
 
     protected void reset(Button button) {
-        value.reset();
+        valueRef.reset();
         this.detectAndSync();
     }
 
@@ -168,11 +165,11 @@ public abstract class ValueWidget<T, V extends PuppetValue<T, ?>> extends Nested
     public void syncWithValue() {}
 
     protected boolean hasChanged() {
-        return !value.get().equals(original);
+        return !valueRef.get().equals(original);
     }
 
     protected boolean isDefault() {
-        return value.isDefault();
+        return valueRef.isDefault();
     }
 
     protected boolean canDelete() {
@@ -180,17 +177,17 @@ public abstract class ValueWidget<T, V extends PuppetValue<T, ?>> extends Nested
     }
 
     @Override
-    public IFormattableTextComponent getTitle() {
-        return (IFormattableTextComponent) message;
+    public MutableComponent getTitle() {
+        return (MutableComponent) message;
     }
 
     @Override
-    public List<IFormattableTextComponent> getDescription() {
+    public List<MutableComponent> getDescription() {
         return description;
     }
 
     @Override
-    public List<IFormattableTextComponent> getAdvancedDescription() {
+    public List<MutableComponent> getAdvancedDescription() {
         return advancedDescription;
     }
 

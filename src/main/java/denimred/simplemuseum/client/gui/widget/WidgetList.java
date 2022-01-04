@@ -1,12 +1,12 @@
 package denimred.simplemuseum.client.gui.widget;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.util.Mth;
 
 import java.awt.Color;
 
@@ -21,15 +21,15 @@ public class WidgetList<T extends Screen> extends NestedWidget {
     protected boolean scrolling;
 
     public WidgetList(T parent, int x, int y, int width, int height) {
-        this(parent, x, y, width, height, StringTextComponent.EMPTY);
+        this(parent, x, y, width, height, TextComponent.EMPTY);
     }
 
-    public WidgetList(T parent, int x, int y, int width, int height, ITextComponent title) {
+    public WidgetList(T parent, int x, int y, int width, int height, Component title) {
         super(x, y, width, height, title);
         this.parent = parent;
     }
 
-    public void add(Widget widget) {
+    public void add(AbstractWidget widget) {
         this.addChild(widget);
         final int realWidth = width - scrollBarWidth;
         widget.setWidth(realWidth);
@@ -51,7 +51,7 @@ public class WidgetList<T extends Screen> extends NestedWidget {
         }
     }
 
-    public void remove(Widget widget) {
+    public void remove(AbstractWidget widget) {
         if (children.contains(widget)) {
             this.removeChild(widget);
             totalHeight -= widget.getHeight();
@@ -76,7 +76,7 @@ public class WidgetList<T extends Screen> extends NestedWidget {
             scrollPos = pos < 0 ? 0 : Math.min(pos, maxScroll);
             if (scrollPos != last) {
                 final int diff = scrollPos - last;
-                for (Widget child : children) {
+                for (AbstractWidget child : children) {
                     if (child instanceof NestedWidget) {
                         ((NestedWidget) child).setY(child.y - diff);
                     } else {
@@ -98,7 +98,7 @@ public class WidgetList<T extends Screen> extends NestedWidget {
 
     public void setScrollBarLeft(boolean scrollBarLeft) {
         this.scrollBarLeft = scrollBarLeft;
-        for (Widget child : children) {
+        for (AbstractWidget child : children) {
             final int childX = scrollBarLeft ? x + scrollBarWidth : x;
             if (child instanceof NestedWidget) {
                 ((NestedWidget) child).setX(childX);
@@ -114,7 +114,7 @@ public class WidgetList<T extends Screen> extends NestedWidget {
 
     public void setScrollBarWidth(int scrollBarWidth) {
         this.scrollBarWidth = scrollBarWidth;
-        for (Widget child : children) {
+        for (AbstractWidget child : children) {
             child.setWidth(width - scrollBarWidth);
             if (scrollBarLeft) {
                 if (child instanceof NestedWidget) {
@@ -129,7 +129,7 @@ public class WidgetList<T extends Screen> extends NestedWidget {
     public int getScrollBarHeight() {
         if (totalHeight > height) {
             final double factor = (double) height / totalHeight;
-            return MathHelper.clamp((int) (factor * height), 40, height);
+            return Mth.clamp((int) (factor * height), 40, height);
         } else {
             return height;
         }
@@ -193,44 +193,44 @@ public class WidgetList<T extends Screen> extends NestedWidget {
     }
 
     @Override
-    public void renderWidget(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        fill(matrixStack, x, y, x + width, y + height, 0x66000000);
-        this.renderScrollBar(matrixStack);
+    public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
+        fill(poseStack, x, y, x + width, y + height, 0x66000000);
+        this.renderScrollBar(poseStack);
         ScissorUtil.start(
                 scrollBarLeft ? x + scrollBarWidth : x, y, width - scrollBarWidth, height);
         for (int i = 0, size = children.size(); i < size; i++) {
-            final Widget child = children.get(i);
+            final AbstractWidget child = children.get(i);
             if (this.isWidgetWithin(child)) {
                 final int color = Color.HSBtoRGB(0.0F, 0.0F, i % 2 == 0 ? 0.1F : 0.2F) & 0x66FFFFFF;
-                fill(matrixStack, x, child.y, x + width, child.y + child.getHeight(), color);
+                fill(poseStack, x, child.y, x + width, child.y + child.getHeight(), color);
             }
         }
-        super.renderWidget(matrixStack, mouseX, mouseY, partialTicks);
+        super.renderButton(poseStack, mouseX, mouseY, partialTicks);
         ScissorUtil.stop();
     }
 
-    protected boolean isWidgetWithin(Widget widget) {
+    protected boolean isWidgetWithin(AbstractWidget widget) {
         return widget.x <= x + width
                 && widget.x + widget.getWidth() >= x
                 && widget.y <= y + height
                 && widget.y + widget.getHeight() >= y;
     }
 
-    protected void renderScrollBar(MatrixStack matrixStack) {
+    protected void renderScrollBar(PoseStack poseStack) {
         final int minX = scrollBarLeft ? x : x + width - scrollBarWidth;
         final int maxX = minX + scrollBarWidth;
         final int minY = y;
         final int maxY = y + height;
-        fill(matrixStack, minX, minY, maxX, maxY, 0x55000000);
+        fill(poseStack, minX, minY, maxX, maxY, 0x55000000);
         final int barHeight = this.getScrollBarHeight();
         final int barY = this.getScrollBarY();
-        fill(matrixStack, minX, barY, maxX, barY + barHeight, 0xFFDDDDDD);
-        fill(matrixStack, minX + 1, barY + 1, maxX, barY + barHeight, 0xFF666666);
-        fill(matrixStack, minX + 1, barY + 1, maxX - 1, barY + barHeight - 1, 0xFFAAAAAA);
+        fill(poseStack, minX, barY, maxX, barY + barHeight, 0xFFDDDDDD);
+        fill(poseStack, minX + 1, barY + 1, maxX, barY + barHeight, 0xFF666666);
+        fill(poseStack, minX + 1, barY + 1, maxX - 1, barY + barHeight - 1, 0xFFAAAAAA);
         final int lines = barHeight / 6;
         for (int i = 0; i < lines; i++) {
             final int y = barY + barHeight / 2 - lines + 2 * i;
-            hLine(matrixStack, minX, maxX - 1, y, 0x44000000);
+            hLine(poseStack, minX, maxX - 1, y, 0x44000000);
         }
     }
 }

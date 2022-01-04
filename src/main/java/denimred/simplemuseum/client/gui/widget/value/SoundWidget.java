@@ -1,10 +1,10 @@
 package denimred.simplemuseum.client.gui.widget.value;
 
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.ResourceLocationException;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.ResourceLocationException;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ public final class SoundWidget
         extends ValueWidget<ResourceLocation, CheckedValue<ResourceLocation>> {
     public static final ResourceLocation FOLDER_BUTTON_TEXTURE =
             new ResourceLocation(SimpleMuseum.MOD_ID, "textures/gui/folder_button.png");
-    private final TranslationTextComponent title;
+    private final TranslatableComponent title;
     private final IconButton selectButton;
     private final SoundTextField animField;
 
@@ -39,7 +39,7 @@ public final class SoundWidget
             int height,
             CheckedValue<ResourceLocation> value) {
         super(parent, x, y, width, height, value);
-        title = new TranslationTextComponent(value.provider.translationKey);
+        title = new TranslatableComponent(value.provider.translationKey);
         selectButton =
                 this.addChild(
                         new IconButton(
@@ -73,26 +73,26 @@ public final class SoundWidget
 
     @Override
     public void syncWithValue() {
-        animField.setText(value.get().toString());
-        animField.setCursorPositionZero();
+        animField.setValue(valueRef.get().toString());
+        animField.moveCursorToStart();
     }
 
     private void selectSource(Button button) {
-        MC.displayGuiScreen(new SoundSelectScreen());
+        MC.setScreen(new SoundSelectScreen());
     }
 
     private final class SoundTextField extends BetterTextFieldWidget {
         public SoundTextField() {
-            super(MC.fontRenderer, 0, 0, 0, 20, title);
-            this.setMaxStringLength(MAX_PACKET_STRING);
-            this.setValidator(s -> ResourceLocation.tryCreate(s) != null);
+            super(MC.font, 0, 0, 0, 20, title);
+            this.setMaxLength(MAX_PACKET_STRING);
+            this.setFilter(s -> ResourceLocation.tryParse(s) != null);
             this.setResponder(this::respond);
         }
 
         private void respond(String s) {
             try {
-                value.set(new ResourceLocation(s));
-                if (value.isValid()) {
+                valueRef.set(new ResourceLocation(s));
+                if (valueRef.isValid()) {
                     this.setTextColor(TEXT_VALID);
                 } else {
                     this.setTextColor(TEXT_INVALID);
@@ -105,27 +105,27 @@ public final class SoundWidget
     }
 
     private final class SoundSelectScreen extends SelectScreen<ResourceLocation> {
-        protected SoundSelectScreen() {
-            super(SoundWidget.this.parent, new StringTextComponent("Select Sound Effect"));
+        private SoundSelectScreen() {
+            super(SoundWidget.this.parent, new TextComponent("Select Sound Effect"));
         }
 
         @Override
         protected void onSave() {
             if (selected != null) {
-                value.set(selected.value);
+                valueRef.set(selected.value);
                 SoundWidget.this.syncWithValue();
             }
         }
 
         @Override
         protected boolean isSelected(ListWidget.Entry entry) {
-            return entry.value.equals(value.get());
+            return entry.value.equals(valueRef.get());
         }
 
         @Override
         protected CompletableFuture<List<ResourceLocation>> getEntriesAsync() {
             return CompletableFuture.completedFuture(
-                    new ArrayList<>(MC.getSoundHandler().getAvailableSounds()));
+                    new ArrayList<>(MC.getSoundManager().getAvailableSounds()));
         }
     }
 }

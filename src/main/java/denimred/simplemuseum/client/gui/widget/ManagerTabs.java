@@ -1,9 +1,9 @@
 package denimred.simplemuseum.client.gui.widget;
 
-import net.minecraft.client.audio.SoundHandler;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.client.sounds.SoundManager;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -27,7 +27,7 @@ public final class ManagerTabs extends NestedWidget {
             int y,
             List<PuppetValueManager> managers,
             Consumer<PuppetValueManager> callback) {
-        super(x, y, 20 * managers.size(), 20, StringTextComponent.EMPTY);
+        super(x, y, 20 * managers.size(), 20, TextComponent.EMPTY);
         this.callback = callback.andThen(m -> lastManager = m.nbtKey);
         final int count = managers.size();
         for (int i = 0; i < count; i++) {
@@ -44,7 +44,7 @@ public final class ManagerTabs extends NestedWidget {
     public class TabButton extends IconButton implements Descriptive {
         private final PuppetValueManager manager;
 
-        public TabButton(int x, int y, int index, PuppetValueManager manager, ITooltip tooltip) {
+        public TabButton(int x, int y, int index, PuppetValueManager manager, OnTooltip tooltip) {
             super(
                     x,
                     y,
@@ -68,9 +68,9 @@ public final class ManagerTabs extends NestedWidget {
         }
 
         @Override
-        public void playDownSound(SoundHandler handler) {
-            if (!selected.equals(manager.nbtKey)) {
-                super.playDownSound(handler);
+        public void playDownSound(SoundManager manager) {
+            if (!selected.equals(this.manager.nbtKey)) {
+                super.playDownSound(manager);
             }
         }
 
@@ -85,12 +85,12 @@ public final class ManagerTabs extends NestedWidget {
         }
 
         @Override
-        public IFormattableTextComponent getTitle() {
+        public MutableComponent getTitle() {
             return manager.getTitle();
         }
 
         @Override
-        public List<IFormattableTextComponent> getDescription() {
+        public List<MutableComponent> getDescription() {
             return manager.getDescription();
         }
     }

@@ -1,7 +1,7 @@
 package denimred.simplemuseum.common.event;
 
 import net.minecraft.data.DataGenerator;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -31,6 +31,7 @@ public final class ModEventHandler {
 
     @SubscribeEvent
     public static void onEntityAttributeCreation(EntityAttributeCreationEvent event) {
-        event.put(MuseumEntities.MUSEUM_PUPPET.get(), LivingEntity.registerAttributes().create());
+        event.put(
+                MuseumEntities.MUSEUM_PUPPET.get(), LivingEntity.createLivingAttributes().build());
     }
 }

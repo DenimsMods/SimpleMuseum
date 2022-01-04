@@ -41,14 +41,14 @@ public final class IntWidget extends ValueWidget<Integer, PuppetValue<Integer, ?
 
     @Override
     public void syncWithValue() {
-        intTextField.setText(String.valueOf(value.get()));
-        intTextField.setCursorPositionZero();
+        intTextField.setValue(String.valueOf(valueRef.get()));
+        intTextField.moveCursorToStart();
     }
 
     private final class IntTextField extends BetterTextFieldWidget {
         public IntTextField() {
-            super(MC.fontRenderer, 0, 0, 0, 20, IntWidget.this.message);
-            this.setValidator(this::validate);
+            super(MC.font, 0, 0, 0, 20, IntWidget.this.message);
+            this.setFilter(this::validate);
             this.setResponder(this::respond);
         }
 
@@ -60,8 +60,8 @@ public final class IntWidget extends ValueWidget<Integer, PuppetValue<Integer, ?
             final Optional<Integer> oI = NumberUtil.parseInt(s);
             if (oI.isPresent()) {
                 final int i = oI.get();
-                this.setTextColor(value.test(i) ? TEXT_VALID : TEXT_INVALID);
-                value.set(i);
+                this.setTextColor(valueRef.test(i) ? TEXT_VALID : TEXT_INVALID);
+                valueRef.set(i);
             } else {
                 this.setTextColor(TEXT_ERROR);
             }

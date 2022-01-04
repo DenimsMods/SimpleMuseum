@@ -1,16 +1,16 @@
 package denimred.simplemuseum.common.i18n;
 
-import net.minecraft.util.text.IFormattableTextComponent;
+import net.minecraft.network.chat.MutableComponent;
 
 import java.util.Collections;
 import java.util.List;
 
 public interface Descriptive {
-    IFormattableTextComponent getTitle();
+    MutableComponent getTitle();
 
-    List<IFormattableTextComponent> getDescription();
+    List<MutableComponent> getDescription();
 
-    default List<IFormattableTextComponent> getAdvancedDescription() {
+    default List<MutableComponent> getAdvancedDescription() {
         return Collections.emptyList();
     }
 

@@ -11,8 +11,8 @@ import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.DirectoryCache;
-import net.minecraft.data.IDataProvider;
+import net.minecraft.data.DataProvider;
+import net.minecraft.data.HashCache;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
@@ -30,7 +30,7 @@ import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 
 @SuppressWarnings("UnstableApiUsage")
-public abstract class TextureProvider implements IDataProvider {
+public abstract class TextureProvider implements DataProvider {
     protected static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     protected static final MinecraftSessionService SESSION =
             new YggdrasilAuthenticationService(Proxy.NO_PROXY).createMinecraftSessionService();
@@ -45,7 +45,7 @@ public abstract class TextureProvider implements IDataProvider {
     }
 
     @Override
-    public void act(DirectoryCache cache) throws IOException {
+    public void run(HashCache cache) throws IOException {
         this.addTextures();
         for (Map.Entry<GameProfile, String> entry : desiredSkins.entries()) {
             this.downloadSkin(entry.getKey(), entry.getValue(), cache);
@@ -63,7 +63,7 @@ public abstract class TextureProvider implements IDataProvider {
         desiredSkins.put(profile, location);
     }
 
-    protected void downloadSkin(GameProfile profile, String location, DirectoryCache cache)
+    protected void downloadSkin(GameProfile profile, String location, HashCache cache)
             throws IOException {
         final MinecraftProfileTexture texture =
                 SESSION.getTextures(profile, true).get(MinecraftProfileTexture.Type.SKIN);
@@ -77,28 +77,28 @@ public abstract class TextureProvider implements IDataProvider {
         }
     }
 
-    protected void writeImage(DirectoryCache cache, String location, RenderedImage image)
+    protected void writeImage(HashCache cache, String location, RenderedImage image)
             throws IOException {
         this.writeImage(cache, location, image, null);
     }
 
     protected void writeImage(
-            DirectoryCache cache, String location, RenderedImage image, @Nullable JsonElement meta)
+            HashCache cache, String location, RenderedImage image, @Nullable JsonElement meta)
             throws IOException {
         // A rough copy of IDataProvider.save, but for images
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ImageIO.write(image, "png", outputStream);
         final byte[] data = outputStream.toByteArray();
-        final String hash = HASH_FUNCTION.hashBytes(data).toString();
+        final String hash = SHA1.hashBytes(data).toString();
         final Path pngOut = this.getPath(location, "png");
-        if (!Files.exists(pngOut) || !Objects.equals(cache.getPreviousHash(pngOut), hash)) {
+        if (!Files.exists(pngOut) || !Objects.equals(cache.getHash(pngOut), hash)) {
             Files.createDirectories(pngOut.getParent());
             Files.write(pngOut, data);
         }
-        cache.recordHash(pngOut, hash);
+        cache.putNew(pngOut, hash);
         // Write the metadata if applicable
         if (meta != null) {
-            IDataProvider.save(GSON, cache, meta, this.getPath(location, "png.mcmeta"));
+            DataProvider.save(GSON, cache, meta, this.getPath(location, "png.mcmeta"));
         }
     }
 

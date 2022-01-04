@@ -1,6 +1,6 @@
 package denimred.simplemuseum.client.gui.widget;
 
-import net.minecraft.util.text.IFormattableTextComponent;
+import net.minecraft.network.chat.MutableComponent;
 
 import java.util.Collections;
 import java.util.List;
@@ -8,17 +8,17 @@ import java.util.List;
 import denimred.simplemuseum.common.i18n.Descriptive;
 
 public class DescriptiveButton extends BetterButton implements Descriptive {
-    private final IFormattableTextComponent description;
+    private final MutableComponent description;
 
     public DescriptiveButton(
             int x,
             int y,
             int width,
             int height,
-            IFormattableTextComponent title,
-            IFormattableTextComponent description,
-            IPressable pressable) {
-        this(x, y, width, height, title, description, pressable, EMPTY_TOOLTIP);
+            MutableComponent title,
+            MutableComponent description,
+            OnPress press) {
+        this(x, y, width, height, title, description, press, NO_TOOLTIP);
     }
 
     public DescriptiveButton(
@@ -26,21 +26,21 @@ public class DescriptiveButton extends BetterButton implements Descriptive {
             int y,
             int width,
             int height,
-            IFormattableTextComponent title,
-            IFormattableTextComponent description,
-            IPressable pressable,
-            ITooltip tooltip) {
-        super(x, y, width, height, title, pressable, tooltip);
+            MutableComponent title,
+            MutableComponent description,
+            OnPress press,
+            OnTooltip tooltip) {
+        super(x, y, width, height, title, press, tooltip);
         this.description = description;
     }
 
     @Override
-    public IFormattableTextComponent getTitle() {
-        return (IFormattableTextComponent) this.getMessage();
+    public MutableComponent getTitle() {
+        return (MutableComponent) this.getMessage();
     }
 
     @Override
-    public List<IFormattableTextComponent> getDescription() {
+    public List<MutableComponent> getDescription() {
         return Collections.singletonList(description);
     }
 }

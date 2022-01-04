@@ -1,9 +1,9 @@
 package denimred.simplemuseum.common.network.messages.c2s;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.UUID;
@@ -18,13 +18,13 @@ public class C2SCryptMasterRemovePuppet {
         this.uuid = uuid;
     }
 
-    public static C2SCryptMasterRemovePuppet decode(PacketBuffer buf) {
-        final UUID uuid = buf.readUniqueId();
+    public static C2SCryptMasterRemovePuppet decode(FriendlyByteBuf buf) {
+        final UUID uuid = buf.readUUID();
         return new C2SCryptMasterRemovePuppet(uuid);
     }
 
-    public void encode(PacketBuffer buf) {
-        buf.writeUniqueId(uuid);
+    public void encode(FriendlyByteBuf buf) {
+        buf.writeUUID(uuid);
     }
 
     public void handle(Supplier<NetworkEvent.Context> sup) {
@@ -35,12 +35,12 @@ public class C2SCryptMasterRemovePuppet {
 
     @SuppressWarnings("deprecation") // >:I Mojang
     private void doWork(NetworkEvent.Context ctx) {
-        final ServerPlayerEntity sender = ctx.getSender();
+        final ServerPlayer sender = ctx.getSender();
         if (sender != null) {
-            final ServerWorld world = sender.getServerWorld();
-            final Entity entity = world.getEntityByUuid(uuid);
+            final ServerLevel world = sender.getLevel();
+            final Entity entity = world.getEntity(uuid);
             if (entity instanceof PuppetEntity) {
-                if (world.isBlockLoaded(entity.getPosition()) && ((PuppetEntity) entity).exists()) {
+                if (world.hasChunkAt(entity.blockPosition()) && ((PuppetEntity) entity).exists()) {
                     // TODO: Do permissions check?
                     entity.remove();
                 }

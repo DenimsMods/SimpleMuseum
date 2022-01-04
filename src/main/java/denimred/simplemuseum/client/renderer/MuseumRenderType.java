@@ -1,9 +1,10 @@
 package denimred.simplemuseum.client.renderer;
 
-import net.minecraft.client.renderer.RenderState;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+
+import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
@@ -18,15 +19,16 @@ public final class MuseumRenderType extends RenderType {
     }
 
     public static RenderType getErrorBanners(final ResourceLocation texture) {
-        final RenderType.State state =
-                RenderType.State.getBuilder()
-                        .alpha(DEFAULT_ALPHA)
-                        .texture(new RenderState.TextureState(texture, false, false))
-                        .transparency(ADDITIVE_TRANSPARENCY)
-                        .build(false);
-        return RenderType.makeType(
+        final RenderType.CompositeState state =
+                RenderType.CompositeState.builder()
+                        .setAlphaState(DEFAULT_ALPHA)
+                        .setTextureState(
+                                new RenderStateShard.TextureStateShard(texture, false, false))
+                        .setTransparencyState(ADDITIVE_TRANSPARENCY)
+                        .createCompositeState(false);
+        return RenderType.create(
                 SimpleMuseum.MOD_ID + ":error_banners",
-                DefaultVertexFormats.POSITION_COLOR_TEX,
+                DefaultVertexFormat.POSITION_COLOR_TEX,
                 GL11.GL_QUAD_STRIP,
                 256,
                 false,

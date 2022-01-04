@@ -2,12 +2,12 @@ package denimred.simplemuseum.common.network.messages.bidirectional;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.fml.network.NetworkEvent;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 
@@ -38,11 +38,11 @@ public final class CopyPastePuppetData {
     }
 
     public static CopyPastePuppetData copy(PuppetEntity puppet) {
-        return new CopyPastePuppetData(puppet.getEntityId(), REQUEST_COPY);
+        return new CopyPastePuppetData(puppet.getId(), REQUEST_COPY);
     }
 
     public static CopyPastePuppetData paste(PuppetEntity puppet) {
-        return new CopyPastePuppetData(puppet.getEntityId(), REQUEST_PASTE);
+        return new CopyPastePuppetData(puppet.getId(), REQUEST_PASTE);
     }
 
     public static void register(SimpleChannel channel, int id) {
@@ -54,18 +54,18 @@ public final class CopyPastePuppetData {
                 CopyPastePuppetData::handle);
     }
 
-    private static CopyPastePuppetData decode(PacketBuffer buf) {
+    private static CopyPastePuppetData decode(FriendlyByteBuf buf) {
         final int puppetId = buf.readVarInt();
         final int state = buf.readVarInt();
-        final String data = state == SEND_CLIPBOARD ? buf.readString(32767) : "";
+        final String data = state == SEND_CLIPBOARD ? buf.readUtf(32767) : "";
         return new CopyPastePuppetData(puppetId, state, data);
     }
 
-    private void encode(PacketBuffer buf) {
+    private void encode(FriendlyByteBuf buf) {
         buf.writeVarInt(puppetId);
         buf.writeVarInt(state);
         if (state == SEND_CLIPBOARD) {
-            buf.writeString(clipboard);
+            buf.writeUtf(clipboard);
         }
     }
 
@@ -80,36 +80,36 @@ public final class CopyPastePuppetData {
     }
 
     private void processPuppet(NetworkEvent.Context ctx, PuppetEntity puppet) {
-        if (puppet.world.isRemote) {
+        if (puppet.level.isClientSide) {
             if (state == REQUEST_COPY) {
-                final CompoundNBT tag = new CompoundNBT();
+                final CompoundTag tag = new CompoundTag();
                 puppet.writeModTag(tag);
-                ClientUtil.MC.keyboardListener.setClipboardString(tag.toString());
+                ClientUtil.MC.keyboardHandler.setClipboard(tag.toString());
                 if (ClientUtil.MC.player != null) {
                     ClientUtil.MC
                             .player
-                            .getCommandSource()
-                            .sendFeedback(
+                            .createCommandSourceStack()
+                            .sendSuccess(
                                     MiscLang.COMMAND_FEEDBACK_PUPPET_COPY.asText(
                                             puppet.getDisplayName()),
                                     false);
                 }
             } else if (state == REQUEST_PASTE) {
-                final String data = ClientUtil.MC.keyboardListener.getClipboardString();
+                final String data = ClientUtil.MC.keyboardHandler.getClipboard();
                 MuseumNetworking.CHANNEL.reply(
-                        new CopyPastePuppetData(puppet.getEntityId(), SEND_CLIPBOARD, data), ctx);
+                        new CopyPastePuppetData(puppet.getId(), SEND_CLIPBOARD, data), ctx);
             }
         } else if (state == SEND_CLIPBOARD) {
-            final ServerPlayerEntity player = ctx.getSender();
+            final ServerPlayer player = ctx.getSender();
             if (player != null) {
-                final CommandSource source = player.getCommandSource();
+                final CommandSourceStack source = player.createCommandSourceStack();
                 try {
-                    puppet.readModTag(JsonToNBT.getTagFromJson(clipboard));
-                    source.sendFeedback(
+                    puppet.readModTag(TagParser.parseTag(clipboard));
+                    source.sendSuccess(
                             MiscLang.COMMAND_FEEDBACK_PUPPET_PASTE.asText(puppet.getDisplayName()),
                             true);
                 } catch (CommandSyntaxException e) {
-                    source.sendErrorMessage(new StringTextComponent(e.getMessage()));
+                    source.sendFailure(new TextComponent(e.getMessage()));
                 }
             }
         }

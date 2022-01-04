@@ -1,23 +1,26 @@
 package denimred.simplemuseum.client.util;
 
-import com.mojang.datafixers.util.Pair;
+import static org.lwjgl.glfw.GLFW.GLFW_ARROW_CURSOR;
+import static org.lwjgl.glfw.GLFW.GLFW_VRESIZE_CURSOR;
 
+import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.math.Vector3f;
+
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.ISound;
-import net.minecraft.client.audio.SimpleSound;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.client.util.InputMappings;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntitySize;
-import net.minecraft.entity.projectile.ProjectileHelper;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.EntityRayTraceResult;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.DatagenModLoader;
 
@@ -46,27 +49,24 @@ import software.bernie.geckolib3.geo.render.built.GeoBone;
 import software.bernie.geckolib3.geo.render.built.GeoModel;
 import software.bernie.geckolib3.resource.GeckoLibCache;
 
-import static org.lwjgl.glfw.GLFW.GLFW_ARROW_CURSOR;
-import static org.lwjgl.glfw.GLFW.GLFW_VRESIZE_CURSOR;
-
 public class ClientUtil {
     public static final Minecraft MC =
             DatagenModLoader.isRunningDataGen() ? null : Minecraft.getInstance();
-    static final Object2ReferenceMap<ResourceLocation, Pair<EntitySize, AxisAlignedBB>>
-            MODEL_BOUNDS = new Object2ReferenceOpenHashMap<>();
-    private static final long WINDOW_HANDLE = MC != null ? MC.getMainWindow().getHandle() : 0L;
+    static final Object2ReferenceMap<ResourceLocation, Pair<EntityDimensions, AABB>> MODEL_BOUNDS =
+            new Object2ReferenceOpenHashMap<>();
+    private static final long WINDOW_HANDLE = MC != null ? MC.getWindow().getWindow() : 0L;
     private static final Int2LongMap CURSORS = new Int2LongArrayMap(6);
     @Nullable private static PuppetEntity selectedPuppet;
     private static boolean holdingCane;
 
     @Nullable
     public static PuppetEntity getHoveredPuppet(Entity entity) {
-        final Vector3d eyes = entity.getEyePosition(1.0F);
+        final Vec3 eyes = entity.getEyePosition(1.0F);
         final double range = 100.0D;
-        final Vector3d look = entity.getLook(1.0F).scale(range);
-        final AxisAlignedBB aabb = entity.getBoundingBox().expand(look).grow(1.0D, 1.0D, 1.0D);
-        final EntityRayTraceResult result =
-                ProjectileHelper.rayTraceEntities(
+        final Vec3 look = entity.getViewVector(1.0F).scale(range);
+        final AABB aabb = entity.getBoundingBox().expandTowards(look).inflate(1.0D, 1.0D, 1.0D);
+        final EntityHitResult result =
+                ProjectileUtil.getEntityHitResult(
                         entity,
                         eyes,
                         eyes.add(look),
@@ -103,10 +103,9 @@ public class ClientUtil {
 
     public static boolean shouldPuppetGlow(PuppetEntity puppet) {
         return puppet.renderManager.canRenderHiddenDeathEffects()
-                || (MC.currentScreen == null || ModCompat.CryptMaster.isActive())
+                || (MC.screen == null || ModCompat.CryptMaster.isActive())
                         && holdingCane
-                        && (puppet == selectedPuppet
-                                || MuseumKeybinds.GLOBAL_HIGHLIGHTS.isKeyDown());
+                        && (puppet == selectedPuppet || MuseumKeybinds.GLOBAL_HIGHLIGHTS.isDown());
     }
 
     @Nullable
@@ -115,7 +114,7 @@ public class ClientUtil {
     }
 
     public static void openPuppetScreen(PuppetEntity puppet, @Nullable Screen parent) {
-        MC.displayGuiScreen(new PuppetConfigScreen(puppet, parent));
+        MC.setScreen(new PuppetConfigScreen(puppet, parent));
     }
 
     public static void setCursor(int shape) {
@@ -131,7 +130,7 @@ public class ClientUtil {
         GLFW.glfwSetCursor(WINDOW_HANDLE, 0L);
     }
 
-    public static Optional<Pair<EntitySize, AxisAlignedBB>> getPuppetBounds(PuppetEntity puppet) {
+    public static Optional<Pair<EntityDimensions, AABB>> getPuppetBounds(PuppetEntity puppet) {
         final ResourceLocation source = puppet.sourceManager.model.get();
         if (MODEL_BOUNDS.containsKey(source)) {
             return Optional.of(MODEL_BOUNDS.get(source));
@@ -150,7 +149,7 @@ public class ClientUtil {
         }
     }
 
-    public static Pair<EntitySize, AxisAlignedBB> generateModelBounds(ResourceLocation source) {
+    public static Pair<EntityDimensions, AABB> generateModelBounds(ResourceLocation source) {
         final GeoModel model = GeckoLibCache.getInstance().getGeoModels().get(source);
         if (model == null) {
             throw new IllegalArgumentException("Invalid model file " + source);
@@ -173,36 +172,34 @@ public class ClientUtil {
 
         // Refine min/max towards points that are furthest from the model's center
         for (final Vector3f vertex : vertices) {
-            final float x = vertex.getX();
-            final float y = vertex.getY();
-            final float z = vertex.getZ();
-            min.setX(Math.min(min.getX(), x));
-            max.setX(Math.max(max.getX(), x));
-            min.setY(Math.min(min.getY(), y));
-            max.setY(Math.max(max.getY(), y));
-            min.setZ(Math.min(min.getZ(), z));
-            max.setZ(Math.max(max.getZ(), z));
+            final float x = vertex.x();
+            final float y = vertex.y();
+            final float z = vertex.z();
+            min.setX(Math.min(min.x(), x));
+            max.setX(Math.max(max.x(), x));
+            min.setY(Math.min(min.y(), y));
+            max.setY(Math.max(max.y(), y));
+            min.setZ(Math.min(min.z(), z));
+            max.setZ(Math.max(max.z(), z));
         }
 
         // Calculate the longest and shortest horizontal edges using the min/max absolute values
-        final float minAbsX = Math.abs(min.getX());
-        final float maxAbsX = Math.abs(max.getX());
-        final float minAbsZ = Math.abs(min.getZ());
-        final float maxAbsZ = Math.abs(max.getZ());
+        final float minAbsX = Math.abs(min.x());
+        final float maxAbsX = Math.abs(max.x());
+        final float minAbsZ = Math.abs(min.z());
+        final float maxAbsZ = Math.abs(max.z());
         final float shortest = Math.min(Math.min(minAbsX, maxAbsX), Math.min(minAbsZ, maxAbsZ));
         final float longest = Math.max(Math.max(minAbsX, maxAbsX), Math.max(minAbsZ, maxAbsZ));
 
         // We don't factor the vertical edges into the edge length calculations
-        final float minY = min.getY();
-        final float maxY = max.getY();
+        final float minY = min.y();
+        final float maxY = max.y();
 
         // Collision bounds are defined by the shortest edge, render bounds by the longest
         // TODO: Clamp the collision bounds to a minimum and maximum size
-        final EntitySize collisionBounds = EntitySize.flexible(shortest * 2, maxY);
-        final AxisAlignedBB renderBounds =
-                new AxisAlignedBB(
-                        new Vector3d(-longest, minY, -longest),
-                        new Vector3d(longest, maxY, longest));
+        final EntityDimensions collisionBounds = EntityDimensions.scalable(shortest * 2, maxY);
+        final AABB renderBounds =
+                new AABB(new Vec3(-longest, minY, -longest), new Vec3(longest, maxY, longest));
 
         return Pair.of(collisionBounds, renderBounds);
     }
@@ -218,43 +215,39 @@ public class ClientUtil {
 
     /** Plays a given sound by name. Primarily exists to suppress {@linkplain OnlyIn} exceptions. */
     public static void playArbitrarySound(
-            ResourceLocation soundName,
-            SoundCategory category,
-            Vector3d pos,
-            float volume,
-            float pitch) {
-        final SimpleSound sound =
-                new SimpleSound(
+            ResourceLocation soundName, SoundSource source, Vec3 pos, float volume, float pitch) {
+        final SimpleSoundInstance instance =
+                new SimpleSoundInstance(
                         soundName,
-                        category,
+                        source,
                         volume,
                         pitch,
                         false,
                         0,
-                        ISound.AttenuationType.LINEAR,
+                        SoundInstance.Attenuation.LINEAR,
                         pos.x,
                         pos.y,
                         pos.z,
                         false);
-        MC.getSoundHandler().play(sound);
+        MC.getSoundManager().play(instance);
     }
 
     /** Returns true if the keybind is pressed, regardless of the current screen or input mode. */
-    public static boolean hasKeyDown(KeyBinding keyBind) {
-        return InputMappings.isKeyDown(WINDOW_HANDLE, keyBind.getKey().getKeyCode());
+    public static boolean hasKeyDown(KeyMapping mapping) {
+        return InputConstants.isKeyDown(WINDOW_HANDLE, mapping.getKey().getValue());
     }
 
     public static RenderType typeFromLayer(
             PuppetRenderManager.RenderLayer layer, ResourceLocation texture) {
         switch (layer) {
             case CUTOUT:
-                return RenderType.getEntityCutoutNoCull(texture);
+                return RenderType.entityCutoutNoCull(texture);
             case CUTOUT_CULL:
-                return RenderType.getEntityCutout(texture);
+                return RenderType.entityCutout(texture);
             case TRANSLUCENT:
-                return RenderType.getEntityTranslucent(texture);
+                return RenderType.entityTranslucent(texture);
             case TRANSLUCENT_CULL:
-                return RenderType.getEntityTranslucentCull(texture);
+                return RenderType.entityTranslucentCull(texture);
             default:
                 throw new IllegalArgumentException("Unexpected value: " + layer);
         }

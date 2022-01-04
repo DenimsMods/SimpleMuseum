@@ -1,9 +1,9 @@
 package denimred.simplemuseum.client.gui.widget.value;
 
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.Collections;
 import java.util.List;
@@ -23,7 +23,7 @@ import software.bernie.geckolib3.resource.GeckoLibCache;
 public final class AnimationWidget extends ValueWidget<String, CheckedValue<String>> {
     public static final ResourceLocation FOLDER_BUTTON_TEXTURE =
             new ResourceLocation(SimpleMuseum.MOD_ID, "textures/gui/folder_button.png");
-    private final TranslationTextComponent title;
+    private final TranslatableComponent title;
     private final IconButton selectButton;
     private final AnimationTextField animField;
 
@@ -40,7 +40,7 @@ public final class AnimationWidget extends ValueWidget<String, CheckedValue<Stri
             int height,
             CheckedValue<String> value) {
         super(parent, x, y, width, height, value);
-        title = new TranslationTextComponent(value.provider.translationKey);
+        title = new TranslatableComponent(value.provider.translationKey);
         selectButton =
                 this.addChild(
                         new IconButton(
@@ -77,7 +77,7 @@ public final class AnimationWidget extends ValueWidget<String, CheckedValue<Stri
         super.detectChanges();
         final ResourceLocation animLoc = parent.getAnimationFile();
         final AnimationFile animFile = GeckoLibCache.getInstance().getAnimations().get(animLoc);
-        final String anim = animField.getText();
+        final String anim = animField.getValue();
         final boolean fileExists = animFile != null;
         if (!fileExists || anim.isEmpty() || animFile.getAnimation(anim) != null) {
             animField.setTextColor(BetterTextFieldWidget.TEXT_VALID);
@@ -89,43 +89,43 @@ public final class AnimationWidget extends ValueWidget<String, CheckedValue<Stri
 
     @Override
     public void syncWithValue() {
-        animField.setText(value.get());
-        animField.setCursorPositionZero();
+        animField.setValue(valueRef.get());
+        animField.moveCursorToStart();
     }
 
     private void selectAnimation(Button button) {
-        MC.displayGuiScreen(new AnimSelectScreen());
+        MC.setScreen(new AnimSelectScreen());
     }
 
     private final class AnimationTextField extends BetterTextFieldWidget {
         public AnimationTextField() {
-            super(MC.fontRenderer, 0, 0, 0, 20, title);
-            this.setMaxStringLength(MAX_PACKET_STRING);
+            super(MC.font, 0, 0, 0, 20, title);
+            this.setMaxLength(MAX_PACKET_STRING);
             this.setResponder(this::respond);
         }
 
         private void respond(String s) {
-            value.set(s);
+            valueRef.set(s);
             AnimationWidget.this.detectChanges();
         }
     }
 
     private final class AnimSelectScreen extends SelectScreen<String> {
-        protected AnimSelectScreen() {
-            super(AnimationWidget.this.parent, new StringTextComponent("Select Animation"));
+        private AnimSelectScreen() {
+            super(AnimationWidget.this.parent, new TextComponent("Select Animation"));
         }
 
         @Override
         protected void onSave() {
             if (selected != null) {
-                value.set(selected.value);
+                valueRef.set(selected.value);
                 AnimationWidget.this.syncWithValue();
             }
         }
 
         @Override
         protected boolean isSelected(ListWidget.Entry entry) {
-            return entry.value.equals(value.get());
+            return entry.value.equals(valueRef.get());
         }
 
         @Override

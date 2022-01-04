@@ -1,12 +1,12 @@
 package denimred.simplemuseum.common.util;
 
-import net.minecraft.nbt.CompoundNBT;
+import static net.minecraftforge.common.util.Constants.NBT.TAG_BYTE;
+import static net.minecraftforge.common.util.Constants.NBT.TAG_INT;
+
+import net.minecraft.nbt.CompoundTag;
 
 import java.awt.Color;
 import java.util.Objects;
-
-import static net.minecraftforge.common.util.Constants.NBT.TAG_BYTE;
-import static net.minecraftforge.common.util.Constants.NBT.TAG_INT;
 
 public final class GlowColor {
     public static final GlowColor DEFAULT = new GlowColor(Color.WHITE, true);
@@ -24,7 +24,7 @@ public final class GlowColor {
         this.useTeamColor = useTeamColor;
     }
 
-    public static GlowColor deserialize(CompoundNBT tag) {
+    public static GlowColor deserialize(CompoundTag tag) {
         final int rgb = tag.contains(RGB_NBT, TAG_INT) ? tag.getInt(RGB_NBT) : DEFAULT.rgb;
         final boolean useTeamColor =
                 tag.contains(USE_TEAM_COLOR_NBT, TAG_BYTE)
@@ -33,8 +33,8 @@ public final class GlowColor {
         return new GlowColor(rgb, useTeamColor);
     }
 
-    public CompoundNBT serialize() {
-        final CompoundNBT tag = new CompoundNBT();
+    public CompoundTag serialize() {
+        final CompoundTag tag = new CompoundTag();
         tag.putInt(RGB_NBT, rgb);
         tag.putBoolean(USE_TEAM_COLOR_NBT, useTeamColor);
         return tag;

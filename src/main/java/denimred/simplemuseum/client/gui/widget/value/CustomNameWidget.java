@@ -1,14 +1,14 @@
 package denimred.simplemuseum.client.gui.widget.value;
 
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 
 import denimred.simplemuseum.client.gui.screen.PuppetConfigScreen;
 import denimred.simplemuseum.client.gui.widget.BetterTextFieldWidget;
 import denimred.simplemuseum.common.entity.puppet.manager.value.PuppetValue;
 import denimred.simplemuseum.common.entity.puppet.manager.value.vanilla.CustomNameValue;
 
-public final class CustomNameWidget extends ValueWidget<ITextComponent, CustomNameValue> {
+public final class CustomNameWidget extends ValueWidget<Component, CustomNameValue> {
     private final CustomNameField nameField;
 
     public CustomNameWidget(PuppetConfigScreen parent, PuppetValue<?, ?> value) {
@@ -36,19 +36,19 @@ public final class CustomNameWidget extends ValueWidget<ITextComponent, CustomNa
 
     @Override
     public void syncWithValue() {
-        nameField.setText(value.get().getUnformattedComponentText());
-        nameField.setCursorPositionZero();
+        nameField.setValue(valueRef.get().getContents());
+        nameField.moveCursorToStart();
     }
 
     private final class CustomNameField extends BetterTextFieldWidget {
         public CustomNameField() {
-            super(MC.fontRenderer, 0, 0, 0, 20, CustomNameWidget.this.message);
-            this.setMaxStringLength(MAX_PACKET_STRING);
+            super(MC.font, 0, 0, 0, 20, CustomNameWidget.this.message);
+            this.setMaxLength(MAX_PACKET_STRING);
             this.setResponder(this::respond);
         }
 
         private void respond(String s) {
-            value.set(new StringTextComponent(s).setStyle(value.get().getStyle()));
+            valueRef.set(new TextComponent(s).setStyle(valueRef.get().getStyle()));
             CustomNameWidget.this.detectChanges();
         }
     }

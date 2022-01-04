@@ -1,8 +1,8 @@
 package denimred.simplemuseum.client.util;
 
+import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 
-import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 
 import org.lwjgl.opengl.GL11;
@@ -55,11 +55,11 @@ public final class ScissorUtil {
         }
 
         public static ScissorBox fromScreenSpace(int x, int y, int width, int height) {
-            final MainWindow window = Minecraft.getInstance().getMainWindow();
-            final double scale = window.getGuiScaleFactor();
+            final Window window = Minecraft.getInstance().getWindow();
+            final double scale = window.getGuiScale();
             return new ScissorBox(
                     (int) (x * scale),
-                    (int) ((window.getScaledHeight() - y - height) * scale),
+                    (int) ((window.getGuiScaledHeight() - y - height) * scale),
                     (int) (width * scale),
                     (int) (height * scale));
         }

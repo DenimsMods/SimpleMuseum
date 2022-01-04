@@ -1,7 +1,7 @@
 package denimred.simplemuseum.common.entity.puppet.manager;
 
-import net.minecraft.entity.EntitySize;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.entity.EntityDimensions;
 
 import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 import denimred.simplemuseum.common.entity.puppet.manager.value.PuppetKey;
@@ -19,10 +19,10 @@ public final class PuppetBehaviorManager extends PuppetValueManager {
     public static final EntitySizeProvider PHYSICAL_SIZE =
             new EntitySizeProvider(
                     key("PhysicalSize"),
-                    EntitySize.flexible(0.5625F, 2.03125F),
-                    (puppet, size) -> puppet.recalculateSize(),
-                    EntitySize.flexible(0.25F, 0.25F),
-                    EntitySize.flexible(10.0F, 10.0F));
+                    EntityDimensions.scalable(0.5625F, 2.03125F),
+                    (puppet, size) -> puppet.refreshDimensions(),
+                    EntityDimensions.scalable(0.25F, 0.25F),
+                    EntityDimensions.scalable(10.0F, 10.0F));
     //    public static final VanillaProvider<Boolean> INVULNERABLE =
     //            new VanillaProvider<>(
     //                    key("Invulnerable"),
@@ -48,12 +48,12 @@ public final class PuppetBehaviorManager extends PuppetValueManager {
     }
 
     private static boolean validateCommand(PuppetEntity puppet, String command) {
-        if (puppet.world.isRemote || command.isEmpty()) {
+        if (puppet.level.isClientSide || command.isEmpty()) {
             return true;
         }
-        final MinecraftServer server = puppet.world.getServer();
+        final MinecraftServer server = puppet.level.getServer();
         if (server != null && server.isCommandBlockEnabled()) {
-            puppet.getCommandSource().withPermissionLevel(2);
+            puppet.createCommandSourceStack().withPermission(2);
         }
         return false;
     }

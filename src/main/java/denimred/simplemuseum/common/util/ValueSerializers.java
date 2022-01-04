@@ -1,17 +1,17 @@
 package denimred.simplemuseum.common.util;
 
-import net.minecraft.entity.EntitySize;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.FloatNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.Util;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.FloatTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraftforge.common.util.Constants;
 
 import java.awt.Color;
@@ -22,14 +22,14 @@ import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 
 public final class ValueSerializers {
     public static final IValueSerializer<Boolean> BOOLEAN =
-            new IValueSerializer.Wrapped<Boolean>(DataSerializers.BOOLEAN) {
+            new IValueSerializer.Wrapped<Boolean>(EntityDataSerializers.BOOLEAN) {
                 @Override
-                public Boolean read(CompoundNBT tag, String key) {
+                public Boolean read(CompoundTag tag, String key) {
                     return tag.getBoolean(key);
                 }
 
                 @Override
-                public void write(CompoundNBT tag, String key, Boolean value) {
+                public void write(CompoundTag tag, String key, Boolean value) {
                     tag.putBoolean(key, value);
                 }
 
@@ -47,22 +47,22 @@ public final class ValueSerializers {
     public static final IValueSerializer<Integer> INTEGER =
             new IValueSerializer<Integer>() {
                 @Override
-                public Integer read(CompoundNBT tag, String key) {
+                public Integer read(CompoundTag tag, String key) {
                     return tag.getInt(key);
                 }
 
                 @Override
-                public void write(CompoundNBT tag, String key, Integer value) {
+                public void write(CompoundTag tag, String key, Integer value) {
                     tag.putInt(key, value);
                 }
 
                 @Override
-                public Integer read(PacketBuffer buf) {
+                public Integer read(FriendlyByteBuf buf) {
                     return buf.readInt();
                 }
 
                 @Override
-                public void write(PacketBuffer buf, Integer value) {
+                public void write(FriendlyByteBuf buf, Integer value) {
                     buf.writeInt(value);
                 }
 
@@ -78,14 +78,14 @@ public final class ValueSerializers {
             };
 
     public static final IValueSerializer<Float> FLOAT =
-            new IValueSerializer.Wrapped<Float>(DataSerializers.FLOAT) {
+            new IValueSerializer.Wrapped<Float>(EntityDataSerializers.FLOAT) {
                 @Override
-                public Float read(CompoundNBT tag, String key) {
+                public Float read(CompoundTag tag, String key) {
                     return tag.getFloat(key);
                 }
 
                 @Override
-                public void write(CompoundNBT tag, String key, Float value) {
+                public void write(CompoundTag tag, String key, Float value) {
                     tag.putFloat(key, value);
                 }
 
@@ -101,14 +101,14 @@ public final class ValueSerializers {
             };
 
     public static final IValueSerializer<String> STRING =
-            new IValueSerializer.Wrapped<String>(DataSerializers.STRING) {
+            new IValueSerializer.Wrapped<String>(EntityDataSerializers.STRING) {
                 @Override
-                public String read(CompoundNBT tag, String key) {
+                public String read(CompoundTag tag, String key) {
                     return tag.getString(key);
                 }
 
                 @Override
-                public void write(CompoundNBT tag, String key, String value) {
+                public void write(CompoundTag tag, String key, String value) {
                     tag.putString(key, value);
                 }
 
@@ -126,27 +126,27 @@ public final class ValueSerializers {
     public static final IValueSerializer<ResourceLocation> RESOURCE_LOCATION =
             new IValueSerializer<ResourceLocation>() {
                 @Override
-                public ResourceLocation read(CompoundNBT tag, String key) {
+                public ResourceLocation read(CompoundTag tag, String key) {
                     return new ResourceLocation(tag.getString(key));
                 }
 
                 @Override
-                public void write(CompoundNBT tag, String key, ResourceLocation value) {
+                public void write(CompoundTag tag, String key, ResourceLocation value) {
                     tag.putString(key, value.toString());
                 }
 
                 @Override
-                public ResourceLocation read(PacketBuffer buf) {
+                public ResourceLocation read(FriendlyByteBuf buf) {
                     return buf.readResourceLocation();
                 }
 
                 @Override
-                public void write(PacketBuffer buf, ResourceLocation value) {
+                public void write(FriendlyByteBuf buf, ResourceLocation value) {
                     buf.writeResourceLocation(value);
                 }
 
                 @Override
-                public ResourceLocation copyValue(ResourceLocation value) {
+                public ResourceLocation copy(ResourceLocation value) {
                     return new ResourceLocation(value.getNamespace(), value.getPath());
                 }
 
@@ -161,23 +161,22 @@ public final class ValueSerializers {
                 }
             };
 
-    public static final IValueSerializer<ITextComponent> TEXT_COMPONENT =
-            new IValueSerializer.Wrapped<ITextComponent>(DataSerializers.TEXT_COMPONENT) {
+    public static final IValueSerializer<Component> TEXT_COMPONENT =
+            new IValueSerializer.Wrapped<Component>(EntityDataSerializers.COMPONENT) {
                 @Override
-                public ITextComponent read(CompoundNBT tag, String key) {
-                    final IFormattableTextComponent text =
-                            ITextComponent.Serializer.getComponentFromJson(tag.getString(key));
-                    return text != null ? text : StringTextComponent.EMPTY;
+                public Component read(CompoundTag tag, String key) {
+                    final MutableComponent text = Component.Serializer.fromJson(tag.getString(key));
+                    return text != null ? text : TextComponent.EMPTY;
                 }
 
                 @Override
-                public void write(CompoundNBT tag, String key, ITextComponent value) {
-                    tag.putString(key, ITextComponent.Serializer.toJson(value));
+                public void write(CompoundTag tag, String key, Component value) {
+                    tag.putString(key, Component.Serializer.toJson(value));
                 }
 
                 @Override
-                public Class<ITextComponent> getType() {
-                    return ITextComponent.class;
+                public Class<Component> getType() {
+                    return Component.class;
                 }
 
                 @Override
@@ -189,27 +188,27 @@ public final class ValueSerializers {
     public static final IValueSerializer<Color> COLOR =
             new IValueSerializer<Color>() {
                 @Override
-                public Color read(CompoundNBT tag, String key) {
+                public Color read(CompoundTag tag, String key) {
                     return new Color(tag.getInt(key));
                 }
 
                 @Override
-                public void write(CompoundNBT tag, String key, Color value) {
+                public void write(CompoundTag tag, String key, Color value) {
                     tag.putInt(key, value.getRGB());
                 }
 
                 @Override
-                public Color read(PacketBuffer buf) {
+                public Color read(FriendlyByteBuf buf) {
                     return new Color(buf.readInt(), true);
                 }
 
                 @Override
-                public void write(PacketBuffer buf, Color value) {
+                public void write(FriendlyByteBuf buf, Color value) {
                     buf.writeInt(value.getRGB());
                 }
 
                 @Override
-                public Color copyValue(Color value) {
+                public Color copy(Color value) {
                     return new Color(value.getRGB(), true);
                 }
 
@@ -224,31 +223,31 @@ public final class ValueSerializers {
                 }
             };
 
-    public static final IValueSerializer<SoundCategory> SOUND_CATEGORY =
-            new IValueSerializer<SoundCategory>() {
+    public static final IValueSerializer<SoundSource> SOUND_CATEGORY =
+            new IValueSerializer<SoundSource>() {
                 @Override
-                public SoundCategory read(CompoundNBT tag, String key) {
-                    return SoundCategory.SOUND_CATEGORIES.get(tag.getString(key));
+                public SoundSource read(CompoundTag tag, String key) {
+                    return SoundSource.BY_NAME.get(tag.getString(key));
                 }
 
                 @Override
-                public void write(CompoundNBT tag, String key, SoundCategory value) {
+                public void write(CompoundTag tag, String key, SoundSource value) {
                     tag.putString(key, value.getName());
                 }
 
                 @Override
-                public SoundCategory read(PacketBuffer buf) {
-                    return buf.readEnumValue(SoundCategory.class);
+                public SoundSource read(FriendlyByteBuf buf) {
+                    return buf.readEnum(SoundSource.class);
                 }
 
                 @Override
-                public void write(PacketBuffer buf, SoundCategory value) {
-                    buf.writeEnumValue(value);
+                public void write(FriendlyByteBuf buf, SoundSource value) {
+                    buf.writeEnum(value);
                 }
 
                 @Override
-                public Class<SoundCategory> getType() {
-                    return SoundCategory.class;
+                public Class<SoundSource> getType() {
+                    return SoundSource.class;
                 }
 
                 @Override
@@ -257,36 +256,36 @@ public final class ValueSerializers {
                 }
             };
 
-    public static final IValueSerializer<EntitySize> ENTITY_SIZE =
-            new IValueSerializer<EntitySize>() {
+    public static final IValueSerializer<EntityDimensions> ENTITY_SIZE =
+            new IValueSerializer<EntityDimensions>() {
                 @Override
-                public EntitySize read(CompoundNBT tag, String key) {
-                    final ListNBT list = tag.getList(key, Constants.NBT.TAG_FLOAT);
-                    return EntitySize.flexible(list.getFloat(0), list.getFloat(1));
+                public EntityDimensions read(CompoundTag tag, String key) {
+                    final ListTag list = tag.getList(key, Constants.NBT.TAG_FLOAT);
+                    return EntityDimensions.scalable(list.getFloat(0), list.getFloat(1));
                 }
 
                 @Override
-                public void write(CompoundNBT tag, String key, EntitySize value) {
-                    final ListNBT list = new ListNBT();
-                    list.add(FloatNBT.valueOf(value.width));
-                    list.add(FloatNBT.valueOf(value.height));
+                public void write(CompoundTag tag, String key, EntityDimensions value) {
+                    final ListTag list = new ListTag();
+                    list.add(FloatTag.valueOf(value.width));
+                    list.add(FloatTag.valueOf(value.height));
                     tag.put(key, list);
                 }
 
                 @Override
-                public EntitySize read(PacketBuffer buf) {
-                    return EntitySize.flexible(buf.readFloat(), buf.readFloat());
+                public EntityDimensions read(FriendlyByteBuf buf) {
+                    return EntityDimensions.scalable(buf.readFloat(), buf.readFloat());
                 }
 
                 @Override
-                public void write(PacketBuffer buf, EntitySize value) {
+                public void write(FriendlyByteBuf buf, EntityDimensions value) {
                     buf.writeFloat(value.width);
                     buf.writeFloat(value.height);
                 }
 
                 @Override
-                public Class<EntitySize> getType() {
-                    return EntitySize.class;
+                public Class<EntityDimensions> getType() {
+                    return EntityDimensions.class;
                 }
 
                 @Override
@@ -298,22 +297,22 @@ public final class ValueSerializers {
     public static final IValueSerializer<GlowColor> GLOW_COLOR =
             new IValueSerializer<GlowColor>() {
                 @Override
-                public GlowColor read(CompoundNBT tag, String key) {
+                public GlowColor read(CompoundTag tag, String key) {
                     return GlowColor.deserialize(tag.getCompound(key));
                 }
 
                 @Override
-                public void write(CompoundNBT tag, String key, GlowColor value) {
+                public void write(CompoundTag tag, String key, GlowColor value) {
                     tag.put(key, value.serialize());
                 }
 
                 @Override
-                public GlowColor read(PacketBuffer buf) {
+                public GlowColor read(FriendlyByteBuf buf) {
                     return new GlowColor(buf.readInt(), buf.readBoolean());
                 }
 
                 @Override
-                public void write(PacketBuffer buf, GlowColor value) {
+                public void write(FriendlyByteBuf buf, GlowColor value) {
                     buf.writeInt(value.rgb);
                     buf.writeBoolean(value.useTeamColor);
                 }
@@ -335,8 +334,8 @@ public final class ValueSerializers {
                     map -> {
                         map.put(String.class, STRING);
                         map.put(ResourceLocation.class, RESOURCE_LOCATION);
-                        map.put(SoundCategory.class, SOUND_CATEGORY);
-                        map.put(EntitySize.class, ENTITY_SIZE);
+                        map.put(SoundSource.class, SOUND_CATEGORY);
+                        map.put(EntityDimensions.class, ENTITY_SIZE);
                         map.put(GlowColor.class, GLOW_COLOR);
                         map.put(Color.class, COLOR);
                         map.put(Boolean.class, BOOLEAN);
@@ -362,22 +361,22 @@ public final class ValueSerializers {
             Class<T> type, Function<Integer, T> read, Function<T, Integer> write) {
         return new IValueSerializer<T>() {
             @Override
-            public T read(CompoundNBT tag, String key) {
+            public T read(CompoundTag tag, String key) {
                 return read.apply(tag.getInt(key));
             }
 
             @Override
-            public void write(CompoundNBT tag, String key, T value) {
+            public void write(CompoundTag tag, String key, T value) {
                 tag.putInt(key, write.apply(value));
             }
 
             @Override
-            public T read(PacketBuffer buf) {
+            public T read(FriendlyByteBuf buf) {
                 return read.apply(buf.readVarInt());
             }
 
             @Override
-            public void write(PacketBuffer buf, T value) {
+            public void write(FriendlyByteBuf buf, T value) {
                 buf.writeVarInt(write.apply(value));
             }
 

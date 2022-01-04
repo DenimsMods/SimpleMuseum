@@ -1,6 +1,6 @@
 package denimred.simplemuseum.common.i18n;
 
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.common.data.LanguageProvider;
 
 public interface Translatable {
@@ -12,7 +12,7 @@ public interface Translatable {
         provider.add(this.getKey(), this.getEnglish());
     }
 
-    default TranslationTextComponent asText(Object... args) {
-        return new TranslationTextComponent(this.getKey(), args);
+    default TranslatableComponent asText(Object... args) {
+        return new TranslatableComponent(this.getKey(), args);
     }
 }

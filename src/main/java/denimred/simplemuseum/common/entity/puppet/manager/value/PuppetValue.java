@@ -1,7 +1,7 @@
 package denimred.simplemuseum.common.entity.puppet.manager.value;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -59,7 +59,7 @@ public abstract class PuppetValue<T, P extends PuppetValueProvider<T, ? extends 
         this.set(provider.defaultValue);
     }
 
-    public boolean onDataChanged(DataParameter<?> key) {
+    public boolean onDataChanged(EntityDataAccessor<?> key) {
         if (provider.dataKey != null && provider.dataKey.equals(key)) {
             this.set(manager.data.get(provider.dataKey));
             return true;
@@ -67,7 +67,7 @@ public abstract class PuppetValue<T, P extends PuppetValueProvider<T, ? extends 
         return false;
     }
 
-    public void read(CompoundNBT tag) {
+    public void read(CompoundTag tag) {
         if (tag.contains(provider.key.provider, provider.serializer.getTagId())) {
             try {
                 this.set(provider.serializer.read(tag, provider.key.provider));
@@ -77,7 +77,7 @@ public abstract class PuppetValue<T, P extends PuppetValueProvider<T, ? extends 
         }
     }
 
-    public void write(CompoundNBT tag) {
+    public void write(CompoundTag tag) {
         if (value != provider.defaultValue) {
             provider.serializer.write(tag, provider.key.provider, value);
         }

@@ -1,41 +1,40 @@
 modLoader = "javafml"
-loaderVersion = "[35,)"
-license = "GPLv3"
-issueTrackerURL="https://github.com/DenimRed/SimpleMuseum/issues"
+loaderVersion = "[36,)"
+license = "${mod_license}"
+issueTrackerURL = "${mod_url_issue}"
 
 [[mods]]
-modId = "simplemuseum"
-version = "${file.jarVersion}"
-displayName = "Simple Museum"
-updateJSONURL="https://raw.githubusercontent.com/DenimRed/SimpleMuseum/main/update.json"
-displayURL="https://github.com/DenimRed/SimpleMuseum"
-logoFile="simplemuseum.png"
-credits="@jordanimating for requesting this project, @TofuToons for testing and ideas"
-authors="DenimRed"
-description = '''Allows you to load and display static arbitrary GeckoLib models via resource packs. Primarily useful for testing things in-game or creating displays/showcases.
+modId = "${mod_id}"
+version = "${mod_version}"
+displayName = "${mod_name}"
+updateJSONURL = "${mod_url_update}"
+displayURL = "${mod_url}"
+logoFile = "${mod_id}.png"
+credits = "${mod_credits}"
+authors = "${mod_author}"
+description = '''${mod_description}'''
 
-Use the "Curator's Cane" (found in the "tools" creative tab) to create a puppet. Use the cane on the puppet to open its settings, or hit the puppet with the cane to remove the puppet.'''
-[[dependencies.simplemuseum]]
-modId="forge"
-mandatory=true
-versionRange="[35,)"
-ordering="NONE"
-side="BOTH"
-[[dependencies.simplemuseum]]
-modId="minecraft"
-mandatory=true
-versionRange="[1.16.4,1.17)"
-ordering="NONE"
+[[dependencies."${mod_id}"]]
+modId = "forge"
+mandatory = true
+versionRange = "[36,)"
+ordering = "NONE"
 side = "BOTH"
-[[dependencies.simplemuseum]]
-modId="geckolib3"
-mandatory=true
-versionRange="[3.0.15,)"
-ordering="AFTER"
+[[dependencies."${mod_id}"]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.16.5,1.17)"
+ordering = "NONE"
 side = "BOTH"
-[[dependencies.simplemuseum]]
-modId="cryptmaster"
-mandatory=false
-versionRange="[0.3,)"
-ordering="AFTER"
+[[dependencies."${mod_id}"]]
+modId = "geckolib3"
+mandatory = true
+versionRange = "[3.0.15,)"
+ordering = "AFTER"
+side = "BOTH"
+[[dependencies."${mod_id}"]]
+modId = "cryptmaster"
+mandatory = false
+versionRange = "[0.3,)"
+ordering = "AFTER"
 side = "BOTH"

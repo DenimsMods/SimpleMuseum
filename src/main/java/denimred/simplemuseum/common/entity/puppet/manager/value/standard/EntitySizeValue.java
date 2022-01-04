@@ -1,12 +1,12 @@
 package denimred.simplemuseum.common.entity.puppet.manager.value.standard;
 
-import net.minecraft.entity.EntitySize;
+import net.minecraft.world.entity.EntityDimensions;
 
 import denimred.simplemuseum.common.entity.puppet.manager.PuppetValueManager;
 import denimred.simplemuseum.common.entity.puppet.manager.value.PuppetValue;
 
-public final class EntitySizeValue extends PuppetValue<EntitySize, EntitySizeProvider> {
-    protected EntitySizeValue(EntitySizeProvider provider, PuppetValueManager manager) {
+public final class EntitySizeValue extends PuppetValue<EntityDimensions, EntitySizeProvider> {
+    EntitySizeValue(EntitySizeProvider provider, PuppetValueManager manager) {
         super(provider, manager);
     }
 
@@ -15,7 +15,7 @@ public final class EntitySizeValue extends PuppetValue<EntitySize, EntitySizePro
     }
 
     public void setWidth(float width) {
-        super.set(EntitySize.flexible(this.clampWidth(width), this.getHeight()));
+        super.set(EntityDimensions.scalable(this.clampWidth(width), this.getHeight()));
     }
 
     public float getHeight() {
@@ -23,22 +23,22 @@ public final class EntitySizeValue extends PuppetValue<EntitySize, EntitySizePro
     }
 
     public void setHeight(float height) {
-        super.set(EntitySize.flexible(this.getWidth(), this.clampHeight(height)));
+        super.set(EntityDimensions.scalable(this.getWidth(), this.clampHeight(height)));
     }
 
     @Override
-    public void set(EntitySize size) {
+    public void set(EntityDimensions size) {
         super.set(this.clampSize(size));
     }
 
-    private EntitySize clampSize(EntitySize size) {
+    private EntityDimensions clampSize(EntityDimensions size) {
         // We do this in kind of a roundabout manner since EntitySize doesn't implement equals()
         // which can cause a stack overflow in the entity data manager since the value will always
         // be considered dirty.
         final float width = this.clampWidth(size.width);
         final float height = this.clampHeight(size.height);
         if (size.width != width || size.height != height) {
-            return EntitySize.flexible(width, height);
+            return EntityDimensions.scalable(width, height);
         }
         return size;
     }
@@ -66,7 +66,7 @@ public final class EntitySizeValue extends PuppetValue<EntitySize, EntitySizePro
     }
 
     @Override
-    public boolean test(EntitySize size) {
+    public boolean test(EntityDimensions size) {
         return this.testWidth(size.width) && this.testHeight(size.height);
     }
 }

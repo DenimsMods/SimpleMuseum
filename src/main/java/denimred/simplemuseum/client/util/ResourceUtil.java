@@ -1,11 +1,11 @@
 package denimred.simplemuseum.client.util;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.Entity;
-import net.minecraft.resources.IReloadableResourceManager;
-import net.minecraft.resources.IResourceManager;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ReloadableResourceManager;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.entity.Entity;
 import net.minecraftforge.resource.IResourceType;
 import net.minecraftforge.resource.ISelectiveResourceReloadListener;
 import net.minecraftforge.resource.VanillaResourceType;
@@ -28,8 +28,8 @@ public class ResourceUtil {
     // TODO: Load resources manually to catch each individual edge case
     public static List<ResourceLocation> getAllResources(
             String path, Predicate<ResourceLocation> filter) {
-        final IResourceManager manager = Minecraft.getInstance().getResourceManager();
-        return manager.getAllResourceLocations(path, string -> true).stream()
+        final ResourceManager manager = Minecraft.getInstance().getResourceManager();
+        return manager.listResources(path, string -> true).stream()
                 .filter(
                         loc -> {
                             if (!filter.test(loc)) {
@@ -63,14 +63,14 @@ public class ResourceUtil {
 
     public static void registerResourceReloadListener() {
         if (ClientUtil.MC != null) {
-            final IReloadableResourceManager resourceManager =
-                    (IReloadableResourceManager) ClientUtil.MC.getResourceManager();
-            resourceManager.addReloadListener(
+            final ReloadableResourceManager manager =
+                    (ReloadableResourceManager) ClientUtil.MC.getResourceManager();
+            manager.registerReloadListener(
                     (ISelectiveResourceReloadListener) ResourceUtil::onResourceReload);
         }
     }
 
-    private static void onResourceReload(IResourceManager manager, Predicate<IResourceType> types) {
+    private static void onResourceReload(ResourceManager manager, Predicate<IResourceType> types) {
         if (types.test(VanillaResourceType.MODELS) || types.test(VanillaResourceType.TEXTURES)) {
             for (List<ResourceLocation> value : RESOURCE_CACHE.values()) {
                 value.clear();
@@ -78,10 +78,10 @@ public class ResourceUtil {
             RESOURCE_CACHE.clear();
             ClientUtil.MODEL_BOUNDS.clear();
 
-            final ClientWorld world = ClientUtil.MC.world;
-            if (world != null) {
+            final ClientLevel level = ClientUtil.MC.level;
+            if (level != null) {
                 // This is stupid but it's simple and I'm lazy :)
-                for (Entity entity : world.getAllEntities()) {
+                for (Entity entity : level.entitiesForRendering()) {
                     if (entity instanceof PuppetEntity) {
                         ((PuppetEntity) entity).invalidateCaches();
                     }
