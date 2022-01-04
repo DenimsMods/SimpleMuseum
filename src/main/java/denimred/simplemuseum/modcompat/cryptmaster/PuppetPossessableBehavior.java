@@ -1,7 +1,7 @@
 package denimred.simplemuseum.modcompat.cryptmaster;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 
 import cryptcraft.cryptcomp.entity.EntityComponent;
 import cryptcraft.cryptmaster.IPossessableBehavior;
@@ -36,34 +36,34 @@ public class PuppetPossessableBehavior implements IPossessableBehavior {
         final Entity old = puppet.getPossessor();
         puppet.setPossessor(null);
         if (old != null) {
-            old.recalculateSize();
+            old.refreshDimensions();
         }
     }
 
     @Override
-    public void applyActing(PlayerEntity player) {
+    public void applyActing(Player player) {
         if (puppet.getPossessor() != player) {
             puppet.setPossessor(player);
-            player.recalculateSize();
+            player.refreshDimensions();
         }
         // While the puppet is dying, don't move it (makes it appear more seamless)
         if (!puppet.isDead() || puppet.isCompletelyDead()) {
-            puppet.setPosition(player.getPosX(), player.getPosY(), player.getPosZ());
-            puppet.setMotion(player.getMotion());
+            puppet.setPos(player.getX(), player.getY(), player.getZ());
+            puppet.setDeltaMovement(player.getDeltaMovement());
             puppet.setNoGravity(true);
-            puppet.setSneaking(player.isSneaking());
+            puppet.setShiftKeyDown(player.isShiftKeyDown());
             puppet.setSprinting(player.isSprinting());
             puppet.setSwimming(player.isSwimming());
             puppet.setPose(player.getPose());
 
-            puppet.rotationYaw = player.rotationYaw;
-            puppet.prevRotationYaw = player.prevRotationYaw;
-            puppet.rotationPitch = player.rotationPitch;
-            puppet.prevRotationPitch = player.prevRotationPitch;
-            puppet.rotationYawHead = player.rotationYawHead;
-            puppet.prevRotationYawHead = player.prevRotationYawHead;
-            puppet.renderYawOffset = player.renderYawOffset;
-            puppet.prevRenderYawOffset = player.prevRenderYawOffset;
+            puppet.yRot = player.yRot;
+            puppet.yRotO = player.yRotO;
+            puppet.xRot = player.xRot;
+            puppet.xRotO = player.xRotO;
+            puppet.yHeadRot = player.yHeadRot;
+            puppet.yHeadRotO = player.yHeadRotO;
+            puppet.yBodyRot = player.yBodyRot;
+            puppet.yBodyRotO = player.yBodyRotO;
         }
     }
 }

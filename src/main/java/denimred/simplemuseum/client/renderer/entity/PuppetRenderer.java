@@ -1,14 +1,16 @@
 package denimred.simplemuseum.client.renderer.entity;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import static denimred.simplemuseum.common.entity.puppet.PuppetEasterEggTracker.Egg.ERROR;
 
-import net.minecraft.client.renderer.IRenderTypeBuffer;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.WorldRenderer;
-import net.minecraft.client.renderer.entity.EntityRendererManager;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.AABB;
 
 import java.awt.Color;
 
@@ -23,11 +25,9 @@ import software.bernie.geckolib3.geo.render.built.GeoModel;
 import software.bernie.geckolib3.renderers.geo.GeoEntityRenderer;
 import software.bernie.geckolib3.util.RenderUtils;
 
-import static denimred.simplemuseum.common.entity.puppet.PuppetEasterEggTracker.Egg.ERROR;
-
 public class PuppetRenderer extends GeoEntityRenderer<PuppetEntity> {
-    public PuppetRenderer(EntityRendererManager renderManager) {
-        super(renderManager, new PuppetModel());
+    public PuppetRenderer(EntityRenderDispatcher dispatcher) {
+        super(dispatcher, new PuppetModel());
         this.addLayer(new PuppetBannersLayerRenderer(this, 16, 1.0D));
     }
 
@@ -37,9 +37,9 @@ public class PuppetRenderer extends GeoEntityRenderer<PuppetEntity> {
             PuppetEntity puppet,
             float partialTicks,
             RenderType type,
-            MatrixStack matrixStackIn,
-            @Nullable IRenderTypeBuffer renderTypeBuffer,
-            @Nullable IVertexBuilder vertexBuilder,
+            PoseStack poseStack,
+            @Nullable MultiBufferSource buffers,
+            @Nullable VertexConsumer buffer,
             int packedLightIn,
             int packedOverlayIn,
             float red,
@@ -48,10 +48,10 @@ public class PuppetRenderer extends GeoEntityRenderer<PuppetEntity> {
             float alpha) {
         this.renderEarly(
                 puppet,
-                matrixStackIn,
+                poseStack,
                 partialTicks,
-                renderTypeBuffer,
-                vertexBuilder,
+                buffers,
+                buffer,
                 packedLightIn,
                 packedOverlayIn,
                 red,
@@ -59,15 +59,15 @@ public class PuppetRenderer extends GeoEntityRenderer<PuppetEntity> {
                 blue,
                 alpha);
 
-        if (renderTypeBuffer != null) {
-            vertexBuilder = renderTypeBuffer.getBuffer(type);
+        if (buffers != null) {
+            buffer = buffers.getBuffer(type);
         }
         this.renderLate(
                 puppet,
-                matrixStackIn,
+                poseStack,
                 partialTicks,
-                renderTypeBuffer,
-                vertexBuilder,
+                buffers,
+                buffer,
                 packedLightIn,
                 packedOverlayIn,
                 red,
@@ -78,8 +78,8 @@ public class PuppetRenderer extends GeoEntityRenderer<PuppetEntity> {
         for (GeoBone bone : model.topLevelBones) {
             this.renderRecursivelySolid(
                     bone,
-                    matrixStackIn,
-                    vertexBuilder,
+                    poseStack,
+                    buffer,
                     packedLightIn,
                     packedOverlayIn,
                     red,
@@ -87,16 +87,16 @@ public class PuppetRenderer extends GeoEntityRenderer<PuppetEntity> {
                     blue,
                     alpha);
         }
-        IVertexBuilder translucent =
-                renderTypeBuffer != null
-                        ? renderTypeBuffer.getBuffer(
-                                RenderType.getEntityTranslucent(this.getTextureLocation(puppet)))
-                        : vertexBuilder;
+        VertexConsumer translucent =
+                buffers != null
+                        ? buffers.getBuffer(
+                                RenderType.entityTranslucent(this.getTextureLocation(puppet)))
+                        : buffer;
         // Render all top level bones
         for (GeoBone bone : model.topLevelBones) {
             this.renderRecursivelySlime(
                     bone,
-                    matrixStackIn,
+                    poseStack,
                     translucent,
                     packedLightIn,
                     packedOverlayIn,
@@ -109,43 +109,43 @@ public class PuppetRenderer extends GeoEntityRenderer<PuppetEntity> {
 
     private void renderRecursivelySolid(
             GeoBone bone,
-            MatrixStack stack,
-            @Nullable IVertexBuilder bufferIn,
+            PoseStack poseStack,
+            @Nullable VertexConsumer buffer,
             int packedLightIn,
             int packedOverlayIn,
             float red,
             float green,
             float blue,
             float alpha) {
-        stack.push();
-        RenderUtils.translate(bone, stack);
-        RenderUtils.moveToPivot(bone, stack);
-        RenderUtils.rotate(bone, stack);
-        RenderUtils.scale(bone, stack);
-        RenderUtils.moveBackFromPivot(bone, stack);
+        poseStack.pushPose();
+        RenderUtils.translate(bone, poseStack);
+        RenderUtils.moveToPivot(bone, poseStack);
+        RenderUtils.rotate(bone, poseStack);
+        RenderUtils.scale(bone, poseStack);
+        RenderUtils.moveBackFromPivot(bone, poseStack);
 
         if (!bone.isHidden) {
             if (!bone.name.endsWith("_slime")) {
                 for (GeoCube cube : bone.childCubes) {
-                    stack.push();
+                    poseStack.pushPose();
                     renderCube(
                             cube,
-                            stack,
-                            bufferIn,
+                            poseStack,
+                            buffer,
                             packedLightIn,
                             packedOverlayIn,
                             red,
                             green,
                             blue,
                             alpha);
-                    stack.pop();
+                    poseStack.popPose();
                 }
             }
             for (GeoBone childBone : bone.childBones) {
                 renderRecursivelySolid(
                         childBone,
-                        stack,
-                        bufferIn,
+                        poseStack,
+                        buffer,
                         packedLightIn,
                         packedOverlayIn,
                         red,
@@ -155,48 +155,48 @@ public class PuppetRenderer extends GeoEntityRenderer<PuppetEntity> {
             }
         }
 
-        stack.pop();
+        poseStack.popPose();
     }
 
     private void renderRecursivelySlime(
             GeoBone bone,
-            MatrixStack stack,
-            @Nullable IVertexBuilder bufferIn,
+            PoseStack poseStack,
+            @Nullable VertexConsumer buffer,
             int packedLightIn,
             int packedOverlayIn,
             float red,
             float green,
             float blue,
             float alpha) {
-        stack.push();
-        RenderUtils.translate(bone, stack);
-        RenderUtils.moveToPivot(bone, stack);
-        RenderUtils.rotate(bone, stack);
-        RenderUtils.scale(bone, stack);
-        RenderUtils.moveBackFromPivot(bone, stack);
+        poseStack.pushPose();
+        RenderUtils.translate(bone, poseStack);
+        RenderUtils.moveToPivot(bone, poseStack);
+        RenderUtils.rotate(bone, poseStack);
+        RenderUtils.scale(bone, poseStack);
+        RenderUtils.moveBackFromPivot(bone, poseStack);
 
         if (!bone.isHidden) {
             if (bone.name.endsWith("_slime")) {
                 for (GeoCube cube : bone.childCubes) {
-                    stack.push();
+                    poseStack.pushPose();
                     renderCube(
                             cube,
-                            stack,
-                            bufferIn,
+                            poseStack,
+                            buffer,
                             packedLightIn,
                             packedOverlayIn,
                             red,
                             green,
                             blue,
                             alpha);
-                    stack.pop();
+                    poseStack.popPose();
                 }
             }
             for (GeoBone childBone : bone.childBones) {
                 renderRecursivelySlime(
                         childBone,
-                        stack,
-                        bufferIn,
+                        poseStack,
+                        buffer,
                         packedLightIn,
                         packedOverlayIn,
                         red,
@@ -206,7 +206,7 @@ public class PuppetRenderer extends GeoEntityRenderer<PuppetEntity> {
             }
         }
 
-        stack.pop();
+        poseStack.popPose();
     }
 
     @Override
@@ -214,59 +214,52 @@ public class PuppetRenderer extends GeoEntityRenderer<PuppetEntity> {
             PuppetEntity puppet,
             float entityYaw,
             float partialTicks,
-            MatrixStack matrixStack,
-            IRenderTypeBuffer typeBuffer,
+            PoseStack poseStack,
+            MultiBufferSource buffers,
             int packedLightIn) {
         if (puppet.isCompletelyDead() && !puppet.renderManager.canRenderHiddenDeathEffects()) {
             // Don't render
             return;
         }
-        matrixStack.push();
-        final float scale = puppet.getRenderScale();
-        matrixStack.scale(scale, scale, scale);
+        poseStack.pushPose();
+        final float scale = puppet.getScale();
+        poseStack.scale(scale, scale, scale);
         final int light = !puppet.renderManager.ignoreLighting.get() ? packedLightIn : 0xF000F0;
-        super.render(puppet, entityYaw, partialTicks, matrixStack, typeBuffer, light);
-        matrixStack.pop();
-        if (renderManager.isDebugBoundingBox()) {
-            matrixStack.push();
-            final AxisAlignedBB aabb =
-                    puppet.getRenderBoundingBox().offset(puppet.getPositionVec().inverse());
-            final IVertexBuilder buffer = typeBuffer.getBuffer(RenderType.getLines());
-            WorldRenderer.drawBoundingBox(matrixStack, buffer, aabb, 0.0F, 1.0F, 1.0F, 1.0F);
-            matrixStack.pop();
+        super.render(puppet, entityYaw, partialTicks, poseStack, buffers, light);
+        poseStack.popPose();
+        if (entityRenderDispatcher.shouldRenderHitBoxes()) {
+            poseStack.pushPose();
+            final AABB aabb = puppet.getBoundingBoxForCulling().move(puppet.position().reverse());
+            final VertexConsumer buffer = buffers.getBuffer(RenderType.lines());
+            LevelRenderer.renderLineBox(poseStack, buffer, aabb, 0.0F, 1.0F, 1.0F, 1.0F);
+            poseStack.popPose();
         }
     }
 
     @Override
     protected void applyRotations(
             PuppetEntity puppet,
-            MatrixStack matrixStack,
+            PoseStack poseStack,
             float ageInTicks,
             float rotationYaw,
             float partialTicks) {
-        super.applyRotations(puppet, matrixStack, ageInTicks, rotationYaw, partialTicks);
+        super.applyRotations(puppet, poseStack, ageInTicks, rotationYaw, partialTicks);
         if (puppet.easterEggs.isActive(ERROR)) {
-            matrixStack.scale(0.6F, 1.0F, 1.0F);
+            poseStack.scale(0.6F, 1.0F, 1.0F);
         }
-    }
-
-    @Override
-    public ResourceLocation getEntityTexture(PuppetEntity entity) {
-        // Uh... what?
-        return super.getTextureLocation(entity);
     }
 
     @Override
     public RenderType getRenderType(
             PuppetEntity puppet,
             float partialTicks,
-            MatrixStack stack,
-            @Nullable IRenderTypeBuffer renderTypeBuffer,
-            @Nullable IVertexBuilder vertexBuilder,
+            PoseStack poseStack,
+            @Nullable MultiBufferSource buffers,
+            @Nullable VertexConsumer buffer,
             int packedLightIn,
             ResourceLocation textureLocation) {
         if (puppet.renderManager.canRenderHiddenDeathEffects()) {
-            return RenderType.getEntityTranslucent(textureLocation);
+            return RenderType.entityTranslucent(textureLocation);
         }
         return puppet.renderManager.getRenderType(textureLocation);
     }
@@ -275,13 +268,13 @@ public class PuppetRenderer extends GeoEntityRenderer<PuppetEntity> {
     public Color getRenderColor(
             PuppetEntity puppet,
             float partialTicks,
-            MatrixStack stack,
-            @Nullable IRenderTypeBuffer renderTypeBuffer,
-            @Nullable IVertexBuilder vertexBuilder,
+            PoseStack poseStack,
+            @Nullable MultiBufferSource buffers,
+            @Nullable VertexConsumer buffer,
             int packedLightIn) {
         if (puppet.easterEggs.isActive(ERROR)) {
             final float b =
-                    ((float) Math.sin(puppet.world.getGameTime() / 3.0D) + 1.0F) / 3.34F + 0.4F;
+                    ((float) Math.sin(puppet.level.getGameTime() / 3.0D) + 1.0F) / 3.34F + 0.4F;
             return Color.getHSBColor(0.0F, 1.0F, b);
         } else {
             final Color color = Color.WHITE; // puppet.renderManager.tintColor.get();
@@ -306,9 +299,9 @@ public class PuppetRenderer extends GeoEntityRenderer<PuppetEntity> {
     }
 
     @Override
-    protected boolean canRenderName(PuppetEntity puppet) {
+    public boolean shouldShowName(PuppetEntity puppet) {
         final NameplateBehavior nameplateBehavior = puppet.renderManager.nameplateBehavior.get();
         return nameplateBehavior != NameplateBehavior.NEVER
-                && (super.canRenderName(puppet) || nameplateBehavior == NameplateBehavior.ALWAYS);
+                && (super.shouldShowName(puppet) || nameplateBehavior == NameplateBehavior.ALWAYS);
     }
 }

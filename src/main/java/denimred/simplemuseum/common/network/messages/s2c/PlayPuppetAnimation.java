@@ -1,6 +1,6 @@
 package denimred.simplemuseum.common.network.messages.s2c;
 
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkEvent;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
@@ -29,15 +29,15 @@ public final class PlayPuppetAnimation {
                 Optional.of(NetworkDirection.PLAY_TO_CLIENT));
     }
 
-    private static PlayPuppetAnimation decode(PacketBuffer buf) {
+    private static PlayPuppetAnimation decode(FriendlyByteBuf buf) {
         final int puppetId = buf.readVarInt();
-        final String animation = buf.readString();
+        final String animation = buf.readUtf();
         return new PlayPuppetAnimation(puppetId, animation);
     }
 
-    private void encode(PacketBuffer buf) {
+    private void encode(FriendlyByteBuf buf) {
         buf.writeVarInt(puppetId);
-        buf.writeString(animation);
+        buf.writeUtf(animation);
     }
 
     private void handle(Supplier<NetworkEvent.Context> sup) {

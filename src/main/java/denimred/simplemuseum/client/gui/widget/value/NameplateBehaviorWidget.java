@@ -1,7 +1,7 @@
 package denimred.simplemuseum.client.gui.widget.value;
 
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraftforge.fml.client.gui.widget.ExtendedButton;
 
 import java.util.Arrays;
@@ -33,8 +33,7 @@ public final class NameplateBehaviorWidget
         super(parent, x, y, width, height, value);
         button =
                 this.addChild(
-                        new ExtendedButton(
-                                0, 0, 0, 20, StringTextComponent.EMPTY, this::selectEnum));
+                        new ExtendedButton(0, 0, 0, 20, TextComponent.EMPTY, this::selectEnum));
         this.setMaxWidth(100);
         this.detectAndSync();
     }
@@ -51,32 +50,32 @@ public final class NameplateBehaviorWidget
     }
 
     private void selectEnum(Button button) {
-        MC.displayGuiScreen(new AnimSelectScreen());
+        MC.setScreen(new AnimSelectScreen());
     }
 
     @Override
     public void syncWithValue() {
-        button.setMessage(new StringTextComponent(value.get().name()));
+        button.setMessage(new TextComponent(valueRef.get().name()));
     }
 
     private final class AnimSelectScreen extends SelectScreen<NameplateBehavior> {
-        protected AnimSelectScreen() {
+        private AnimSelectScreen() {
             super(
                     NameplateBehaviorWidget.this.parent,
-                    new StringTextComponent("Select Nameplate Behavior"));
+                    new TextComponent("Select Nameplate Behavior"));
         }
 
         @Override
         protected void onSave() {
             if (selected != null) {
-                value.set(selected.value);
+                valueRef.set(selected.value);
                 NameplateBehaviorWidget.this.syncWithValue();
             }
         }
 
         @Override
         protected boolean isSelected(ListWidget.Entry entry) {
-            return entry.value.equals(value.get());
+            return entry.value.equals(valueRef.get());
         }
 
         @Override

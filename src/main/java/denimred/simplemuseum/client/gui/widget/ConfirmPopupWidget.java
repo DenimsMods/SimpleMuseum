@@ -1,16 +1,16 @@
 package denimred.simplemuseum.client.gui.widget;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 
-import net.minecraft.client.audio.SoundHandler;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.sounds.SoundManager;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.util.Mth;
 import net.minecraftforge.fml.client.gui.widget.ExtendedButton;
 
 import java.util.ArrayList;
@@ -21,13 +21,13 @@ import denimred.simplemuseum.client.gui.widget.LabelWidget.AnchorX;
 import denimred.simplemuseum.client.gui.widget.LabelWidget.AnchorY;
 import denimred.simplemuseum.common.util.MathUtil;
 
-public class ConfirmPopupWidget extends Widget {
+public class ConfirmPopupWidget extends AbstractWidget {
     public static final int MARGIN = 6;
     protected static final int BORDER_WIDTH = 2;
     protected static final int BUTTON_SIZE = 20;
     protected final int originX;
     protected final int originY;
-    protected final Widget[] widgets;
+    protected final AbstractWidget[] widgets;
     protected final LabelWidget titleLabel;
     protected final LabelWidget descriptionLabel;
     protected final LabelWidget extraLabel;
@@ -37,19 +37,19 @@ public class ConfirmPopupWidget extends Widget {
     protected Runnable yesAction = () -> {};
     protected Runnable noAction = () -> {};
 
-    public ConfirmPopupWidget(int x, int y, FontRenderer font) {
-        super(x, y, 100, 100, StringTextComponent.EMPTY);
+    public ConfirmPopupWidget(int x, int y, Font font) {
+        super(x, y, 100, 100, TextComponent.EMPTY);
         originX = x;
         originY = y;
         widgets =
-                new Widget[] {
+                new AbstractWidget[] {
                     yesButton =
                             new ExtendedButton(
                                     0,
                                     0,
                                     BUTTON_SIZE,
                                     BUTTON_SIZE,
-                                    StringTextComponent.EMPTY,
+                                    TextComponent.EMPTY,
                                     this::onYes),
                     noButton =
                             new ExtendedButton(
@@ -57,7 +57,7 @@ public class ConfirmPopupWidget extends Widget {
                                     0,
                                     BUTTON_SIZE,
                                     BUTTON_SIZE,
-                                    StringTextComponent.EMPTY,
+                                    TextComponent.EMPTY,
                                     this::onNo),
                     titleLabel = new LabelWidget(x, y, font, AnchorX.CENTER, AnchorY.TOP),
                     descriptionLabel = new LabelWidget(x, y, font, AnchorX.LEFT, AnchorY.TOP),
@@ -106,7 +106,7 @@ public class ConfirmPopupWidget extends Widget {
         challengeLabel.y = bottom - BORDER_WIDTH;
         yesButton.x = left;
         yesButton.y = bottom;
-        final int buttonWidth = MathHelper.floor((width - BORDER_WIDTH * 2) / 2.0F);
+        final int buttonWidth = Mth.floor((width - BORDER_WIDTH * 2) / 2.0F);
         yesButton.setWidth(buttonWidth);
         noButton.x = x + width - BORDER_WIDTH - buttonWidth;
         noButton.y = bottom;
@@ -130,54 +130,54 @@ public class ConfirmPopupWidget extends Widget {
     }
 
     public ConfirmPopupWidget title(String title) {
-        return this.title(new StringTextComponent(title).mergeStyle(TextFormatting.UNDERLINE));
+        return this.title(new TextComponent(title).withStyle(ChatFormatting.UNDERLINE));
     }
 
-    public ConfirmPopupWidget title(ITextComponent title) {
+    public ConfirmPopupWidget title(Component title) {
         this.message = title;
         this.titleLabel.setTexts(title);
         return this;
     }
 
     public ConfirmPopupWidget description(String... texts) {
-        final List<ITextComponent> list = new ArrayList<>();
+        final List<Component> list = new ArrayList<>();
         for (String text : texts) {
-            list.add(new StringTextComponent(text));
+            list.add(new TextComponent(text));
         }
         return this.description(list);
     }
 
-    public ConfirmPopupWidget description(ITextComponent... texts) {
+    public ConfirmPopupWidget description(Component... texts) {
         return this.description(Arrays.asList(texts));
     }
 
-    public ConfirmPopupWidget description(List<? extends ITextComponent> texts) {
+    public ConfirmPopupWidget description(List<? extends Component> texts) {
         this.descriptionLabel.setTexts(texts);
         return this;
     }
 
     public ConfirmPopupWidget extra(String... texts) {
-        final List<ITextComponent> list = new ArrayList<>();
+        final List<Component> list = new ArrayList<>();
         for (String text : texts) {
-            list.add(new StringTextComponent(text));
+            list.add(new TextComponent(text));
         }
         return this.extra(list);
     }
 
-    public ConfirmPopupWidget extra(ITextComponent... texts) {
+    public ConfirmPopupWidget extra(Component... texts) {
         return this.extra(Arrays.asList(texts));
     }
 
-    public ConfirmPopupWidget extra(List<? extends ITextComponent> texts) {
+    public ConfirmPopupWidget extra(List<? extends Component> texts) {
         this.extraLabel.setTexts(texts);
         return this;
     }
 
     public ConfirmPopupWidget challenge(String title) {
-        return this.challenge(new StringTextComponent(title));
+        return this.challenge(new TextComponent(title));
     }
 
-    public ConfirmPopupWidget challenge(ITextComponent title) {
+    public ConfirmPopupWidget challenge(Component title) {
         this.message = title;
         this.challengeLabel.setTexts(title);
         return this;
@@ -188,10 +188,10 @@ public class ConfirmPopupWidget extends Widget {
     }
 
     public ConfirmPopupWidget yes(String title, Runnable action) {
-        return this.yes(new StringTextComponent(title), action);
+        return this.yes(new TextComponent(title), action);
     }
 
-    public ConfirmPopupWidget yes(ITextComponent title, Runnable action) {
+    public ConfirmPopupWidget yes(Component title, Runnable action) {
         yesButton.setMessage(title);
         this.yesAction = action;
         return this;
@@ -202,10 +202,10 @@ public class ConfirmPopupWidget extends Widget {
     }
 
     public ConfirmPopupWidget no(String title, Runnable action) {
-        return this.no(new StringTextComponent(title), action);
+        return this.no(new TextComponent(title), action);
     }
 
-    public ConfirmPopupWidget no(ITextComponent title, Runnable action) {
+    public ConfirmPopupWidget no(Component title, Runnable action) {
         noButton.setMessage(title);
         this.noAction = action;
         return this;
@@ -222,38 +222,38 @@ public class ConfirmPopupWidget extends Widget {
     }
 
     @Override
-    public void playDownSound(SoundHandler handler) {
+    public void playDownSound(SoundManager manager) {
         // no-op
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public void renderWidget(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
         RenderSystem.color4f(1.0F, 1.0F, 1.0F, alpha);
         RenderSystem.enableDepthTest();
         RenderSystem.enableBlend();
-        fillGradient(matrixStack, x, y, x + width, y + height, 0x66FFFFFF, 0x66FFFFFF);
+        fillGradient(poseStack, x, y, x + width, y + height, 0x66FFFFFF, 0x66FFFFFF);
         fillGradient(
-                matrixStack,
+                poseStack,
                 x + BORDER_WIDTH,
                 y + BORDER_WIDTH,
                 x + width - BORDER_WIDTH,
                 y + height - BORDER_WIDTH,
                 0x66000000,
                 0xCC000000);
-        matrixStack.push();
-        matrixStack.translate(0.0D, 0.0D, this.getBlitOffset());
-        for (Widget widget : widgets) {
-            widget.render(matrixStack, mouseX, mouseY, partialTicks);
+        poseStack.pushPose();
+        poseStack.translate(0.0D, 0.0D, this.getBlitOffset());
+        for (AbstractWidget widget : widgets) {
+            widget.render(poseStack, mouseX, mouseY, partialTicks);
         }
-        matrixStack.pop();
+        poseStack.popPose();
         RenderSystem.disableBlend();
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (visible && active) {
-            for (Widget widget : widgets) {
+            for (AbstractWidget widget : widgets) {
                 if (widget.keyPressed(keyCode, scanCode, modifiers)) {
                     return true;
                 }
@@ -266,7 +266,7 @@ public class ConfirmPopupWidget extends Widget {
     @Override
     public boolean charTyped(char codePoint, int modifiers) {
         if (visible && active) {
-            for (Widget widget : widgets) {
+            for (AbstractWidget widget : widgets) {
                 if (widget.charTyped(codePoint, modifiers)) {
                     return true;
                 }
@@ -279,7 +279,7 @@ public class ConfirmPopupWidget extends Widget {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
         if (visible && active) {
-            for (Widget widget : widgets) {
+            for (AbstractWidget widget : widgets) {
                 if (widget.mouseClicked(mouseX, mouseY, mouseButton)) {
                     return true;
                 }
@@ -293,7 +293,7 @@ public class ConfirmPopupWidget extends Widget {
     public boolean mouseReleased(double mouseX, double mouseY, int mouseButton) {
         if (visible && active) {
             boolean b = false;
-            for (Widget widget : widgets) {
+            for (AbstractWidget widget : widgets) {
                 if (widget.mouseReleased(mouseX, mouseY, mouseButton)) {
                     b = true;
                 }
@@ -306,7 +306,7 @@ public class ConfirmPopupWidget extends Widget {
     @Override
     public boolean changeFocus(boolean focus) {
         if (visible && active) {
-            for (Widget widget : widgets) {
+            for (AbstractWidget widget : widgets) {
                 if (widget.changeFocus(focus)) {
                     return true;
                 }
@@ -319,7 +319,7 @@ public class ConfirmPopupWidget extends Widget {
     @Override
     public boolean isMouseOver(double mouseX, double mouseY) {
         if (visible && active) {
-            for (Widget widget : widgets) {
+            for (AbstractWidget widget : widgets) {
                 if (widget.isMouseOver(mouseX, mouseY)) {
                     return true;
                 }

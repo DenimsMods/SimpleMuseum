@@ -1,8 +1,8 @@
 package denimred.simplemuseum.common.init;
 
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.Rarity;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Rarity;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -20,7 +20,7 @@ public final class MuseumItems {
                     () ->
                             new CuratorsCaneItem(
                                     new Item.Properties()
-                                            .maxStackSize(1)
+                                            .stacksTo(1)
                                             .rarity(Rarity.UNCOMMON)
-                                            .group(ItemGroup.TOOLS)));
+                                            .tab(CreativeModeTab.TAB_TOOLS)));
 }

@@ -1,6 +1,6 @@
 package denimred.simplemuseum.common.network.messages.s2c;
 
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkEvent;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
@@ -28,12 +28,12 @@ public final class ResurrectPuppetSync {
                 Optional.of(NetworkDirection.PLAY_TO_CLIENT));
     }
 
-    private static ResurrectPuppetSync decode(PacketBuffer buf) {
+    private static ResurrectPuppetSync decode(FriendlyByteBuf buf) {
         final int puppetId = buf.readVarInt();
         return new ResurrectPuppetSync(puppetId);
     }
 
-    private void encode(PacketBuffer buf) {
+    private void encode(FriendlyByteBuf buf) {
         buf.writeVarInt(puppetId);
     }
 

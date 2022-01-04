@@ -1,7 +1,7 @@
 package denimred.simplemuseum.client.gui.widget;
 
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceLocation;
 
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.client.gui.screen.PuppetConfigScreen;
@@ -14,7 +14,7 @@ public class CopyPasteButtons extends NestedWidget {
             new ResourceLocation(SimpleMuseum.MOD_ID, "textures/gui/paste_button.png");
 
     public CopyPasteButtons(PuppetConfigScreen parent, int x, int y) {
-        super(x, y, 40, 20, StringTextComponent.EMPTY);
+        super(x, y, 40, 20, TextComponent.EMPTY);
         this.addChild(
                 new IconButton(
                         x,

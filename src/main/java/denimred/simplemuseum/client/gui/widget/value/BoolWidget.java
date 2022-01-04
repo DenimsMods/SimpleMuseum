@@ -1,9 +1,9 @@
 package denimred.simplemuseum.client.gui.widget.value;
 
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.fml.client.gui.widget.ExtendedButton;
 
 import denimred.simplemuseum.client.gui.screen.PuppetConfigScreen;
@@ -25,10 +25,10 @@ public final class BoolWidget extends ValueWidget<Boolean, PuppetValue<Boolean, 
             int height,
             PuppetValue<Boolean, ?> value) {
         super(parent, x, y, width, height, value);
-        final IFormattableTextComponent msgTrue =
-                new TranslationTextComponent("True").mergeStyle(TextFormatting.GREEN);
-        final IFormattableTextComponent msgFalse =
-                new TranslationTextComponent("False").mergeStyle(TextFormatting.RED);
+        final MutableComponent msgTrue =
+                new TranslatableComponent("True").withStyle(ChatFormatting.GREEN);
+        final MutableComponent msgFalse =
+                new TranslatableComponent("False").withStyle(ChatFormatting.RED);
         toggleButton =
                 this.addChild(
                         new ExtendedButton(
@@ -36,7 +36,7 @@ public final class BoolWidget extends ValueWidget<Boolean, PuppetValue<Boolean, 
                                 0,
                                 0,
                                 20,
-                                this.value.get()
+                                this.valueRef.get()
                                         ? msgTrue.setStyle(msgTrue.getStyle())
                                         : msgFalse.setStyle(msgFalse.getStyle()),
                                 this::toggle));
@@ -56,18 +56,18 @@ public final class BoolWidget extends ValueWidget<Boolean, PuppetValue<Boolean, 
     }
 
     private void toggle(Button button) {
-        value.set(!value.get());
+        valueRef.set(!valueRef.get());
         this.detectAndSync();
     }
 
     @Override
     public void syncWithValue() {
-        final IFormattableTextComponent msgTrue =
-                new TranslationTextComponent("True").mergeStyle(TextFormatting.GREEN);
-        final IFormattableTextComponent msgFalse =
-                new TranslationTextComponent("False").mergeStyle(TextFormatting.RED);
+        final MutableComponent msgTrue =
+                new TranslatableComponent("True").withStyle(ChatFormatting.GREEN);
+        final MutableComponent msgFalse =
+                new TranslatableComponent("False").withStyle(ChatFormatting.RED);
         toggleButton.setMessage(
-                value.get()
+                valueRef.get()
                         ? msgTrue.setStyle(msgTrue.getStyle())
                         : msgFalse.setStyle(msgFalse.getStyle()));
     }

@@ -2,12 +2,12 @@ package denimred.simplemuseum.client.gui.widget.value;
 
 import com.mojang.datafixers.util.Pair;
 
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.entity.EntitySize;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.entity.EntityDimensions;
 
 import java.util.Optional;
 
@@ -19,9 +19,9 @@ import denimred.simplemuseum.client.util.NumberUtil;
 import denimred.simplemuseum.common.entity.puppet.manager.value.PuppetValue;
 import denimred.simplemuseum.common.entity.puppet.manager.value.standard.EntitySizeValue;
 
-public final class EntitySizeWidget extends ValueWidget<EntitySize, EntitySizeValue> {
-    private final TextFieldWidget widthField;
-    private final TextFieldWidget heightField;
+public final class EntitySizeWidget extends ValueWidget<EntityDimensions, EntitySizeValue> {
+    private final EditBox widthField;
+    private final EditBox heightField;
     private final DescriptiveButton autoCalculateButton;
 
     public EntitySizeWidget(PuppetConfigScreen parent, PuppetValue<?, ?> value) {
@@ -39,10 +39,10 @@ public final class EntitySizeWidget extends ValueWidget<EntitySize, EntitySizeVa
                                 0,
                                 0,
                                 20,
-                                new StringTextComponent("Calculate"),
-                                new StringTextComponent(
+                                new TextComponent("Calculate"),
+                                new TextComponent(
                                                 "Automatically calculate the physical bounds of the puppet using the puppet's model geometry as a reference.")
-                                        .mergeStyle(TextFormatting.GRAY),
+                                        .withStyle(ChatFormatting.GRAY),
                                 this::autoCalculate,
                                 parent::renderWidgetTooltip));
         widthField = this.addChild(new SizeHalfFieldWidget(false), true);
@@ -55,9 +55,9 @@ public final class EntitySizeWidget extends ValueWidget<EntitySize, EntitySizeVa
     protected void recalculateChildren() {
         final int yPos = y + TITLE_OFFSET + heightMargin;
         final int widgetWidth = (width - 40) / 3;
-        final Widget[] mainChildren = {autoCalculateButton, widthField, heightField};
+        final AbstractWidget[] mainChildren = {autoCalculateButton, widthField, heightField};
         for (int i = 0; i < mainChildren.length; i++) {
-            final Widget child = mainChildren[i];
+            final AbstractWidget child = mainChildren[i];
             child.x = x + widgetWidth * i;
             child.y = yPos;
             child.setWidth(widgetWidth);
@@ -67,25 +67,25 @@ public final class EntitySizeWidget extends ValueWidget<EntitySize, EntitySizeVa
     }
 
     private void autoCalculate(Button button) {
-        final Optional<EntitySize> collisionBounds =
-                ClientUtil.getPuppetBounds(value.manager.puppet).map(Pair::getFirst);
+        final Optional<EntityDimensions> collisionBounds =
+                ClientUtil.getPuppetBounds(valueRef.manager.puppet).map(Pair::getFirst);
         if (collisionBounds.isPresent()) {
-            value.set(collisionBounds.get());
+            valueRef.set(collisionBounds.get());
             this.syncWithValue();
         }
     }
 
     @Override
     public void syncWithValue() {
-        widthField.setText(String.valueOf(value.getWidth()));
-        widthField.setCursorPositionZero();
-        heightField.setText(String.valueOf(value.getHeight()));
-        heightField.setCursorPositionZero();
+        widthField.setValue(String.valueOf(valueRef.getWidth()));
+        widthField.moveCursorToStart();
+        heightField.setValue(String.valueOf(valueRef.getHeight()));
+        heightField.moveCursorToStart();
     }
 
     @Override
     protected boolean hasChanged() {
-        return !(value.getWidth() == original.width && value.getHeight() == original.height);
+        return !(valueRef.getWidth() == original.width && valueRef.getHeight() == original.height);
     }
 
     private final class SizeHalfFieldWidget extends BetterTextFieldWidget {
@@ -93,16 +93,14 @@ public final class EntitySizeWidget extends ValueWidget<EntitySize, EntitySizeVa
 
         public SizeHalfFieldWidget(boolean isHeight) {
             super(
-                    ClientUtil.MC.fontRenderer,
+                    ClientUtil.MC.font,
                     0,
                     0,
                     0,
                     20,
-                    isHeight
-                            ? new StringTextComponent("Height")
-                            : new StringTextComponent("Width"));
+                    isHeight ? new TextComponent("Height") : new TextComponent("Width"));
             this.isHeight = isHeight;
-            this.setValidator(this::validate);
+            this.setFilter(this::validate);
             this.setResponder(this::respond);
         }
 
@@ -115,11 +113,11 @@ public final class EntitySizeWidget extends ValueWidget<EntitySize, EntitySizeVa
             if (oF.isPresent()) {
                 final float f = oF.get();
                 if (isHeight) {
-                    this.setTextColor(value.testHeight(f) ? TEXT_VALID : TEXT_INVALID);
-                    value.setHeight(f);
+                    this.setTextColor(valueRef.testHeight(f) ? TEXT_VALID : TEXT_INVALID);
+                    valueRef.setHeight(f);
                 } else {
-                    this.setTextColor(value.testWidth(f) ? TEXT_VALID : TEXT_INVALID);
-                    value.setWidth(f);
+                    this.setTextColor(valueRef.testWidth(f) ? TEXT_VALID : TEXT_INVALID);
+                    valueRef.setWidth(f);
                 }
             } else {
                 this.setTextColor(TEXT_ERROR);

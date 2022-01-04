@@ -1,23 +1,23 @@
 package denimred.simplemuseum.common.util;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.IDataSerializer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializer;
 
-public interface IValueSerializer<T> extends IDataSerializer<T> {
-    T read(CompoundNBT tag, String key);
+public interface IValueSerializer<T> extends EntityDataSerializer<T> {
+    T read(CompoundTag tag, String key);
 
-    void write(CompoundNBT tag, String key, T value);
-
-    @Override
-    T read(PacketBuffer buf);
+    void write(CompoundTag tag, String key, T value);
 
     @Override
-    void write(PacketBuffer buf, T value);
+    T read(FriendlyByteBuf buf);
 
     @Override
-    default T copyValue(T value) {
+    void write(FriendlyByteBuf buf, T value);
+
+    @Override
+    default T copy(T value) {
         return value;
     }
 
@@ -26,30 +26,30 @@ public interface IValueSerializer<T> extends IDataSerializer<T> {
     int getTagId();
 
     abstract class Wrapped<T> implements IValueSerializer<T> {
-        public final IDataSerializer<T> parent;
+        public final EntityDataSerializer<T> parent;
 
-        public Wrapped(IDataSerializer<T> parent) {
+        public Wrapped(EntityDataSerializer<T> parent) {
             this.parent = parent;
         }
 
         @Override
-        public T read(PacketBuffer buf) {
+        public T read(FriendlyByteBuf buf) {
             return parent.read(buf);
         }
 
         @Override
-        public void write(PacketBuffer buf, T value) {
+        public void write(FriendlyByteBuf buf, T value) {
             parent.write(buf, value);
         }
 
         @Override
-        public T copyValue(T value) {
-            return parent.copyValue(value);
+        public T copy(T value) {
+            return parent.copy(value);
         }
 
         @Override
-        public DataParameter<T> createKey(int id) {
-            return parent.createKey(id);
+        public EntityDataAccessor<T> createAccessor(int id) {
+            return parent.createAccessor(id);
         }
     }
 }

@@ -1,28 +1,28 @@
 package denimred.simplemuseum.client.gui.widget;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 
-import net.minecraft.client.audio.SoundHandler;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.sounds.SoundManager;
+import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class NestedWidget extends Widget implements ITickingWidget {
-    protected final List<Widget> children = new ArrayList<>();
+public class NestedWidget extends AbstractWidget implements ITickingWidget {
+    protected final List<AbstractWidget> children = new ArrayList<>();
     protected int maxWidth = Integer.MAX_VALUE;
 
-    public NestedWidget(int x, int y, int width, int height, ITextComponent title) {
+    public NestedWidget(int x, int y, int width, int height, Component title) {
         super(x, y, width, height, title);
     }
 
-    protected <T extends Widget> T addChild(T child) {
+    protected <T extends AbstractWidget> T addChild(T child) {
         return this.addChild(child, false);
     }
 
-    protected <T extends Widget> T addChild(T child, boolean reverseOrder) {
+    protected <T extends AbstractWidget> T addChild(T child, boolean reverseOrder) {
         if (reverseOrder) {
             children.add(0, child);
         } else {
@@ -31,7 +31,7 @@ public class NestedWidget extends Widget implements ITickingWidget {
         return child;
     }
 
-    protected void removeChild(Widget child) {
+    protected void removeChild(AbstractWidget child) {
         children.remove(child);
     }
 
@@ -39,7 +39,7 @@ public class NestedWidget extends Widget implements ITickingWidget {
         children.clear();
     }
 
-    protected void swapChild(Widget oldChild, Widget newChild) {
+    protected void swapChild(AbstractWidget oldChild, AbstractWidget newChild) {
         children.remove(oldChild);
         newChild.setAlpha(oldChild.alpha);
         children.add(newChild);
@@ -72,13 +72,13 @@ public class NestedWidget extends Widget implements ITickingWidget {
     @Override
     public void setAlpha(float alpha) {
         this.alpha = alpha;
-        for (Widget widget : children) {
-            widget.setAlpha(alpha);
+        for (AbstractWidget child : children) {
+            child.setAlpha(alpha);
         }
     }
 
     @Override
-    public void playDownSound(SoundHandler handler) {
+    public void playDownSound(SoundManager manager) {
         // no-op
     }
 
@@ -86,8 +86,8 @@ public class NestedWidget extends Widget implements ITickingWidget {
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (visible && active) {
             boolean b = false;
-            for (Widget widget : children) {
-                b = widget.keyPressed(keyCode, scanCode, modifiers);
+            for (AbstractWidget child : children) {
+                b = child.keyPressed(keyCode, scanCode, modifiers);
             }
             return b || super.keyPressed(keyCode, scanCode, modifiers);
         }
@@ -97,8 +97,8 @@ public class NestedWidget extends Widget implements ITickingWidget {
     @Override
     public boolean charTyped(char codePoint, int modifiers) {
         if (visible && active) {
-            for (Widget widget : children) {
-                if (widget.charTyped(codePoint, modifiers)) {
+            for (AbstractWidget child : children) {
+                if (child.charTyped(codePoint, modifiers)) {
                     return true;
                 }
             }
@@ -110,15 +110,15 @@ public class NestedWidget extends Widget implements ITickingWidget {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
         // TODO: This is stupid
-        for (Widget child : children) {
-            if (child instanceof TextFieldWidget) {
-                ((TextFieldWidget) child).setFocused2(false);
+        for (AbstractWidget child : children) {
+            if (child instanceof EditBox) {
+                ((EditBox) child).setFocus(false);
             }
         }
         if (this.isMouseOver(mouseX, mouseY)) {
             boolean b = false;
-            for (Widget widget : children) {
-                if (widget.mouseClicked(mouseX, mouseY, mouseButton)) {
+            for (AbstractWidget child : children) {
+                if (child.mouseClicked(mouseX, mouseY, mouseButton)) {
                     b = true;
                 }
             }
@@ -131,8 +131,8 @@ public class NestedWidget extends Widget implements ITickingWidget {
     public boolean mouseReleased(double mouseX, double mouseY, int mouseButton) {
         if (this.isMouseOver(mouseX, mouseY)) {
             boolean b = false;
-            for (Widget widget : children) {
-                if (widget.mouseReleased(mouseX, mouseY, mouseButton)) {
+            for (AbstractWidget child : children) {
+                if (child.mouseReleased(mouseX, mouseY, mouseButton)) {
                     b = true;
                 }
             }
@@ -144,8 +144,8 @@ public class NestedWidget extends Widget implements ITickingWidget {
     @Override
     public boolean changeFocus(boolean focus) {
         if (visible && active) {
-            for (Widget widget : children) {
-                if (widget.changeFocus(focus)) {
+            for (AbstractWidget child : children) {
+                if (child.changeFocus(focus)) {
                     return true;
                 }
             }
@@ -157,8 +157,8 @@ public class NestedWidget extends Widget implements ITickingWidget {
     @Override
     public boolean isMouseOver(double mouseX, double mouseY) {
         if (super.isMouseOver(mouseX, mouseY)) {
-            for (Widget widget : children) {
-                if (widget.isMouseOver(mouseX, mouseY)) {
+            for (AbstractWidget child : children) {
+                if (child.isMouseOver(mouseX, mouseY)) {
                     return true;
                 }
             }
@@ -168,9 +168,9 @@ public class NestedWidget extends Widget implements ITickingWidget {
     }
 
     @Override
-    public void renderWidget(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        for (Widget child : children) {
-            child.render(matrixStack, mouseX, mouseY, partialTicks);
+    public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
+        for (AbstractWidget child : children) {
+            child.render(poseStack, mouseX, mouseY, partialTicks);
         }
     }
 
@@ -185,7 +185,7 @@ public class NestedWidget extends Widget implements ITickingWidget {
 
     @Override
     public void tick() {
-        for (Widget child : children) {
+        for (AbstractWidget child : children) {
             if (child instanceof ITickingWidget) {
                 ((ITickingWidget) child).tick();
             }

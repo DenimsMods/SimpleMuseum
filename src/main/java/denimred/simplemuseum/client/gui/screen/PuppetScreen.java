@@ -1,12 +1,12 @@
 package denimred.simplemuseum.client.gui.screen;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
 
@@ -26,43 +26,35 @@ public abstract class PuppetScreen extends Screen {
     }
 
     protected static void drawStringLeft(
-            MatrixStack matrixStack,
-            FontRenderer font,
-            Widget widget,
-            ITextComponent text,
-            boolean bright) {
-        drawStringLeft(matrixStack, font, widget, text, bright ? 0xFFFFFF : 0xA0A0A0);
+            PoseStack poseStack, Font font, AbstractWidget widget, Component text, boolean bright) {
+        drawStringLeft(poseStack, font, widget, text, bright ? 0xFFFFFF : 0xA0A0A0);
     }
 
     protected static void drawStringLeft(
-            MatrixStack matrixStack,
-            FontRenderer font,
-            Widget widget,
-            ITextComponent text,
-            int color) {
+            PoseStack poseStack, Font font, AbstractWidget widget, Component text, int color) {
         drawString(
-                matrixStack,
+                poseStack,
                 font,
                 text,
-                widget.x - font.getStringPropertyWidth(text) - MARGIN,
-                widget.y + widget.getHeight() / 2 - font.FONT_HEIGHT / 2,
+                widget.x - font.width(text) - MARGIN,
+                widget.y + widget.getHeight() / 2 - font.lineHeight / 2,
                 color);
     }
 
     @Override
     public void init(Minecraft minecraft, int width, int height) {
-        minecraft.keyboardListener.enableRepeatEvents(true);
+        minecraft.keyboardHandler.setSendRepeatsToGui(true);
         super.init(minecraft, width, height);
     }
 
     @Override
-    public void closeScreen() {
-        mc.displayGuiScreen(parent);
+    public void onClose() {
+        mc.setScreen(parent);
     }
 
     @Override
-    public void onClose() {
-        mc.keyboardListener.enableRepeatEvents(false);
+    public void removed() {
+        mc.keyboardHandler.setSendRepeatsToGui(false);
     }
 
     @Override
@@ -71,7 +63,7 @@ public abstract class PuppetScreen extends Screen {
     }
 
     protected void renderWidgetTooltip(
-            Widget widget, MatrixStack matrixStack, int mouseX, int mouseY) {
-        this.renderTooltip(matrixStack, widget.getMessage(), mouseX, mouseY);
+            AbstractWidget widget, PoseStack poseStack, int mouseX, int mouseY) {
+        this.renderTooltip(poseStack, widget.getMessage(), mouseX, mouseY);
     }
 }

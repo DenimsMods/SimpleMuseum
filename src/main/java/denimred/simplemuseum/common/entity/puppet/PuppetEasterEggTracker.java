@@ -1,6 +1,6 @@
 package denimred.simplemuseum.common.entity.puppet;
 
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.EnumSet;
 import java.util.function.Predicate;
@@ -51,7 +51,7 @@ public final class PuppetEasterEggTracker {
             this.checker =
                     puppet -> {
                         if (puppet.hasCustomName()) {
-                            final String name = puppet.getName().getUnformattedComponentText();
+                            final String name = puppet.getName().getContents();
                             return pattern.matcher(name).matches();
                         }
                         return false;

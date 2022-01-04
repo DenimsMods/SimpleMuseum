@@ -2,7 +2,7 @@ package denimred.simplemuseum.common.network.messages.c2s;
 
 import com.mojang.datafixers.util.Pair;
 
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkEvent;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
@@ -43,12 +43,12 @@ public class ConfigurePuppet {
                                                 .orElse(false))
                         .map(v -> Pair.of(v.provider.key, v.get()))
                         .collect(Collectors.toList());
-        return new ConfigurePuppet(target.getEntityId(), changes);
+        return new ConfigurePuppet(target.getId(), changes);
     }
 
     @Deprecated
     public static Builder of(PuppetEntity puppet) {
-        return new Builder(puppet.getEntityId());
+        return new Builder(puppet.getId());
     }
 
     public static void register(SimpleChannel channel, int id) {
@@ -61,12 +61,12 @@ public class ConfigurePuppet {
                 Optional.of(NetworkDirection.PLAY_TO_SERVER));
     }
 
-    private static ConfigurePuppet decode(PacketBuffer buf) {
+    private static ConfigurePuppet decode(FriendlyByteBuf buf) {
         final int puppetId = buf.readVarInt();
         final int changeCount = buf.readVarInt();
         final List<Pair<PuppetKey, ?>> changes = new ArrayList<>(changeCount);
         for (int i = 0; i < changeCount; i++) {
-            final PuppetKey key = new PuppetKey(buf.readString(32767));
+            final PuppetKey key = new PuppetKey(buf.readUtf(32767));
 
             final int size = changes.size();
 
@@ -88,14 +88,14 @@ public class ConfigurePuppet {
         return changes.isEmpty();
     }
 
-    private void encode(PacketBuffer buf) {
+    private void encode(FriendlyByteBuf buf) {
         buf.writeVarInt(puppetId);
         buf.writeVarInt(changes.size());
         for (Pair<PuppetKey, ?> change : changes) {
             final PuppetKey key = change.getFirst();
             final Object value = change.getSecond();
 
-            buf.writeString(key.toString());
+            buf.writeUtf(key.toString());
 
             final int writerIndex = buf.writerIndex();
 

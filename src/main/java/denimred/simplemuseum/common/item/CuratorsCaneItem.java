@@ -1,18 +1,18 @@
 package denimred.simplemuseum.common.item;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.item.SimpleFoiledItem;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SimpleFoiledItem;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 import denimred.simplemuseum.client.util.ClientUtil;
 import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
@@ -23,49 +23,49 @@ public class CuratorsCaneItem extends SimpleFoiledItem {
     }
 
     @Override
-    public ActionResultType itemInteractionForEntity(
-            ItemStack stack, PlayerEntity player, LivingEntity target, Hand hand) {
+    public InteractionResult interactLivingEntity(
+            ItemStack stack, Player player, LivingEntity target, InteractionHand hand) {
         if (target instanceof PuppetEntity) {
-            if (!player.world.isRemote) {
-                return ActionResultType.CONSUME;
+            if (!player.level.isClientSide) {
+                return InteractionResult.CONSUME;
             } else {
                 ClientUtil.openPuppetScreen((PuppetEntity) target, null);
-                return ActionResultType.SUCCESS;
+                return InteractionResult.SUCCESS;
             }
         }
-        return ActionResultType.FAIL;
+        return InteractionResult.FAIL;
     }
 
     @Override
-    public ActionResultType onItemUse(ItemUseContext context) {
-        final World world = context.getWorld();
-        if (!(world instanceof ServerWorld)) {
-            return ActionResultType.SUCCESS;
+    public InteractionResult useOn(UseOnContext context) {
+        final Level world = context.getLevel();
+        if (!(world instanceof ServerLevel)) {
+            return InteractionResult.SUCCESS;
         } else {
-            final Vector3d pos = context.getHitVec();
-            final PlayerEntity player = context.getPlayer();
-            PuppetEntity.spawn((ServerWorld) world, pos, player);
+            final Vec3 pos = context.getClickLocation();
+            final Player player = context.getPlayer();
+            PuppetEntity.spawn((ServerLevel) world, pos, player);
 
-            return ActionResultType.CONSUME;
+            return InteractionResult.CONSUME;
         }
     }
 
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World world, PlayerEntity player, Hand hand) {
-        final ItemStack stack = player.getHeldItem(hand);
-        if (!(world instanceof ServerWorld)) {
+    public InteractionResultHolder<ItemStack> use(
+            Level world, Player player, InteractionHand hand) {
+        final ItemStack stack = player.getItemInHand(hand);
+        if (!(world instanceof ServerLevel)) {
             final PuppetEntity puppet = ClientUtil.getSelectedPuppet();
             if (puppet != null) {
                 ClientUtil.openPuppetScreen(puppet, null);
-                return ActionResult.resultSuccess(stack);
+                return InteractionResultHolder.success(stack);
             }
         }
-        return ActionResult.resultConsume(stack);
+        return InteractionResultHolder.consume(stack);
     }
 
     @Override
-    public boolean canPlayerBreakBlockWhileHolding(
-            BlockState state, World worldIn, BlockPos pos, PlayerEntity player) {
+    public boolean canAttackBlock(BlockState state, Level worldIn, BlockPos pos, Player player) {
         return !player.isCreative();
     }
 }

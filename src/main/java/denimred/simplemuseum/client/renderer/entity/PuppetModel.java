@@ -1,9 +1,11 @@
 package denimred.simplemuseum.client.renderer.entity;
 
+import static denimred.simplemuseum.common.entity.puppet.PuppetEasterEggTracker.Egg.ERROR;
+
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.MissingTextureSprite;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
 
@@ -18,13 +20,11 @@ import software.bernie.geckolib3.core.processor.AnimationProcessor;
 import software.bernie.geckolib3.core.processor.IBone;
 import software.bernie.geckolib3.geo.exception.GeckoLibException;
 import software.bernie.geckolib3.geo.render.built.GeoModel;
-import software.bernie.geckolib3.model.AnimatedGeoModel;
+import software.bernie.geckolib3.model.AnimatedTickingGeoModel;
 import software.bernie.geckolib3.model.provider.data.EntityModelData;
 
-import static denimred.simplemuseum.common.entity.puppet.PuppetEasterEggTracker.Egg.ERROR;
-
 // I'm not proud of any of these "emergency fallback" fixes :/
-public class PuppetModel extends AnimatedGeoModel<PuppetEntity> {
+public class PuppetModel extends AnimatedTickingGeoModel<PuppetEntity> {
     @Override
     public ResourceLocation getModelLocation(PuppetEntity puppet) {
         return puppet.sourceManager.model.getSafe();
@@ -51,12 +51,12 @@ public class PuppetModel extends AnimatedGeoModel<PuppetEntity> {
                         ? PuppetEasterEggTracker.ERROR_TEXTURE
                         : puppet.sourceManager.texture.getSafe();
         final TextureManager textureManager = Minecraft.getInstance().getTextureManager();
-        if (textureManager.getTexture(desired) != MissingTextureSprite.getDynamicTexture()) {
+        if (textureManager.getTexture(desired) != MissingTextureAtlasSprite.getTexture()) {
             return desired;
         } else {
             // Emergency fallback for when we render while resources are reloading
             SimpleMuseum.LOGGER.debug("EMERGENCY FALLBACK: Texture '{}'", desired);
-            textureManager.mapTextureObjects.remove(desired);
+            textureManager.byPath.remove(desired);
             return puppet.sourceManager.texture.getDefault();
         }
     }

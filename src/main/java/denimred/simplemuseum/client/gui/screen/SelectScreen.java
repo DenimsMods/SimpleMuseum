@@ -1,19 +1,19 @@
 package denimred.simplemuseum.client.gui.screen;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.DialogTexts;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.gui.widget.list.ExtendedList;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.ITextProperties;
-import net.minecraft.util.text.LanguageMap;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.locale.Language;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.TextComponent;
 
 import java.util.Collections;
 import java.util.List;
@@ -29,32 +29,32 @@ public abstract class SelectScreen<T> extends Screen {
     protected final Screen parent;
     @Nullable protected ListWidget.Entry selected;
     protected ListWidget list;
-    protected TextFieldWidget search;
+    protected EditBox search;
     protected String lastSearchText = "";
 
-    protected SelectScreen(Screen parent, ITextComponent title) {
+    protected SelectScreen(Screen parent, Component title) {
         super(title);
         this.parent = parent;
     }
 
     @Override
     protected void init() {
-        mc.keyboardListener.enableRepeatEvents(true);
+        mc.keyboardHandler.setSendRepeatsToGui(true);
 
         final int margin = 10;
         final int third = width / 3;
         final int bottom = height - margin;
-        final int top = (margin * 2) + font.FONT_HEIGHT;
+        final int top = (margin * 2) + font.lineHeight;
         list = new ListWidget(top, bottom, third * 2);
 
         final int remainingWidth = third - (margin * 3);
         final int remainingX = width - margin - remainingWidth;
 
         search =
-                new TextFieldWidget(
+                new EditBox(
                         font,
                         remainingX,
-                        top + font.FONT_HEIGHT + 2,
+                        top + font.lineHeight + 2,
                         remainingWidth,
                         20,
                         GuiLang.SEARCH.asText());
@@ -65,7 +65,7 @@ public abstract class SelectScreen<T> extends Screen {
                         bottom - 20 - (20 + (margin / 2)),
                         remainingWidth,
                         20,
-                        DialogTexts.GUI_DONE,
+                        CommonComponents.GUI_DONE,
                         b -> this.saveAndClose()));
         this.addButton(
                 new Button(
@@ -73,8 +73,8 @@ public abstract class SelectScreen<T> extends Screen {
                         bottom - 20,
                         remainingWidth,
                         20,
-                        DialogTexts.GUI_CANCEL,
-                        b -> this.closeScreen()));
+                        CommonComponents.GUI_CANCEL,
+                        b -> this.onClose()));
 
         search.setResponder(
                 s -> {
@@ -89,9 +89,9 @@ public abstract class SelectScreen<T> extends Screen {
         children.add(search);
 
         list.setLeftPos(margin);
-        list.func_244605_b(false);
-        list.func_244606_c(false);
-        list.getEventListeners().stream()
+        list.setRenderBackground(false);
+        list.setRenderTopAndBottom(false);
+        list.children().stream()
                 .filter(this::isSelected)
                 .findFirst()
                 .ifPresent(
@@ -109,47 +109,47 @@ public abstract class SelectScreen<T> extends Screen {
     }
 
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(matrixStack);
+    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
+        this.renderBackground(poseStack);
         drawCenteredString(
-                matrixStack,
+                poseStack,
                 font,
-                title.copyRaw().mergeStyle(TextFormatting.UNDERLINE),
+                title.plainCopy().withStyle(ChatFormatting.UNDERLINE),
                 width / 2,
                 10,
                 0xFFFFFF);
-        final double scale = mc.getMainWindow().getGuiScaleFactor();
+        final double scale = mc.getWindow().getGuiScale();
         RenderSystem.enableScissor(
                 (int) (list.getLeft() * scale),
                 (int) ((height - list.getBottom()) * scale),
                 (int) (list.getWidth() * scale),
                 (int) (list.getHeight() * scale));
-        list.render(matrixStack, mouseX, mouseY, partialTicks);
+        list.render(poseStack, mouseX, mouseY, partialTicks);
         RenderSystem.disableScissor();
         drawString(
-                matrixStack,
+                poseStack,
                 font,
                 search.getMessage(),
                 search.x,
-                search.y - font.FONT_HEIGHT - 2,
+                search.y - font.lineHeight - 2,
                 0xA0A0A0);
-        search.render(matrixStack, mouseX, mouseY, partialTicks);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+        search.render(poseStack, mouseX, mouseY, partialTicks);
+        super.render(poseStack, mouseX, mouseY, partialTicks);
     }
 
     protected void saveAndClose() {
         this.onSave();
-        this.closeScreen();
-    }
-
-    @Override
-    public void closeScreen() {
-        mc.displayGuiScreen(parent);
+        this.onClose();
     }
 
     @Override
     public void onClose() {
-        mc.keyboardListener.enableRepeatEvents(false);
+        mc.setScreen(parent);
+    }
+
+    @Override
+    public void removed() {
+        mc.keyboardHandler.setSendRepeatsToGui(false);
     }
 
     @Override
@@ -174,13 +174,13 @@ public abstract class SelectScreen<T> extends Screen {
         return true;
     }
 
-    protected class ListWidget extends ExtendedList<ListWidget.Entry> {
+    protected class ListWidget extends ObjectSelectionList<ListWidget.Entry> {
         protected final int listWidth;
         protected boolean loading;
         protected boolean errored;
 
         public ListWidget(int top, int bottom, int width) {
-            super(mc, width, bottom - top, top, bottom, SelectScreen.this.font.FONT_HEIGHT + 6);
+            super(mc, width, bottom - top, top, bottom, SelectScreen.this.font.lineHeight + 6);
             this.listWidth = width;
             this.refreshList();
         }
@@ -213,7 +213,7 @@ public abstract class SelectScreen<T> extends Screen {
                                     this.clearEntries();
                                     for (T entry : entries) {
                                         if (SelectScreen.this.matchesSearch(entry)) {
-                                            this.addEntry(new Entry(entry));
+                                            this.addEntry(new ListWidget.Entry(entry));
                                         }
                                     }
                                     loading = false;
@@ -222,43 +222,43 @@ public abstract class SelectScreen<T> extends Screen {
         }
 
         @Override
-        protected void renderBackground(MatrixStack matrixStack) {
-            SelectScreen.this.fillGradient(matrixStack, x0, y0, x1, y1, 0xc0101010, 0xd0101010);
+        protected void renderBackground(PoseStack poseStack) {
+            SelectScreen.this.fillGradient(poseStack, x0, y0, x1, y1, 0xc0101010, 0xd0101010);
         }
 
         @Override
-        protected void renderDecorations(MatrixStack stack, int mouseX, int mouseY) {
+        protected void renderDecorations(PoseStack poseStack, int mouseX, int mouseY) {
             if (loading || errored) {
-                final ITextComponent msg;
+                final Component msg;
                 final float scale = 3.0F;
                 final int a;
                 if (loading) {
                     msg =
                             GuiLang.LOADING
                                     .asText()
-                                    .mergeStyle(TextFormatting.ITALIC, TextFormatting.GRAY);
+                                    .withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY);
                     a = 0x66000000;
                 } else {
                     msg =
                             GuiLang.ERROR
                                     .asText()
-                                    .mergeStyle(TextFormatting.ITALIC, TextFormatting.RED);
+                                    .withStyle(ChatFormatting.ITALIC, ChatFormatting.RED);
                     a = 0xFF000000;
                 }
 
-                final float width = (font.getStringPropertyWidth(msg) / 2.0F) * scale;
+                final float width = (font.width(msg) / 2.0F) * scale;
                 final float x = x0 + (this.width / 2.0F) - width;
-                final float y = y0 + (height / 2.0F) - ((font.FONT_HEIGHT / 2.0F) * scale);
-                stack.push();
-                stack.scale(scale, scale, scale);
+                final float y = y0 + (height / 2.0F) - ((font.lineHeight / 2.0F) * scale);
+                poseStack.pushPose();
+                poseStack.scale(scale, scale, scale);
                 RenderSystem.enableBlend();
-                font.drawTextWithShadow(stack, msg, x / scale, y / scale, a | 0xFFFFFF);
+                font.drawShadow(poseStack, msg, x / scale, y / scale, a | 0xFFFFFF);
                 RenderSystem.disableBlend();
-                stack.pop();
+                poseStack.popPose();
             }
         }
 
-        public class Entry extends ExtendedList.AbstractListEntry<Entry> {
+        public class Entry extends ObjectSelectionList.Entry<ListWidget.Entry> {
             public final T value;
 
             public Entry(T value) {
@@ -267,7 +267,7 @@ public abstract class SelectScreen<T> extends Screen {
 
             @Override
             public void render(
-                    MatrixStack matrixStack,
+                    PoseStack poseStack,
                     int id,
                     int top,
                     int left,
@@ -277,13 +277,13 @@ public abstract class SelectScreen<T> extends Screen {
                     int mouseY,
                     boolean hovered,
                     float partialTicks) {
-                final ITextComponent name = new StringTextComponent(value.toString());
-                font.func_238422_b_(
-                        matrixStack,
-                        LanguageMap.getInstance()
-                                .func_241870_a(
-                                        ITextProperties.func_240655_a_(
-                                                font.func_238417_a_(name, listWidth))),
+                final Component name = new TextComponent(value.toString());
+                font.draw(
+                        poseStack,
+                        Language.getInstance()
+                                .getVisualOrder(
+                                        FormattedText.composite(
+                                                font.substrByWidth(name, listWidth))),
                         left + 3,
                         top + 3,
                         0xFFFFFF);

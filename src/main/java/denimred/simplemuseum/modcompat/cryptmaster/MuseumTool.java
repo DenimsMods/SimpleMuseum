@@ -1,11 +1,11 @@
 package denimred.simplemuseum.modcompat.cryptmaster;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 
@@ -35,7 +35,7 @@ public class MuseumTool implements IUtilityToolInstance {
                                     null)),
                     MuseumTool::new);
 
-    @Nullable private Vector3d spawnPos;
+    @Nullable private Vec3 spawnPos;
 
     private MuseumTool() {
         ClientUtil.setHoldingCane(true);
@@ -45,7 +45,7 @@ public class MuseumTool implements IUtilityToolInstance {
     public void onMouseScrolled(double v) {}
 
     @Override
-    public void render(MatrixStack matrixStack) {}
+    public void render(PoseStack matrixStack) {}
 
     @Override
     public void close() {
@@ -72,13 +72,13 @@ public class MuseumTool implements IUtilityToolInstance {
             final PuppetEntity puppet = ClientUtil.getSelectedPuppet();
             if (button == MouseButton.LEFT) {
                 if (puppet != null) {
-                    ClientUtil.openPuppetScreen(puppet, Minecraft.getInstance().currentScreen);
+                    ClientUtil.openPuppetScreen(puppet, Minecraft.getInstance().screen);
                 } else if (spawnPos != null) {
                     MuseumNetworking.CHANNEL.sendToServer(new C2SCryptMasterSpawnPuppet(spawnPos));
                 }
             } else if (button == MouseButton.RIGHT && puppet != null) {
                 MuseumNetworking.CHANNEL.sendToServer(
-                        new C2SCryptMasterRemovePuppet(puppet.getUniqueID()));
+                        new C2SCryptMasterRemovePuppet(puppet.getUUID()));
             }
         }
     }

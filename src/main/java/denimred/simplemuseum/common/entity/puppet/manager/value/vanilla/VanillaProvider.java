@@ -1,6 +1,6 @@
 package denimred.simplemuseum.common.entity.puppet.manager.value.vanilla;
 
-import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.syncher.EntityDataAccessor;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -41,7 +41,7 @@ public final class VanillaProvider<T> extends PuppetValueProvider<T, VanillaValu
     }
 
     @Nullable
-    private static <T> DataParameter<T> createDataKey(
+    private static <T> EntityDataAccessor<T> createDataKey(
             boolean syncData, IValueSerializer<T> serializer) {
         return syncData ? PuppetEntity.createKeyContextual(serializer) : null;
     }

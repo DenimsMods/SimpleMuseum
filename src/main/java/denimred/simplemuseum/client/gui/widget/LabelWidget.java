@@ -1,15 +1,15 @@
 package denimred.simplemuseum.client.gui.widget;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 
-import net.minecraft.client.audio.SoundHandler;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.util.text.CharacterManager;
-import net.minecraft.util.text.ITextProperties;
-import net.minecraft.util.text.LanguageMap;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.Style;
+import net.minecraft.client.StringSplitter;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.sounds.SoundManager;
+import net.minecraft.locale.Language;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextComponent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,11 +17,11 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-public class LabelWidget extends Widget {
-    public final FontRenderer font;
+public class LabelWidget extends AbstractWidget {
+    public final Font font;
     private final AnchorX anchorX;
     private final AnchorY anchorY;
-    private List<? extends ITextProperties> texts;
+    private List<? extends FormattedText> texts;
     @Nullable private Tooltip tooltip;
     private int left;
     private int right;
@@ -31,23 +31,18 @@ public class LabelWidget extends Widget {
     private int lastY = y;
 
     public LabelWidget(
-            int x,
-            int y,
-            FontRenderer font,
-            AnchorX anchorX,
-            AnchorY anchorY,
-            ITextProperties... texts) {
-        this(x, y, font, anchorX, anchorY, Arrays.asList(texts));
+            int x, int y, Font font, AnchorX anchorX, AnchorY anchorY, FormattedText... messages) {
+        this(x, y, font, anchorX, anchorY, Arrays.asList(messages));
     }
 
     public LabelWidget(
             int x,
             int y,
-            FontRenderer font,
+            Font font,
             AnchorX anchorX,
             AnchorY anchorY,
-            List<? extends ITextProperties> texts) {
-        super(x, y, 0, 0, StringTextComponent.EMPTY);
+            List<? extends FormattedText> texts) {
+        super(x, y, 0, 0, TextComponent.EMPTY);
         this.font = font;
         this.anchorX = anchorX;
         this.anchorY = anchorY;
@@ -55,10 +50,10 @@ public class LabelWidget extends Widget {
         this.recalculateBounds();
     }
 
-    private static int getMaxWidth(FontRenderer font, List<? extends ITextProperties> messages) {
+    private static int getMaxWidth(Font font, List<? extends FormattedText> messages) {
         int width = 0;
-        for (ITextProperties message : messages) {
-            width = Math.max(width, font.getStringPropertyWidth(message));
+        for (FormattedText message : messages) {
+            width = Math.max(width, font.width(message));
         }
         return width;
     }
@@ -69,7 +64,7 @@ public class LabelWidget extends Widget {
 
     private void recalculateBounds() {
         this.setWidth(getMaxWidth(font, texts));
-        this.setHeight(font.FONT_HEIGHT * texts.size());
+        this.setHeight(font.lineHeight * texts.size());
         switch (anchorX) {
             case LEFT:
                 left = x;
@@ -101,7 +96,7 @@ public class LabelWidget extends Widget {
     }
 
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
         if (visible) {
             if (lastX != x || lastY != y) {
                 this.recalculateBounds();
@@ -124,7 +119,7 @@ public class LabelWidget extends Widget {
             }
 
             if (visible) {
-                this.renderWidget(matrixStack, mouseX, mouseY, partialTicks);
+                this.renderButton(poseStack, mouseX, mouseY, partialTicks);
             }
 
             this.narrate();
@@ -133,11 +128,11 @@ public class LabelWidget extends Widget {
     }
 
     @Override
-    public void renderWidget(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
         for (int i = 0, count = texts.size(); i < count; i++) {
-            final ITextProperties text = texts.get(i);
-            final int w = font.getStringPropertyWidth(text);
-            final int h = font.FONT_HEIGHT;
+            final FormattedText text = texts.get(i);
+            final int w = font.width(text);
+            final int h = font.lineHeight;
 
             final int x;
             switch (anchorX) {
@@ -171,16 +166,15 @@ public class LabelWidget extends Widget {
                     break;
             }
 
-            font.drawTextWithShadow(
-                    matrixStack, LanguageMap.getInstance().func_241870_a(text), x, y, -1);
+            font.drawShadow(poseStack, Language.getInstance().getVisualOrder(text), x, y, -1);
         }
         if (tooltip != null && this.isHovered()) {
-            tooltip.render(this, matrixStack, mouseX, mouseY);
+            tooltip.render(this, poseStack, mouseX, mouseY);
         }
     }
 
     @Override
-    public void playDownSound(SoundHandler handler) {
+    public void playDownSound(SoundManager handler) {
         // no-op
     }
 
@@ -194,21 +188,21 @@ public class LabelWidget extends Widget {
         return active && visible && isHovered;
     }
 
-    public void setTexts(ITextProperties... texts) {
+    public void setTexts(FormattedText... texts) {
         this.setTexts(Arrays.asList(texts));
     }
 
-    public void setTexts(List<? extends ITextProperties> texts) {
+    public void setTexts(List<? extends FormattedText> texts) {
         this.texts = texts;
         this.recalculateBounds();
     }
 
     public void wrap(int wrapWidth) {
-        final List<ITextProperties> wrapped = new ArrayList<>(texts.size());
-        final CharacterManager charManager = font.getCharacterManager();
-        for (ITextProperties text : texts) {
-            if (font.getStringPropertyWidth(text) > wrapWidth) {
-                wrapped.addAll(charManager.func_238362_b_(text, wrapWidth, Style.EMPTY));
+        final List<FormattedText> wrapped = new ArrayList<>(texts.size());
+        final StringSplitter splitter = font.getSplitter();
+        for (FormattedText text : texts) {
+            if (font.width(text) > wrapWidth) {
+                wrapped.addAll(splitter.splitLines(text, wrapWidth, Style.EMPTY));
             } else {
                 wrapped.add(text);
             }
@@ -229,6 +223,6 @@ public class LabelWidget extends Widget {
     }
 
     public interface Tooltip {
-        void render(LabelWidget label, MatrixStack matrixStack, int mouseX, int mouseY);
+        void render(LabelWidget label, PoseStack poseStack, int mouseX, int mouseY);
     }
 }

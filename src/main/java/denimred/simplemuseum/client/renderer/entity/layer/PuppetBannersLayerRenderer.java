@@ -1,18 +1,20 @@
 package denimred.simplemuseum.client.renderer.entity.layer;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import static denimred.simplemuseum.common.entity.puppet.PuppetEasterEggTracker.Egg.ERROR;
+
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Quaternion;
+import com.mojang.math.Vector3f;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.OutlineLayerBuffer;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.OutlineBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.math.vector.Quaternion;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -24,8 +26,6 @@ import denimred.simplemuseum.client.renderer.entity.PuppetRenderer;
 import denimred.simplemuseum.common.entity.puppet.PuppetEasterEggTracker;
 import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 import software.bernie.geckolib3.renderers.geo.GeoLayerRenderer;
-
-import static denimred.simplemuseum.common.entity.puppet.PuppetEasterEggTracker.Egg.ERROR;
 
 public class PuppetBannersLayerRenderer extends GeoLayerRenderer<PuppetEntity> {
     protected static final ResourceLocation TEXTURE =
@@ -56,8 +56,8 @@ public class PuppetBannersLayerRenderer extends GeoLayerRenderer<PuppetEntity> {
     }
 
     protected static Color getRainbow() {
-        final ClientWorld world = Minecraft.getInstance().world;
-        return Color.getHSBColor(world == null ? 0.0F : (world.getGameTime() * 0.005F), 1.0F, 1.0F);
+        final ClientLevel level = Minecraft.getInstance().level;
+        return Color.getHSBColor(level == null ? 0.0F : (level.getGameTime() * 0.005F), 1.0F, 1.0F);
     }
 
     protected List<Vector3f> generateMesh(boolean inner, int resolution, double radius) {
@@ -83,8 +83,8 @@ public class PuppetBannersLayerRenderer extends GeoLayerRenderer<PuppetEntity> {
 
     @Override
     public void render(
-            MatrixStack matrixStack,
-            IRenderTypeBuffer typeBuffer,
+            PoseStack poseStack,
+            MultiBufferSource buffers,
             int light,
             PuppetEntity puppet,
             float limbSwing,
@@ -95,10 +95,10 @@ public class PuppetBannersLayerRenderer extends GeoLayerRenderer<PuppetEntity> {
             float headPitch) {
         final RenderType type = MuseumRenderType.getErrorBanners(TEXTURE);
         final float time = (float) (ageInTicks * 0.04D);
-        final float yPos = (puppet.getHeight() / 2.0F) + 0.25F;
+        final float yPos = (puppet.getBbHeight() / 2.0F) + 0.25F;
         final boolean doError = puppet.easterEggs.isActive(ERROR);
         if (doError) {
-            matrixStack.scale(1.6F, 1.0F, 1.0F);
+            poseStack.scale(1.6F, 1.0F, 1.0F);
         }
 
         // Determine the banners that we need to display
@@ -135,14 +135,11 @@ public class PuppetBannersLayerRenderer extends GeoLayerRenderer<PuppetEntity> {
         final float height = meshHeight + spacing * 2.0F;
         final float startY = count * height / 2.0F;
         for (int i = 0; i < count; i++) {
-            final float yaw =
-                    MathHelper.interpolateAngle(
-                            partialTicks, puppet.prevRenderYawOffset, puppet.renderYawOffset);
+            final float yaw = Mth.rotLerp(partialTicks, puppet.yBodyRotO, puppet.yBodyRot);
             final float offsetTime = -(time * (1.5F + (0.25F * i))) + (float) Math.toRadians(yaw);
 
             final float offsetY = startY + spacing - height * (i + 1);
-            this.renderBanner(
-                    banners.get(i), yPos + offsetY, offsetTime, matrixStack, typeBuffer, type);
+            this.renderBanner(banners.get(i), yPos + offsetY, offsetTime, poseStack, buffers, type);
         }
     }
 
@@ -150,39 +147,39 @@ public class PuppetBannersLayerRenderer extends GeoLayerRenderer<PuppetEntity> {
             int index,
             float yPos,
             float yAngle,
-            MatrixStack matrixStack,
-            IRenderTypeBuffer typeBuffer,
+            PoseStack poseStack,
+            MultiBufferSource buffers,
             RenderType type) {
-        matrixStack.push();
-        matrixStack.rotate(new Quaternion(0.0F, yAngle, 0.0F, false));
+        poseStack.pushPose();
+        poseStack.mulPose(new Quaternion(0.0F, yAngle, 0.0F, false));
 
         // Render the two meshes
-        final Matrix4f matrix4f = matrixStack.getLast().getMatrix();
-        final IVertexBuilder buffer = typeBuffer.getBuffer(type);
+        final Matrix4f matrix4f = poseStack.last().pose();
+        final VertexConsumer buffer = buffers.getBuffer(type);
         this.renderMesh(index, yPos, matrix4f, buffer, outerMesh);
         this.renderMesh(index, yPos, matrix4f, buffer, innerMesh);
 
         // Manually draw the buffer to prevent loops from connecting to other loops
-        if (typeBuffer instanceof IRenderTypeBuffer.Impl) {
-            ((IRenderTypeBuffer.Impl) typeBuffer).finish(type);
-        } else if (typeBuffer instanceof OutlineLayerBuffer) {
-            ((OutlineLayerBuffer) typeBuffer).buffer.finish(type);
+        if (buffers instanceof MultiBufferSource.BufferSource) {
+            ((MultiBufferSource.BufferSource) buffers).endBatch(type);
+        } else if (buffers instanceof OutlineBufferSource) {
+            ((OutlineBufferSource) buffers).bufferSource.endBatch(type);
         }
 
-        matrixStack.pop();
+        poseStack.popPose();
     }
 
     protected void renderMesh(
-            int index, float yPos, Matrix4f matrix4f, IVertexBuilder buffer, List<Vector3f> mesh) {
+            int index, float yPos, Matrix4f matrix4f, VertexConsumer buffer, List<Vector3f> mesh) {
         final Color color = index == HELLO_HOW_R_U ? getRainbow() : Color.WHITE;
         for (int i = 0; i < vertCount; i++) {
             final boolean top = (i & 1) == 0;
             final float u = (top ? i * TEX_HEIGHT - TEX_HEIGHT : (i - 1) * TEX_HEIGHT) / 2;
             final float v = index * TEX_HEIGHT + (top ? 0 : TEX_HEIGHT);
             final Vector3f vert = mesh.get(i);
-            buffer.pos(matrix4f, vert.getX(), vert.getY() + yPos, vert.getZ())
+            buffer.vertex(matrix4f, vert.x(), vert.y() + yPos, vert.z())
                     .color(color.getRed(), color.getGreen(), color.getBlue(), 255)
-                    .tex(u, v)
+                    .uv(u, v)
                     .endVertex();
         }
     }

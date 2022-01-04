@@ -1,23 +1,23 @@
 package denimred.simplemuseum.client.gui.widget;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Quaternion;
+import com.mojang.math.Vector3f;
 
-import net.minecraft.block.Blocks;
-import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.SoundHandler;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.entity.EntityRendererManager;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Quaternion;
-import net.minecraft.util.math.vector.Vector3f;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.client.sounds.SoundManager;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.client.model.data.EmptyModelData;
 
 import org.lwjgl.opengl.GL11;
@@ -32,7 +32,7 @@ import denimred.simplemuseum.client.util.ScissorUtil;
 import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 import denimred.simplemuseum.common.i18n.lang.GuiLang;
 
-public class PuppetPreviewWidget extends Widget {
+public class PuppetPreviewWidget extends AbstractWidget {
     protected static final int BORDER_WIDTH = 2;
     protected static final int BUTTON_SIZE = 20;
     protected static final ResourceLocation BUTTONS_TEXTURE =
@@ -51,15 +51,15 @@ public class PuppetPreviewWidget extends Widget {
     protected final IconButton[] bottomButtons;
     protected final PuppetEntity previewPuppet;
     protected final LabelWidget title;
+    protected final int originalX;
+    protected final int originalY;
+    protected final int originalWidth;
+    protected final int originalHeight;
     protected float previewScale;
     protected float previewYaw;
     protected float previewPitch;
     protected float previewX;
     protected float previewY;
-    protected final int originalX;
-    protected final int originalY;
-    protected final int originalWidth;
-    protected final int originalHeight;
     protected float fullscreenness;
     protected boolean fullscreen;
     protected boolean transitioning;
@@ -71,7 +71,7 @@ public class PuppetPreviewWidget extends Widget {
             int width,
             int height,
             PuppetEntity previewPuppet,
-            Button.ITooltip tooltip) {
+            Button.OnTooltip tooltip) {
         super(x, y, width, height, previewPuppet.getDisplayName());
         this.originalX = x;
         this.originalY = y;
@@ -110,7 +110,7 @@ public class PuppetPreviewWidget extends Widget {
                             new PlayerIconButton(
                                     0,
                                     0,
-                                    MC.getSession().getProfile(),
+                                    MC.getUser().getGameProfile(),
                                     b -> showPlayer = !showPlayer,
                                     tooltip,
                                     GuiLang.PUPPET_PREVIEW_PLAYER.asText())),
@@ -124,7 +124,7 @@ public class PuppetPreviewWidget extends Widget {
                 new LabelWidget(
                         0,
                         0,
-                        MC.fontRenderer,
+                        MC.font,
                         LabelWidget.AnchorX.CENTER,
                         LabelWidget.AnchorY.CENTER,
                         message);
@@ -133,7 +133,7 @@ public class PuppetPreviewWidget extends Widget {
     }
 
     protected IconButton makeButton(
-            int index, Button.IPressable pressable, Button.ITooltip tooltip, ITextComponent title) {
+            int index, Button.OnPress press, Button.OnTooltip tooltip, Component title) {
         // x and y are controlled by resetWidgetPositions
         final IconButton button =
                 new IconButton(
@@ -147,7 +147,7 @@ public class PuppetPreviewWidget extends Widget {
                         BUTTONS_TEXTURE_HEIGHT,
                         BUTTONS_TEXTURE_WIDTH,
                         BUTTON_SIZE,
-                        pressable,
+                        press,
                         tooltip,
                         title);
         return this.addButton(button);
@@ -198,7 +198,7 @@ public class PuppetPreviewWidget extends Widget {
     }
 
     @Override
-    public void playDownSound(SoundHandler handler) {
+    public void playDownSound(SoundManager manager) {
         // no-op
     }
 
@@ -231,7 +231,7 @@ public class PuppetPreviewWidget extends Widget {
 
     @SuppressWarnings("deprecation")
     @Override
-    public void renderWidget(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
         if (transitioning) {
             final float speed = 0.03F;
             if (fullscreen) {
@@ -255,27 +255,26 @@ public class PuppetPreviewWidget extends Widget {
                     transitioning = false;
                 }
             }
-            x = (int) MathHelper.lerp(fullscreenness, originalX, 0.0F);
-            y = (int) MathHelper.lerp(fullscreenness, originalY, 0.0F);
-            width = MathHelper.ceil(MathHelper.lerp(fullscreenness, originalWidth, parent.width));
-            height =
-                    MathHelper.ceil(MathHelper.lerp(fullscreenness, originalHeight, parent.height));
+            x = (int) Mth.lerp(fullscreenness, originalX, 0.0F);
+            y = (int) Mth.lerp(fullscreenness, originalY, 0.0F);
+            width = Mth.ceil(Mth.lerp(fullscreenness, originalWidth, parent.width));
+            height = Mth.ceil(Mth.lerp(fullscreenness, originalHeight, parent.height));
             this.resetWidgetPositions();
         }
         if (doTurntable) {
             previewYaw += 0.4F;
         }
 
-        final AxisAlignedBB bounds = previewPuppet.renderManager.getRenderBounds();
-        final MainWindow window = MC.getMainWindow();
-        final double guiScale = window.getGuiScaleFactor();
-        fill(matrixStack, x, y, x + width, y + height, 0x66FFFFFF);
+        final AABB bounds = previewPuppet.renderManager.getRenderBounds();
+        final Window window = MC.getWindow();
+        final double guiScale = window.getGuiScale();
+        fill(poseStack, x, y, x + width, y + height, 0x66FFFFFF);
         ScissorUtil.start(
                 x + BORDER_WIDTH,
                 y + BORDER_WIDTH,
                 width - BORDER_WIDTH * 2,
                 height - BORDER_WIDTH * 2);
-        fillGradient(matrixStack, x, y, x + width, y + height, 0x66000000, 0xCC000000);
+        fillGradient(poseStack, x, y, x + width, y + height, 0x66000000, 0xCC000000);
 
         // We reset the projection matrix here in order to change the clip plane distances
         RenderSystem.pushMatrix();
@@ -283,8 +282,8 @@ public class PuppetPreviewWidget extends Widget {
         RenderSystem.loadIdentity();
         RenderSystem.ortho(
                 0.0D,
-                (double) window.getFramebufferWidth() / guiScale,
-                (double) window.getFramebufferHeight() / guiScale,
+                (double) window.getWidth() / guiScale,
+                (double) window.getHeight() / guiScale,
                 0.0D,
                 10.0D,
                 300000.0D);
@@ -295,8 +294,8 @@ public class PuppetPreviewWidget extends Widget {
         RenderSystem.translatef(
                 x + (width / 2.0F) + previewX, y + (height / 2.0F) + previewY, 0.0F);
         RenderSystem.scalef(1.0F, 1.0F, -1.0F);
-        final MatrixStack entityMS = new MatrixStack();
-        entityMS.translate(0.0D, 0.0D, -400.0D);
+        final PoseStack entityPS = new PoseStack();
+        entityPS.translate(0.0D, 0.0D, -400.0D);
         // This is me trying to make some scale to fit thing... poorly
         final int dm = Math.min(width, height);
         final double boundsW =
@@ -305,111 +304,111 @@ public class PuppetPreviewWidget extends Widget {
                 bounds.minY > bounds.maxY ? bounds.minY - bounds.maxY : bounds.maxY - bounds.minY;
         final double bm = Math.max(boundsW, boundsH);
         final float scale = (float) (dm / (bm * guiScale)) * previewScale;
-        entityMS.scale(scale, scale, scale);
+        entityPS.scale(scale, scale, scale);
         Quaternion quaternion = Vector3f.ZP.rotationDegrees(180.0F);
         Quaternion quaternion1 = Vector3f.XP.rotationDegrees(previewPitch);
         Quaternion quaternion2 = Vector3f.YP.rotationDegrees(previewYaw);
-        quaternion1.multiply(quaternion2);
-        quaternion.multiply(quaternion1);
-        entityMS.rotate(quaternion);
-        quaternion1.conjugate();
-        IRenderTypeBuffer.Impl typeBuffer = MC.getRenderTypeBuffers().getBufferSource();
+        quaternion1.mul(quaternion2);
+        quaternion.mul(quaternion1);
+        entityPS.mulPose(quaternion);
+        quaternion1.conj();
+        MultiBufferSource.BufferSource buffers = MC.renderBuffers().bufferSource();
         final double yOff = -(bounds.minY + (bounds.maxY / 2.0D));
         // Render the floor
         if (renderFloor) {
-            entityMS.push();
-            entityMS.translate(-0.5F, yOff - 1.0F, -0.5F);
-            MC.getBlockRendererDispatcher()
+            entityPS.pushPose();
+            entityPS.translate(-0.5F, yOff - 1.0F, -0.5F);
+            MC.getBlockRenderer()
                     .renderBlock(
-                            Blocks.GRASS_BLOCK.getDefaultState(),
-                            entityMS,
-                            typeBuffer,
+                            Blocks.GRASS_BLOCK.defaultBlockState(),
+                            entityPS,
+                            buffers,
                             0xF000F0,
                             OverlayTexture.NO_OVERLAY,
                             EmptyModelData.INSTANCE);
-            entityMS.pop();
+            entityPS.popPose();
         }
         // Render the preview puppet
-        EntityRendererManager manager = MC.getRenderManager();
-        manager.setCameraOrientation(quaternion1);
-        manager.setRenderShadow(false);
-        final boolean dbbb = manager.isDebugBoundingBox();
-        manager.setDebugBoundingBox(renderBoundingBoxes);
+        EntityRenderDispatcher dispatcher = MC.getEntityRenderDispatcher();
+        dispatcher.overrideCameraOrientation(quaternion1);
+        dispatcher.setRenderShadow(false);
+        final boolean renderHitBoxes = dispatcher.shouldRenderHitBoxes();
+        dispatcher.setRenderHitBoxes(renderBoundingBoxes);
         RenderSystem.runAsFancy(
                 () -> {
-                    manager.renderEntityStatic(
+                    dispatcher.render(
                             previewPuppet,
                             0.0D,
                             yOff,
                             0.0D,
                             0.0F,
                             partialTicks,
-                            entityMS,
-                            typeBuffer,
+                            entityPS,
+                            buffers,
                             0xF000F0);
-                    this.renderFire(entityMS, typeBuffer, manager, yOff);
+                    this.renderFire(entityPS, buffers, dispatcher, yOff);
                 });
         // Render the player for scale
         if (showPlayer && MC.player != null) {
             final float xOff = -Math.max(1.0F, (float) bounds.maxX + 0.5F);
             if (renderFloor) {
-                entityMS.push();
-                entityMS.translate(xOff - 0.5F, yOff - 1.0F, -0.5F);
-                MC.getBlockRendererDispatcher()
+                entityPS.pushPose();
+                entityPS.translate(xOff - 0.5F, yOff - 1.0F, -0.5F);
+                MC.getBlockRenderer()
                         .renderBlock(
-                                Blocks.GRASS_BLOCK.getDefaultState(),
-                                entityMS,
-                                typeBuffer,
+                                Blocks.GRASS_BLOCK.defaultBlockState(),
+                                entityPS,
+                                buffers,
                                 0xF000F0,
                                 OverlayTexture.NO_OVERLAY,
                                 EmptyModelData.INSTANCE);
-                entityMS.pop();
+                entityPS.popPose();
             }
-            manager.setDebugBoundingBox(false);
+            dispatcher.setRenderHitBoxes(false);
             PlayerRotationHelper.save();
             PlayerRotationHelper.clear();
             RenderSystem.runAsFancy(
                     () ->
-                            manager.renderEntityStatic(
+                            dispatcher.render(
                                     MC.player,
                                     xOff,
                                     yOff,
                                     0.0D,
                                     0.0F,
                                     partialTicks,
-                                    entityMS,
-                                    typeBuffer,
+                                    entityPS,
+                                    buffers,
                                     0xF000F0));
             PlayerRotationHelper.load();
         }
-        manager.setDebugBoundingBox(dbbb);
-        manager.setRenderShadow(true);
+        dispatcher.setRenderHitBoxes(renderHitBoxes);
+        dispatcher.setRenderShadow(true);
 
-        typeBuffer.finish();
+        buffers.endBatch();
         RenderSystem.popMatrix();
         ScissorUtil.stop();
 
-        matrixStack.push();
-        matrixStack.translate(0, 0, 1000);
+        poseStack.pushPose();
+        poseStack.translate(0, 0, 1000);
         for (final IconButton button : buttons) {
-            button.render(matrixStack, mouseX, mouseY, partialTicks);
+            button.render(poseStack, mouseX, mouseY, partialTicks);
         }
-        title.render(matrixStack, mouseX, mouseY, partialTicks);
-        matrixStack.pop();
+        title.render(poseStack, mouseX, mouseY, partialTicks);
+        poseStack.popPose();
     }
 
     protected void renderFire(
-            MatrixStack entityMS,
-            IRenderTypeBuffer.Impl typeBuffer,
-            EntityRendererManager manager,
+            PoseStack entityPS,
+            MultiBufferSource.BufferSource buffers,
+            EntityRenderDispatcher manager,
             double yOff) {
         // The preview copy will never be on fire otherwise, so doing this directly is fine
         if (previewPuppet.renderManager.flaming.get()) {
-            entityMS.push();
-            entityMS.translate(0.0D, yOff, 0.0D);
-            entityMS.rotate(Vector3f.YP.rotationDegrees(manager.info.getYaw() - previewYaw));
-            manager.renderFire(entityMS, typeBuffer, previewPuppet);
-            entityMS.pop();
+            entityPS.pushPose();
+            entityPS.translate(0.0D, yOff, 0.0D);
+            entityPS.mulPose(Vector3f.YP.rotationDegrees(manager.camera.getYRot() - previewYaw));
+            manager.renderFlame(entityPS, buffers, previewPuppet);
+            entityPS.popPose();
         }
     }
 

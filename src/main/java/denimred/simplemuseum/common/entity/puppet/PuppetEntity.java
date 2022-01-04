@@ -1,32 +1,32 @@
 package denimred.simplemuseum.common.entity.puppet;
 
-import net.minecraft.block.material.PushReaction;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntitySize;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.Pose;
-import net.minecraft.entity.effect.LightningBoltEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.network.datasync.IDataSerializer;
-import net.minecraft.particles.ParticleTypes;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.HandSide;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializer;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.Collections;
@@ -59,12 +59,14 @@ import denimred.simplemuseum.common.util.IValueSerializer;
 import denimred.simplemuseum.common.util.MathUtil;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceLinkedOpenHashMap;
 import software.bernie.geckolib3.core.IAnimatable;
+import software.bernie.geckolib3.core.IAnimationTickable;
 import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 
-public final class PuppetEntity extends LivingEntity implements IAnimatable {
-    public static final DataParameter<OptionalInt> POSSESSOR_ID =
-            EntityDataManager.createKey(PuppetEntity.class, DataSerializers.OPTIONAL_VARINT);
+public final class PuppetEntity extends LivingEntity implements IAnimatable, IAnimationTickable {
+    public static final EntityDataAccessor<OptionalInt> POSSESSOR_ID =
+            SynchedEntityData.defineId(
+                    PuppetEntity.class, EntityDataSerializers.OPTIONAL_UNSIGNED_INT);
     // Manager initialization order is different from normal due to NPEs when managers reference
     // each other during initialization
     public final PuppetSourceManager sourceManager = new PuppetSourceManager(this);
@@ -73,12 +75,12 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable {
     public final PuppetAnimationManager animationManager = new PuppetAnimationManager(this);
     public final PuppetBehaviorManager behaviorManager = new PuppetBehaviorManager(this);
     public final PuppetEasterEggTracker easterEggs = new PuppetEasterEggTracker(this);
-    protected final Map<String, PuppetValueManager> managers =
+    private final Map<String, PuppetValueManager> managers =
             new Object2ReferenceLinkedOpenHashMap<>();
-    protected int livingSoundTime;
-    @Nullable protected Entity possessor;
+    private int livingSoundTime;
+    @Nullable private Entity possessor;
 
-    public PuppetEntity(EntityType<? extends PuppetEntity> type, World world) {
+    public PuppetEntity(EntityType<? extends PuppetEntity> type, Level world) {
         super(type, world);
         // Order is important since the config tab button icons are in a fixed order
         managers.put(sourceManager.nbtKey, sourceManager);
@@ -91,39 +93,39 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable {
     // Forge gets angry about calling createKey from outside the defined class,
     // so we do this to contextualize the call and prove that we own the class.
     // This is technically unsafe since anyone can call this, but whatever.
-    public static <T> DataParameter<T> createKeyContextual(IValueSerializer<T> serializer) {
-        final IDataSerializer<T> dataSerializer =
+    public static <T> EntityDataAccessor<T> createKeyContextual(IValueSerializer<T> serializer) {
+        final EntityDataSerializer<T> dataSerializer =
                 serializer instanceof IValueSerializer.Wrapped
                         ? ((IValueSerializer.Wrapped<T>) serializer).parent
                         : serializer;
-        return EntityDataManager.createKey(PuppetEntity.class, dataSerializer);
+        return SynchedEntityData.defineId(PuppetEntity.class, dataSerializer);
     }
 
     @Nullable
-    public static PuppetEntity spawn(ServerWorld world, Vector3d pos, @Nullable Entity entity) {
-        return spawn(world, pos, entity != null ? entity.getPositionVec() : null);
+    public static PuppetEntity spawn(ServerLevel world, Vec3 pos, @Nullable Entity entity) {
+        return spawn(world, pos, entity != null ? entity.position() : null);
     }
 
     @Nullable
-    public static PuppetEntity spawn(ServerWorld world, Vector3d pos, @Nullable Vector3d facing) {
+    public static PuppetEntity spawn(ServerLevel world, Vec3 pos, @Nullable Vec3 facing) {
         final PuppetEntity puppet = MuseumEntities.MUSEUM_PUPPET.get().create(world);
         if (puppet != null) {
             final float yaw = facing != null ? MathUtil.yawBetween(pos, facing) : 0.0F;
-            puppet.setLocationAndAngles(pos.x, pos.y, pos.z, yaw, 0.0F);
-            puppet.rotationYawHead = yaw;
-            world.func_242417_l(puppet);
+            puppet.moveTo(pos.x, pos.y, pos.z, yaw, 0.0F);
+            puppet.yHeadRot = yaw;
+            world.addFreshEntityWithPassengers(puppet);
         }
         return puppet;
     }
 
     public static PuppetEntity makePreviewCopy(PuppetEntity original) {
         final PuppetEntity copy =
-                Objects.requireNonNull(MuseumEntities.MUSEUM_PUPPET.get().create(original.world));
-        copy.setEntityId(original.getEntityId());
+                Objects.requireNonNull(MuseumEntities.MUSEUM_PUPPET.get().create(original.level));
+        copy.setId(original.getId());
         copy.setCustomName(original.getCustomName());
-        copy.rotationYawHead = 0.0F;
-        copy.rotationYaw = 0.0F;
-        copy.rotationPitch = 0.0F;
+        copy.yHeadRot = 0.0F;
+        copy.yRot = 0.0F;
+        copy.xRot = 0.0F;
         for (PuppetValueManager cm : copy.getManagers()) {
             final Optional<PuppetValueManager> om = original.getManager(cm.nbtKey);
             for (PuppetValue<?, ?> cv : cm.getValues()) {
@@ -137,9 +139,9 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable {
     }
 
     @Override
-    protected void registerData() {
-        super.registerData();
-        dataManager.register(POSSESSOR_ID, OptionalInt.empty());
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        entityData.define(POSSESSOR_ID, OptionalInt.empty());
     }
 
     public Optional<PuppetValueManager> getManager(String managerKey) {
@@ -155,16 +157,16 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable {
     }
 
     @Override
-    public void recalculateSize() {
-        double x = this.getPosX();
-        double y = this.getPosY();
-        double z = this.getPosZ();
-        super.recalculateSize();
-        this.setPosition(x, y, z);
+    public void refreshDimensions() {
+        double x = this.getX();
+        double y = this.getY();
+        double z = this.getZ();
+        super.refreshDimensions();
+        this.setPos(x, y, z);
     }
 
     @Override
-    public EntitySize getSize(Pose poseIn) {
+    public EntityDimensions getDimensions(Pose poseIn) {
         // TODO: Change for different poses?
         // Note: Not adjusting based on render scale for performance reasons
         return behaviorManager.physicalSize.get();
@@ -173,29 +175,29 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable {
     @Override
     public void baseTick() {
         super.baseTick();
-        if (this.isAlive() && rand.nextInt(1000) < livingSoundTime++) {
+        if (this.isAlive() && random.nextInt(1000) < livingSoundTime++) {
             livingSoundTime -= 80; // TODO: Make this configurable
             audioManager.playAmbientSound();
         }
-        if (this.world.isRemote) easterEggs.tick();
+        if (this.level.isClientSide) easterEggs.tick();
     }
 
     @Override
-    public SoundCategory getSoundCategory() {
+    public SoundSource getSoundSource() {
         return audioManager.category.get();
     }
 
     @Override
-    public void writeAdditional(CompoundNBT tag) {
-        super.writeAdditional(tag);
-        final CompoundNBT modTag = tag.getCompound(SimpleMuseum.MOD_ID);
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        final CompoundTag modTag = tag.getCompound(SimpleMuseum.MOD_ID);
         this.writeModTag(modTag);
         if (!modTag.isEmpty()) {
             tag.put(SimpleMuseum.MOD_ID, modTag);
         }
     }
 
-    public void writeModTag(CompoundNBT modTag) {
+    public void writeModTag(CompoundTag modTag) {
         PuppetDataHistorian.writeVersion(modTag);
         for (PuppetValueManager manager : managers.values()) {
             manager.write(modTag);
@@ -203,12 +205,12 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable {
     }
 
     @Override
-    public void readAdditional(CompoundNBT tag) {
-        super.readAdditional(tag);
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
         this.readModTag(tag.getCompound(SimpleMuseum.MOD_ID));
     }
 
-    public void readModTag(CompoundNBT modTag) {
+    public void readModTag(CompoundTag modTag) {
         PuppetDataHistorian.checkAndUpdate(modTag);
         for (PuppetValueManager manager : managers.values()) {
             manager.read(modTag);
@@ -216,20 +218,20 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable {
     }
 
     @Override
-    public ItemStack getPickedResult(RayTraceResult target) {
+    public ItemStack getPickedResult(HitResult target) {
         return new ItemStack(MuseumItems.CURATORS_CANE.get());
     }
 
     @Override
-    public boolean canBePushed() {
+    public boolean isPushable() {
         return false;
     }
 
     @Override
-    protected void collideWithEntity(Entity entityIn) {}
+    protected void doPush(Entity entityIn) {}
 
     @Override
-    protected void collideWithNearbyEntities() {}
+    protected void pushEntities() {}
 
     @Override
     public boolean isInvulnerableTo(DamageSource source) {
@@ -237,21 +239,21 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable {
     }
 
     @Override
-    public boolean canBeCollidedWith() {
-        return world.isRemote && ClientUtil.isClientPossessing(this)
+    public boolean isPickable() {
+        return level.isClientSide && ClientUtil.isClientPossessing(this)
                 ? ClientUtil.isHoldingCane()
-                : super.canBeCollidedWith();
+                : super.isPickable();
     }
 
     @Override
-    protected float updateDistance(float yawOffset, float what) {
+    protected float tickHeadTurn(float yawOffset, float what) {
         if (possessor == null) {
-            prevRenderYawOffset = prevRotationYaw;
-            renderYawOffset = rotationYaw;
+            yBodyRotO = yRotO;
+            yBodyRot = yRot;
             return 0.0F;
         } else {
-            this.renderYawOffset += MathHelper.wrapDegrees(yawOffset - this.renderYawOffset) * 0.3F;
-            float yaw = MathHelper.wrapDegrees(this.rotationYaw - this.renderYawOffset);
+            this.yBodyRot += Mth.wrapDegrees(yawOffset - this.yBodyRot) * 0.3F;
+            float yaw = Mth.wrapDegrees(this.yRot - this.yBodyRot);
             boolean flag = yaw < -90.0F || yaw >= 90.0F;
             if (yaw < -75.0F) {
                 yaw = -75.0F;
@@ -261,9 +263,9 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable {
                 yaw = 75.0F;
             }
 
-            this.renderYawOffset = this.rotationYaw - yaw;
+            this.yBodyRot = this.yRot - yaw;
             if (yaw * yaw > 2500.0F) {
-                this.renderYawOffset += yaw * 0.2F;
+                this.yBodyRot += yaw * 0.2F;
             }
 
             if (flag) {
@@ -274,54 +276,54 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable {
     }
 
     @Override
-    public void travel(Vector3d travelVector) {
+    public void travel(Vec3 travelVector) {
         // TODO: Make the boolean here configurable (true to include Y value in limb swing calc)
-        this.func_233629_a_(this, false);
+        this.calculateEntityAnimation(this, false);
     }
 
     @Override
-    public void setRenderYawOffset(float offset) {
-        prevRenderYawOffset = prevRotationYaw = offset;
-        prevRotationYawHead = rotationYawHead = offset;
+    public void setYBodyRot(float offset) {
+        yBodyRotO = yRotO = offset;
+        yHeadRotO = yHeadRot = offset;
     }
 
     @Override
-    public void setRotationYawHead(float rotation) {
-        prevRenderYawOffset = prevRotationYaw = rotation;
-        prevRotationYawHead = rotationYawHead = rotation;
+    public void setYHeadRot(float rotation) {
+        yBodyRotO = yRotO = rotation;
+        yHeadRotO = yHeadRot = rotation;
     }
 
     @Override
-    public void onKillCommand() {
+    public void kill() {
         if (!this.isDamageable()) {
             this.remove();
         } else {
-            super.onKillCommand();
+            super.kill();
         }
     }
 
     @Override
-    public void onDeath(DamageSource cause) {
+    public void die(DamageSource cause) {
         if (this.isCompletelyDead() && cause == DamageSource.OUT_OF_WORLD) {
             this.remove();
         } else {
-            super.onDeath(cause);
+            super.die(cause);
         }
     }
 
     @Override
-    protected void onDeathUpdate() {
+    protected void tickDeath() {
         ++deathTime;
         if (deathTime == animationManager.deathLength.get()) {
             for (int i = 0; i < 20; ++i) {
-                world.addParticle(
+                level.addParticle(
                         ParticleTypes.POOF,
-                        this.getPosXRandom(1.0D),
-                        this.getPosYRandom(),
-                        this.getPosZRandom(1.0D),
-                        rand.nextGaussian() * 0.02D,
-                        rand.nextGaussian() * 0.02D,
-                        rand.nextGaussian() * 0.02D);
+                        this.getRandomX(1.0D),
+                        this.getRandomY(),
+                        this.getRandomZ(1.0D),
+                        random.nextGaussian() * 0.02D,
+                        random.nextGaussian() * 0.02D,
+                        random.nextGaussian() * 0.02D);
             }
         }
     }
@@ -330,10 +332,10 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable {
         this.setHealth(this.getMaxHealth());
         dead = false;
         deathTime = 0;
-        if (!world.isRemote) {
+        if (!level.isClientSide) {
             MuseumNetworking.CHANNEL.send(
                     PacketDistributor.TRACKING_ENTITY.with(() -> this),
-                    new ResurrectPuppetSync(this.getEntityId()));
+                    new ResurrectPuppetSync(this.getId()));
         }
     }
 
@@ -343,7 +345,7 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable {
     }
 
     public boolean isDead() {
-        return dead || deathTime > 0 || this.getShouldBeDead();
+        return dead || deathTime > 0 || this.isDeadOrDying();
     }
 
     public boolean isCompletelyDead() {
@@ -362,11 +364,11 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable {
     }
 
     @Override
-    public boolean isInvisibleToPlayer(PlayerEntity player) {
-        if (super.isInvisibleToPlayer(player)) {
+    public boolean isInvisibleTo(Player player) {
+        if (super.isInvisibleTo(player)) {
             return true;
         } else if (player.equals(possessor)) {
-            return ClientUtil.MC.gameSettings.getPointOfView().func_243192_a();
+            return ClientUtil.MC.options.getCameraType().isFirstPerson();
         } else if (this.isDead()) {
             return this.isCompletelyDead() && !ClientUtil.isHoldingCane();
         }
@@ -374,43 +376,44 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable {
     }
 
     @Override
-    public boolean isImmuneToExplosions() {
+    public boolean ignoreExplosion() {
         return !this.isDamageable();
     }
 
     @Override
-    public boolean isImmuneToFire() {
+    public boolean fireImmune() {
         // TODO: Handle this in the behavior manager
-        return this.isCompletelyDead() || super.isImmuneToFire();
+        return this.isCompletelyDead() || super.fireImmune();
     }
 
     @Override
-    public boolean canRenderOnFire() {
+    public boolean displayFireAnimation() {
         // We have to render the fire separately for preview puppets to make it line up right
-        return this.isAddedToWorld() && (renderManager.flaming.get() || super.canRenderOnFire());
+        return this.isAddedToWorld()
+                && (renderManager.flaming.get() || super.displayFireAnimation());
     }
 
     @Override
-    public PushReaction getPushReaction() {
+    public PushReaction getPistonPushReaction() {
         return PushReaction.IGNORE;
     }
 
     @Override
-    public boolean hitByEntity(Entity entity) {
-        if (entity instanceof PlayerEntity) {
-            final PlayerEntity player = (PlayerEntity) entity;
-            final ItemStack stack = player.getHeldItemMainhand();
+    public boolean skipAttackInteraction(Entity entity) {
+        if (entity instanceof Player) {
+            final Player player = (Player) entity;
+            final ItemStack stack = player.getMainHandItem();
             if (stack.getItem() instanceof CuratorsCaneItem) {
-                if (!world.isRemote) {
+                if (!level.isClientSide) {
                     this.remove();
                 }
-                world.playSound(
+                level.playSound(
                         null,
-                        entity.getPosX(),
-                        entity.getPosY(),
-                        entity.getPosZ(),
-                        SoundEvents.ENTITY_PLAYER_ATTACK_KNOCKBACK,
-                        entity.getSoundCategory(),
+                        entity.getX(),
+                        entity.getY(),
+                        entity.getZ(),
+                        SoundEvents.PLAYER_ATTACK_KNOCKBACK,
+                        entity.getSoundSource(),
                         1.0F,
                         1.0F);
                 return true;
@@ -420,9 +423,9 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable {
     }
 
     @Override
-    protected SoundEvent getFallSound(int heightIn) {
+    protected SoundEvent getFallDamageSound(int heightIn) {
         // TODO: Make this configurable
-        return SoundEvents.ENTITY_ARMOR_STAND_FALL;
+        return SoundEvents.ARMOR_STAND_FALL;
     }
 
     @Override
@@ -440,14 +443,14 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable {
     }
 
     @Override
-    public void causeLightningStrike(ServerWorld world, LightningBoltEntity lightning) {
+    public void thunderHit(ServerLevel world, LightningBolt lightning) {
         if (this.isDamageable()) {
-            super.causeLightningStrike(world, lightning);
+            super.thunderHit(world, lightning);
         }
     }
 
     @Override
-    public boolean canBeHitWithPotion() {
+    public boolean isAffectedByPotions() {
         // TODO: Handle this in the behavior manager
         return this.isDamageable(); // || (invulnerable && behaviorManager.allowPotions)
     }
@@ -458,29 +461,29 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable {
     }
 
     @Override
-    public Iterable<ItemStack> getArmorInventoryList() {
+    public Iterable<ItemStack> getArmorSlots() {
         return Collections.emptyList();
     }
 
     @Override
-    public ItemStack getItemStackFromSlot(EquipmentSlotType slotIn) {
+    public ItemStack getItemBySlot(EquipmentSlot slotIn) {
         return ItemStack.EMPTY;
     }
 
     @Override
-    public void setItemStackToSlot(EquipmentSlotType slotIn, ItemStack stack) {}
+    public void setItemSlot(EquipmentSlot slotIn, ItemStack stack) {}
 
     @Override
-    public HandSide getPrimaryHand() {
-        return HandSide.RIGHT;
+    public HumanoidArm getMainArm() {
+        return HumanoidArm.RIGHT;
     }
 
     @Override
-    public void notifyDataManagerChange(DataParameter<?> key) {
-        super.notifyDataManagerChange(key);
+    public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
+        super.onSyncedDataUpdated(key);
         if (key.equals(POSSESSOR_ID)) {
-            final OptionalInt id = dataManager.get(POSSESSOR_ID);
-            final Entity possessor = id.isPresent() ? world.getEntityByID(id.getAsInt()) : null;
+            final OptionalInt id = entityData.get(POSSESSOR_ID);
+            final Entity possessor = id.isPresent() ? level.getEntity(id.getAsInt()) : null;
             this.setPossessor(possessor);
         } else {
             // Sanity check; superclass calls this method before the managers exist
@@ -495,29 +498,29 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable {
     }
 
     @Override
-    public AxisAlignedBB getRenderBoundingBox() {
+    public AABB getBoundingBoxForCulling() {
         return renderManager.getRenderBounds();
     }
 
     @Override
-    public boolean isInRangeToRenderDist(double distance) {
+    public boolean shouldRenderAtSqrDistance(double distance) {
         // Why doesn't vanilla use the render bounds for this...
-        double d0 = this.getRenderBoundingBox().getAverageEdgeLength();
+        double d0 = this.getBoundingBoxForCulling().getSize();
         if (Double.isNaN(d0)) {
             d0 = 1.0D;
         }
-        d0 = d0 * 64.0D * renderDistanceWeight;
+        d0 = d0 * 64.0D * viewScale;
         return distance < d0 * d0;
     }
 
     @Override
-    public float getRenderScale() {
+    public float getScale() {
         return renderManager.scale.get();
     }
 
     @Override
     public boolean isGlowing() {
-        return super.isGlowing() || world.isRemote && ClientUtil.shouldPuppetGlow(this);
+        return super.isGlowing() || level.isClientSide && ClientUtil.shouldPuppetGlow(this);
     }
 
     @Override
@@ -549,8 +552,7 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable {
     }
 
     public boolean isSitting() {
-        final Entity vehicle =
-                possessor != null ? possessor.getRidingEntity() : this.getRidingEntity();
+        final Entity vehicle = possessor != null ? possessor.getVehicle() : this.getVehicle();
         return vehicle != null && vehicle.shouldRiderSit();
     }
 
@@ -562,16 +564,19 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable {
     public void setPossessor(@Nullable Entity possessor) {
         final Entity prev = this.possessor;
         if (!Objects.equals(possessor, prev)) {
-            if (this.isServerWorld()) {
+            if (this.isEffectiveAi()) {
                 final OptionalInt id =
-                        possessor != null
-                                ? OptionalInt.of(possessor.getEntityId())
-                                : OptionalInt.empty();
-                dataManager.set(POSSESSOR_ID, id);
+                        possessor != null ? OptionalInt.of(possessor.getId()) : OptionalInt.empty();
+                entityData.set(POSSESSOR_ID, id);
             }
             this.possessor = possessor;
-            if (possessor != null) possessor.recalculateSize();
-            if (prev != null) prev.recalculateSize();
+            if (possessor != null) possessor.refreshDimensions();
+            if (prev != null) prev.refreshDimensions();
         }
+    }
+
+    @Override
+    public int tickTimer() {
+        return tickCount;
     }
 }

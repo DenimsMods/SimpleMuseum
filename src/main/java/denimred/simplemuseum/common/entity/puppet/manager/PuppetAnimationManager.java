@@ -1,6 +1,5 @@
 package denimred.simplemuseum.common.entity.puppet.manager;
 
-import denimred.simplemuseum.client.renderer.entity.temp.TEMPAnimationController;
 import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 import denimred.simplemuseum.common.entity.puppet.manager.value.PuppetKey;
 import denimred.simplemuseum.common.entity.puppet.manager.value.checked.CheckedProvider;
@@ -77,7 +76,7 @@ public final class PuppetAnimationManager extends PuppetValueManager {
 
     public final AnimationFactory factory = new AnimationFactory(puppet);
     public final AnimationController<PuppetEntity> controller =
-            new TEMPAnimationController<>(puppet, "controller", 3, this::getAnimState);
+            new AnimationController<>(puppet, "controller", 3, this::getAnimState);
 
     public PuppetAnimationManager(PuppetEntity puppet) {
         super(puppet, NBT_KEY, TRANSLATION_KEY);
@@ -98,7 +97,7 @@ public final class PuppetAnimationManager extends PuppetValueManager {
     }
 
     private static boolean validateAnimation(PuppetEntity puppet, String anim, boolean allowEmpty) {
-        return !puppet.world.isRemote
+        return !puppet.level.isClientSide
                 || allowEmpty && anim.isEmpty()
                 || puppet.sourceManager.animations.isValid()
                         && GeckoLibCache.getInstance()
@@ -132,7 +131,7 @@ public final class PuppetAnimationManager extends PuppetValueManager {
             }
             // Moving animation, overrides idle
             if (event.isMoving()) {
-                if (puppet.isSneaking() && this.playAnimInternal(movingSneak, true)) {
+                if (puppet.isShiftKeyDown() && this.playAnimInternal(movingSneak, true)) {
                     return PlayState.CONTINUE;
                 } else if (puppet.isSprinting() && this.playAnimInternal(sprinting, true)) {
                     return PlayState.CONTINUE;
@@ -141,7 +140,7 @@ public final class PuppetAnimationManager extends PuppetValueManager {
                 }
             }
             // Idle animation last, as a fallback
-            if (puppet.isSneaking() && this.playAnimInternal(idleSneak, true)) {
+            if (puppet.isShiftKeyDown() && this.playAnimInternal(idleSneak, true)) {
                 return PlayState.CONTINUE;
             } else if (this.playAnimInternal(idle, true)) {
                 return PlayState.CONTINUE;
@@ -172,4 +171,6 @@ public final class PuppetAnimationManager extends PuppetValueManager {
     public AnimationController<PuppetEntity> getController() {
         return controller;
     }
+
+
 }

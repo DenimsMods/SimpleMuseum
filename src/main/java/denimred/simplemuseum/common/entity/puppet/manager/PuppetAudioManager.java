@@ -1,7 +1,7 @@
 package denimred.simplemuseum.common.entity.puppet.manager;
 
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundSource;
 
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.client.util.ClientUtil;
@@ -24,11 +24,11 @@ public final class PuppetAudioManager extends PuppetValueManager {
                     key("Ambient"),
                     new ResourceLocation(SimpleMuseum.MOD_ID, "misc/silence"),
                     PuppetAudioManager::isSoundValid);
-    public static final BasicProvider<SoundCategory> CATEGORY =
-            new BasicProvider<>(key("Category"), SoundCategory.NEUTRAL);
+    public static final BasicProvider<SoundSource> CATEGORY =
+            new BasicProvider<>(key("Category"), SoundSource.NEUTRAL);
 
     public final CheckedValue<ResourceLocation> ambient = this.value(AMBIENT);
-    public final BasicValue<SoundCategory> category = this.value(CATEGORY);
+    public final BasicValue<SoundSource> category = this.value(CATEGORY);
 
     public PuppetAudioManager(PuppetEntity puppet) {
         super(puppet, NBT_KEY, TRANSLATION_KEY);
@@ -39,12 +39,12 @@ public final class PuppetAudioManager extends PuppetValueManager {
     }
 
     private static boolean isSoundValid(PuppetEntity puppet, ResourceLocation soundName) {
-        return !puppet.world.isRemote
-                || ClientUtil.MC.getSoundHandler().getAvailableSounds().contains(soundName);
+        return !puppet.level.isClientSide
+                || ClientUtil.MC.getSoundManager().getAvailableSounds().contains(soundName);
     }
 
     public void playAmbientSound() {
-        if (puppet.world.isRemote) {
+        if (puppet.level.isClientSide) {
             // We don't use getSafe here since the default isn't technically valid either
             final ResourceLocation ambientSound = ambient.get();
             if (isSoundValid(puppet, ambientSound)) {
@@ -54,7 +54,7 @@ public final class PuppetAudioManager extends PuppetValueManager {
     }
 
     public <T extends IAnimatable> void playAnimSound(SoundKeyframeEvent<T> event) {
-        final ResourceLocation soundName = ResourceLocation.tryCreate(event.sound);
+        final ResourceLocation soundName = ResourceLocation.tryParse(event.sound);
         if (soundName != null && isSoundValid(puppet, soundName)) {
             this.playClientSound(soundName);
         }

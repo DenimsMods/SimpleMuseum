@@ -1,12 +1,12 @@
 package denimred.simplemuseum.client.gui.screen;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.GuiScreenEvent.BackgroundDrawnEvent;
 import net.minecraftforge.common.MinecraftForge;
 
@@ -50,20 +50,20 @@ public class MovePuppetScreen extends PuppetScreen {
                                 WIDTH,
                                 20,
                                 GuiLang.PUPPET_CONFIG.asText(),
-                                button -> mc.displayGuiScreen(parent)));
+                                button -> mc.setScreen(parent)));
         movementButtons =
-                this.addListener(
+                this.addWidget(
                         new MovementButtons(
                                 MARGIN + 20,
                                 backButton.y + backButton.getHeight() + MARGIN,
-                                new StringTextComponent("todo"),
+                                new TextComponent("todo"),
                                 MovementButtons::getName,
                                 i -> MovementButtons.movePuppet(puppet, i),
                                 this::renderWidgetTooltip));
-        final ITextComponent xMsg = GuiLang.PUPPET_MOVE_X.asText();
-        final int xMsgWidth = font.getStringPropertyWidth(xMsg);
+        final Component xMsg = GuiLang.PUPPET_MOVE_X.asText();
+        final int xMsgWidth = font.width(xMsg);
         xField =
-                this.addListener(
+                this.addWidget(
                         new BoundTextFieldWidget(
                                 font,
                                 (MARGIN * 2) + xMsgWidth,
@@ -71,11 +71,11 @@ public class MovePuppetScreen extends PuppetScreen {
                                 WIDTH - xMsgWidth - MARGIN,
                                 20,
                                 xMsg,
-                                () -> NumberUtil.parseString(puppet.getPosX())));
-        final ITextComponent yMsg = GuiLang.PUPPET_MOVE_Y.asText();
-        final int yMsgWidth = font.getStringPropertyWidth(yMsg);
+                                () -> NumberUtil.parseString(puppet.getX())));
+        final Component yMsg = GuiLang.PUPPET_MOVE_Y.asText();
+        final int yMsgWidth = font.width(yMsg);
         yField =
-                this.addListener(
+                this.addWidget(
                         new BoundTextFieldWidget(
                                 font,
                                 (MARGIN * 2) + yMsgWidth,
@@ -83,11 +83,11 @@ public class MovePuppetScreen extends PuppetScreen {
                                 WIDTH - yMsgWidth - MARGIN,
                                 20,
                                 yMsg,
-                                () -> NumberUtil.parseString(puppet.getPosY())));
-        final ITextComponent zMsg = GuiLang.PUPPET_MOVE_Z.asText();
-        final int zMsgWidth = font.getStringPropertyWidth(zMsg);
+                                () -> NumberUtil.parseString(puppet.getY())));
+        final Component zMsg = GuiLang.PUPPET_MOVE_Z.asText();
+        final int zMsgWidth = font.width(zMsg);
         zField =
-                this.addListener(
+                this.addWidget(
                         new BoundTextFieldWidget(
                                 font,
                                 (MARGIN * 2) + zMsgWidth,
@@ -95,11 +95,11 @@ public class MovePuppetScreen extends PuppetScreen {
                                 WIDTH - zMsgWidth - MARGIN,
                                 20,
                                 zMsg,
-                                () -> NumberUtil.parseString(puppet.getPosZ())));
-        final ITextComponent pitchMsg = GuiLang.PUPPET_MOVE_PITCH.asText();
-        final int pitchMsgWidth = font.getStringPropertyWidth(pitchMsg);
+                                () -> NumberUtil.parseString(puppet.getZ())));
+        final Component pitchMsg = GuiLang.PUPPET_MOVE_PITCH.asText();
+        final int pitchMsgWidth = font.width(pitchMsg);
         pitchField =
-                this.addListener(
+                this.addWidget(
                         new BoundTextFieldWidget(
                                 font,
                                 (MARGIN * 2) + pitchMsgWidth,
@@ -107,11 +107,11 @@ public class MovePuppetScreen extends PuppetScreen {
                                 WIDTH - pitchMsgWidth - MARGIN,
                                 20,
                                 pitchMsg,
-                                () -> NumberUtil.parseString(puppet.rotationPitch)));
-        final ITextComponent yawMsg = GuiLang.PUPPET_MOVE_YAW.asText();
-        final int yawMsgWidth = font.getStringPropertyWidth(yawMsg);
+                                () -> NumberUtil.parseString(puppet.xRot)));
+        final Component yawMsg = GuiLang.PUPPET_MOVE_YAW.asText();
+        final int yawMsgWidth = font.width(yawMsg);
         yawField =
-                this.addListener(
+                this.addWidget(
                         new BoundTextFieldWidget(
                                 font,
                                 (MARGIN * 2) + yawMsgWidth,
@@ -119,7 +119,7 @@ public class MovePuppetScreen extends PuppetScreen {
                                 WIDTH - yawMsgWidth - MARGIN,
                                 20,
                                 yawMsg,
-                                () -> NumberUtil.parseString(puppet.rotationYaw)));
+                                () -> NumberUtil.parseString(puppet.yRot)));
         final int buttonsY = yawField.y + yawField.getHeight() + MARGIN;
         applyButton =
                 this.addButton(
@@ -130,23 +130,23 @@ public class MovePuppetScreen extends PuppetScreen {
                                 20,
                                 GuiLang.PUPPET_MOVE_APPLY.asText(),
                                 button -> {
-                                    final Vector3d pos = puppet.getPositionVec();
+                                    final Vec3 pos = puppet.position();
                                     final double x =
-                                            NumberUtil.parseDouble(xField.getText()).orElse(pos.x);
+                                            NumberUtil.parseDouble(xField.getValue()).orElse(pos.x);
                                     final double y =
-                                            NumberUtil.parseDouble(yField.getText()).orElse(pos.y);
+                                            NumberUtil.parseDouble(yField.getValue()).orElse(pos.y);
                                     final double z =
-                                            NumberUtil.parseDouble(zField.getText()).orElse(pos.z);
+                                            NumberUtil.parseDouble(zField.getValue()).orElse(pos.z);
                                     final float pitch =
-                                            NumberUtil.parseFloat(pitchField.getText())
-                                                    .orElse(puppet.rotationPitch);
+                                            NumberUtil.parseFloat(pitchField.getValue())
+                                                    .orElse(puppet.xRot);
                                     final float yaw =
-                                            NumberUtil.parseFloat(yawField.getText())
-                                                    .orElse(puppet.rotationYaw);
+                                            NumberUtil.parseFloat(yawField.getValue())
+                                                    .orElse(puppet.yRot);
                                     MuseumNetworking.CHANNEL.sendToServer(
                                             new C2SMovePuppet(
-                                                    puppet.getUniqueID(),
-                                                    new Vector3d(x, y, z),
+                                                    puppet.getUUID(),
+                                                    new Vec3(x, y, z),
                                                     pitch,
                                                     yaw));
                                     xField.reset();
@@ -171,11 +171,11 @@ public class MovePuppetScreen extends PuppetScreen {
                                     yawField.reset();
                                 }));
 
-        xField.setValidator(NumberUtil::isValidDouble);
-        yField.setValidator(NumberUtil::isValidDouble);
-        zField.setValidator(NumberUtil::isValidDouble);
-        pitchField.setValidator(NumberUtil::isValidFloat);
-        yawField.setValidator(NumberUtil::isValidFloat);
+        xField.setFilter(NumberUtil::isValidDouble);
+        yField.setFilter(NumberUtil::isValidDouble);
+        zField.setFilter(NumberUtil::isValidDouble);
+        pitchField.setFilter(NumberUtil::isValidFloat);
+        yawField.setFilter(NumberUtil::isValidFloat);
         applyButton.active = false;
         resetButton.active = false;
 
@@ -183,37 +183,36 @@ public class MovePuppetScreen extends PuppetScreen {
     }
 
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        super.renderBackground(matrixStack);
+    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
+        super.renderBackground(poseStack);
 
         drawCenteredString(
-                matrixStack,
+                poseStack,
                 font,
                 GuiLang.PUPPET_MOVE_TITLE.asText(title),
                 width / 2,
                 MARGIN * 2,
                 0xFFFFFF);
-        movementButtons.render(matrixStack, mouseX, mouseY, partialTicks);
-        xField.render(matrixStack, mouseX, mouseY, partialTicks);
-        drawStringLeft(matrixStack, font, xField, xField.getMessage(), xField.isPaused());
-        yField.render(matrixStack, mouseX, mouseY, partialTicks);
-        drawStringLeft(matrixStack, font, yField, yField.getMessage(), yField.isPaused());
-        zField.render(matrixStack, mouseX, mouseY, partialTicks);
-        drawStringLeft(matrixStack, font, zField, zField.getMessage(), zField.isPaused());
-        pitchField.render(matrixStack, mouseX, mouseY, partialTicks);
-        drawStringLeft(
-                matrixStack, font, pitchField, pitchField.getMessage(), pitchField.isPaused());
-        yawField.render(matrixStack, mouseX, mouseY, partialTicks);
-        drawStringLeft(matrixStack, font, yawField, yawField.getMessage(), yawField.isPaused());
+        movementButtons.render(poseStack, mouseX, mouseY, partialTicks);
+        xField.render(poseStack, mouseX, mouseY, partialTicks);
+        drawStringLeft(poseStack, font, xField, xField.getMessage(), xField.isPaused());
+        yField.render(poseStack, mouseX, mouseY, partialTicks);
+        drawStringLeft(poseStack, font, yField, yField.getMessage(), yField.isPaused());
+        zField.render(poseStack, mouseX, mouseY, partialTicks);
+        drawStringLeft(poseStack, font, zField, zField.getMessage(), zField.isPaused());
+        pitchField.render(poseStack, mouseX, mouseY, partialTicks);
+        drawStringLeft(poseStack, font, pitchField, pitchField.getMessage(), pitchField.isPaused());
+        yawField.render(poseStack, mouseX, mouseY, partialTicks);
+        drawStringLeft(poseStack, font, yawField, yawField.getMessage(), yawField.isPaused());
 
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+        super.render(poseStack, mouseX, mouseY, partialTicks);
     }
 
     @Override
-    public void renderBackground(MatrixStack matrixStack, int vOffset) {
-        if (mc.world != null) {
-            fill(matrixStack, 0, 0, WIDTH + (MARGIN * 2), this.height, 0x90101010);
-            MinecraftForge.EVENT_BUS.post(new BackgroundDrawnEvent(this, matrixStack));
+    public void renderBackground(PoseStack poseStack, int vOffset) {
+        if (mc.level != null) {
+            fill(poseStack, 0, 0, WIDTH + (MARGIN * 2), this.height, 0x90101010);
+            MinecraftForge.EVENT_BUS.post(new BackgroundDrawnEvent(this, poseStack));
         } else {
             this.renderDirtBackground(vOffset);
         }
@@ -254,19 +253,19 @@ public class MovePuppetScreen extends PuppetScreen {
         protected String yawState;
 
         protected void save() {
-            if (xField != null) xState = xField.getText();
-            if (yField != null) yState = yField.getText();
-            if (zField != null) zState = zField.getText();
-            if (pitchField != null) pitchState = pitchField.getText();
-            if (yawField != null) yawState = yawField.getText();
+            if (xField != null) xState = xField.getValue();
+            if (yField != null) yState = yField.getValue();
+            if (zField != null) zState = zField.getValue();
+            if (pitchField != null) pitchState = pitchField.getValue();
+            if (yawField != null) yawState = yawField.getValue();
         }
 
         protected void load() {
-            if (xState != null) xField.setText(xState);
-            if (yState != null) yField.setText(yState);
-            if (zState != null) zField.setText(zState);
-            if (pitchState != null) pitchField.setText(pitchState);
-            if (yawState != null) yawField.setText(yawState);
+            if (xState != null) xField.setValue(xState);
+            if (yState != null) yField.setValue(yState);
+            if (zState != null) zField.setValue(zState);
+            if (pitchState != null) pitchField.setValue(pitchState);
+            if (yawState != null) yawField.setValue(yawState);
         }
     }
 }

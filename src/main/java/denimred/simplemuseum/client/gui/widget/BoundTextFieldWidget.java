@@ -1,49 +1,49 @@
 package denimred.simplemuseum.client.gui.widget;
 
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.util.IReorderingProcessor;
-import net.minecraft.util.text.Color;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.Style;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.util.FormattedCharSequence;
 
 import java.util.function.Supplier;
 
 @Deprecated
-public class BoundTextFieldWidget extends TextFieldWidget {
-    protected static final Color WHITE = Color.fromInt(0xFFFFFF);
-    protected static final Color LIGHT_GREY = Color.fromInt(0xAAAAAA);
-    protected static final Color DARK_GREY = Color.fromInt(0x777777);
+public class BoundTextFieldWidget extends EditBox {
+    protected static final TextColor WHITE = TextColor.fromRgb(0xFFFFFF);
+    protected static final TextColor LIGHT_GREY = TextColor.fromRgb(0xAAAAAA);
+    protected static final TextColor DARK_GREY = TextColor.fromRgb(0x777777);
     protected final Supplier<String> binder;
     protected String boundText = "";
     protected boolean paused = false;
 
     public BoundTextFieldWidget(
-            FontRenderer font,
+            Font font,
             int x,
             int y,
             int width,
             int height,
-            ITextComponent title,
+            Component title,
             Supplier<String> binder) {
         super(font, x, y, width, height, title);
         this.binder = binder;
-        this.setTextFormatter(
+        this.setFormatter(
                 (s, i) -> {
                     if (s.isEmpty()) {
-                        return IReorderingProcessor.fromString(s, Style.EMPTY);
+                        return FormattedCharSequence.forward(s, Style.EMPTY);
                     } else {
                         final String[] split = s.split("\\.", -1);
                         if (split.length < 2) {
                             final char firstChar = s.charAt(0);
                             final boolean isLeft = firstChar == '+' || firstChar == '-';
-                            return IReorderingProcessor.fromString(s, this.getStyle(isLeft));
+                            return FormattedCharSequence.forward(s, this.getStyle(isLeft));
                         } else {
                             final String left = split[0];
                             final String right = ".".concat(split[1]);
-                            return IReorderingProcessor.func_242244_b(
-                                    IReorderingProcessor.fromString(left, this.getStyle(true)),
-                                    IReorderingProcessor.fromString(right, this.getStyle(false)));
+                            return FormattedCharSequence.fromPair(
+                                    FormattedCharSequence.forward(left, this.getStyle(true)),
+                                    FormattedCharSequence.forward(right, this.getStyle(false)));
                         }
                     }
                 });
@@ -58,27 +58,27 @@ public class BoundTextFieldWidget extends TextFieldWidget {
 
     protected void bind() {
         boundText = binder.get();
-        if (!paused && !this.getText().equals(boundText)) {
+        if (!paused && !this.getValue().equals(boundText)) {
             this.reset();
         }
     }
 
     @Override
-    protected void onTextChanged(String newText) {
+    protected void onValueChange(String newText) {
         final boolean empty = newText.isEmpty();
         final char firstChar = empty ? '\u0000' : newText.charAt(0);
         if (!empty && firstChar != '-' && firstChar != '+') {
-            this.setText("+".concat(newText));
+            this.setValue("+".concat(newText));
         } else {
             paused = !newText.equals(boundText);
-            super.onTextChanged(newText);
+            super.onValueChange(newText);
         }
     }
 
     public void reset() {
-        this.setText(boundText);
-        this.setCursorPositionZero();
-        this.setSelectionPos(0);
+        this.setValue(boundText);
+        this.moveCursorToStart();
+        this.setHighlightPos(0);
     }
 
     public boolean isPaused() {
@@ -86,12 +86,12 @@ public class BoundTextFieldWidget extends TextFieldWidget {
     }
 
     public Style getStyle(boolean left) {
-        final Color color;
+        final TextColor color;
         if (left) {
             color = paused ? WHITE : LIGHT_GREY;
         } else {
             color = paused ? LIGHT_GREY : DARK_GREY;
         }
-        return Style.EMPTY.setItalic(paused).setColor(color);
+        return Style.EMPTY.withItalic(paused).withColor(color);
     }
 }

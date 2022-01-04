@@ -1,6 +1,6 @@
 package denimred.simplemuseum.common.entity.puppet.manager.value;
 
-import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.syncher.EntityDataAccessor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ public abstract class PuppetValueProvider<
     public final PuppetKey key;
     public final T defaultValue;
     public final IValueSerializer<T> serializer;
-    @Nullable public final DataParameter<T> dataKey;
+    @Nullable public final EntityDataAccessor<T> dataKey;
     public final String translationKey;
     @Nullable public final Callback<T> callback;
 
@@ -39,7 +39,7 @@ public abstract class PuppetValueProvider<
             T defaultValue,
             IValueSerializer<T> serializer,
             @Nullable Callback<T> callback,
-            @Nullable DataParameter<T> dataKey) {
+            @Nullable EntityDataAccessor<T> dataKey) {
         this.key = key;
         this.defaultValue = defaultValue;
         this.serializer = serializer;

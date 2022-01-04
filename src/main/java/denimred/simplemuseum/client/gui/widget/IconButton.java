@@ -1,12 +1,12 @@
 package denimred.simplemuseum.client.gui.widget;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceLocation;
 
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.client.util.ClientUtil;
@@ -33,7 +33,7 @@ public class IconButton extends BetterButton {
             int textureHeight,
             int textureWidth,
             int yDiffText,
-            IPressable onPress) {
+            OnPress press) {
         this(
                 x,
                 y,
@@ -45,9 +45,9 @@ public class IconButton extends BetterButton {
                 textureHeight,
                 textureWidth,
                 yDiffText,
-                onPress,
-                EMPTY_TOOLTIP,
-                StringTextComponent.EMPTY);
+                press,
+                NO_TOOLTIP,
+                TextComponent.EMPTY);
     }
 
     public IconButton(
@@ -61,10 +61,10 @@ public class IconButton extends BetterButton {
             int textureHeight,
             int textureWidth,
             int yDiffText,
-            IPressable onPress,
-            ITooltip tooltip,
-            ITextComponent title) {
-        super(x, y, width, height, title, onPress, tooltip);
+            OnPress press,
+            OnTooltip tooltip,
+            Component title) {
+        super(x, y, width, height, title, press, tooltip);
         this.textureWidth = textureWidth;
         this.textureHeight = textureHeight;
         this.xTexStart = xTexStart;
@@ -75,15 +75,15 @@ public class IconButton extends BetterButton {
 
     @SuppressWarnings("deprecation") // >:I Mojang
     @Override
-    public void renderWidget(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        TEXTURE_MANAGER.bindTexture(resourceLocation);
+    public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
+        TEXTURE_MANAGER.bind(resourceLocation);
         final int yTex = yTexStart + (yDiffText * this.getYImage(this.isHovered()));
         RenderSystem.color4f(1.0F, 1.0F, 1.0F, alpha);
         RenderSystem.enableDepthTest();
         RenderSystem.enableBlend();
-        blit(matrixStack, x, y, xTexStart, yTex, width, height, textureWidth, textureHeight);
+        blit(poseStack, x, y, xTexStart, yTex, width, height, textureWidth, textureHeight);
         if (this.isHovered()) {
-            this.renderToolTip(matrixStack, mouseX, mouseY);
+            this.renderToolTip(poseStack, mouseX, mouseY);
         }
         RenderSystem.disableBlend();
     }

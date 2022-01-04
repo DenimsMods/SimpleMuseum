@@ -1,22 +1,22 @@
 package denimred.simplemuseum.client.gui.screen;
 
 import com.google.common.collect.Multimap;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.IGuiEventListener;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.ITextProperties;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.client.gui.GuiUtils;
 
 import org.lwjgl.glfw.GLFW;
@@ -52,12 +52,12 @@ public class PuppetConfigScreen extends Screen {
     protected final PuppetEntity puppet;
     protected final PuppetEntity puppetCopy;
     @Nullable protected final Screen parent;
+    protected final Multimap<PuppetValueManager, ValueWidget<?, ?>> valueWidgets;
     protected ConfirmPopupWidget confirmPopup;
     protected PuppetPreviewWidget preview;
     protected CopyPasteButtons copyPaste;
     protected IconButton move;
     protected ManagerTabs tabs;
-    protected final Multimap<PuppetValueManager, ValueWidget<?, ?>> valueWidgets;
     protected WidgetList<PuppetConfigScreen> list;
     protected BetterButton doneButton;
     protected BetterButton cancelButton;
@@ -72,15 +72,15 @@ public class PuppetConfigScreen extends Screen {
 
     @Override
     public void init(Minecraft minecraft, int width, int height) {
-        minecraft.keyboardListener.enableRepeatEvents(true);
+        minecraft.keyboardHandler.setSendRepeatsToGui(true);
         super.init(minecraft, width, height);
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        for (IGuiEventListener iguieventlistener : this.getEventListeners()) {
-            if (iguieventlistener.mouseClicked(mouseX, mouseY, button)) {
-                this.setListener(iguieventlistener);
+        for (GuiEventListener child : this.children()) {
+            if (child.mouseClicked(mouseX, mouseY, button)) {
+                this.setFocused(child);
                 this.setDragging(true);
                 return true;
             }
@@ -91,10 +91,10 @@ public class PuppetConfigScreen extends Screen {
     @Override
     public boolean mouseDragged(
             double mouseX, double mouseY, int button, double dragX, double dragY) {
-        final IGuiEventListener listener = this.getListener();
-        return listener != null
+        final GuiEventListener focused = this.getFocused();
+        return focused != null
                 && this.isDragging()
-                && listener.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+                && focused.mouseDragged(mouseX, mouseY, button, dragX, dragY);
     }
 
     @Override
@@ -155,7 +155,7 @@ public class PuppetConfigScreen extends Screen {
                                 64,
                                 32,
                                 20,
-                                button -> MC.displayGuiScreen(new MovePuppetScreen(puppet, this)),
+                                button -> MC.setScreen(new MovePuppetScreen(puppet, this)),
                                 this::renderWidgetTooltip,
                                 GuiLang.PUPPET_MOVE.asText()));
         tabs =
@@ -180,7 +180,7 @@ public class PuppetConfigScreen extends Screen {
                                 height - 22,
                                 bw,
                                 20,
-                                new StringTextComponent("Done"),
+                                new TextComponent("Done"),
                                 b -> this.saveAndClose()));
         cancelButton =
                 this.addButton(
@@ -189,8 +189,8 @@ public class PuppetConfigScreen extends Screen {
                                 height - 22,
                                 bw,
                                 20,
-                                new StringTextComponent("Cancel"),
-                                b -> this.closeScreen()));
+                                new TextComponent("Cancel"),
+                                b -> this.onClose()));
     }
 
     @Override
@@ -205,55 +205,53 @@ public class PuppetConfigScreen extends Screen {
     }
 
     public void renderWidgetTooltip(
-            Widget widget, MatrixStack matrixStack, int mouseX, int mouseY) {
+            AbstractWidget widget, PoseStack poseStack, int mouseX, int mouseY) {
         if (widget instanceof Descriptive) {
-            this.renderDescriptiveTooltip((Descriptive) widget, matrixStack, mouseX, mouseY);
+            this.renderDescriptiveTooltip((Descriptive) widget, poseStack, mouseX, mouseY);
         } else {
-            this.renderTooltip(matrixStack, widget.getMessage(), mouseX, mouseY);
+            this.renderTooltip(poseStack, widget.getMessage(), mouseX, mouseY);
         }
     }
 
     @Override
     public void renderWrappedToolTip(
-            MatrixStack matrixStack,
-            List<? extends ITextProperties> lines,
+            PoseStack poseStack,
+            List<? extends FormattedText> lines,
             int mouseX,
             int mouseY,
-            FontRenderer font) {
+            Font font) {
         ScissorUtil.push();
-        GuiUtils.drawHoveringText(matrixStack, lines, mouseX, mouseY, width, height, -1, font);
+        GuiUtils.drawHoveringText(poseStack, lines, mouseX, mouseY, width, height, -1, font);
         ScissorUtil.pop();
     }
 
     public void renderDescriptiveTooltip(
-            Descriptive desc, MatrixStack matrixStack, int mouseX, int mouseY) {
-        final List<ITextComponent> lines = new ArrayList<>();
+            Descriptive desc, PoseStack poseStack, int mouseX, int mouseY) {
+        final List<Component> lines = new ArrayList<>();
         lines.add(desc.getTitle());
-        if (!desc.hideDescription() || ClientUtil.hasKeyDown(MC.gameSettings.keyBindSneak)) {
+        if (!desc.hideDescription() || ClientUtil.hasKeyDown(MC.options.keyShift)) {
             lines.addAll(desc.getDescription());
         } else {
             lines.add(
-                    new TranslationTextComponent(
+                    new TranslatableComponent(
                                     "Hold %s for details",
-                                    new TranslationTextComponent(
-                                                    MC.gameSettings.keyBindSneak
-                                                            .getTranslationKey())
-                                            .mergeStyle(TextFormatting.GOLD))
-                            .mergeStyle(TextFormatting.GRAY));
+                                    new TranslatableComponent(MC.options.keyShift.saveString())
+                                            .withStyle(ChatFormatting.GOLD))
+                            .withStyle(ChatFormatting.GRAY));
         }
-        if (MC.gameSettings.advancedItemTooltips) {
+        if (MC.options.advancedItemTooltips) {
             lines.addAll(desc.getAdvancedDescription());
         }
         ScissorUtil.push();
-        GuiUtils.drawHoveringText(matrixStack, lines, mouseX, mouseY, width, height, 200, font);
+        GuiUtils.drawHoveringText(poseStack, lines, mouseX, mouseY, width, height, 200, font);
         ScissorUtil.pop();
     }
 
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        super.renderBackground(matrixStack);
-        puppetCopy.ticksExisted = puppet.ticksExisted;
-        preview.render(matrixStack, mouseX, mouseY, partialTicks);
+    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
+        super.renderBackground(poseStack);
+        puppetCopy.tickCount = puppet.tickCount;
+        preview.render(poseStack, mouseX, mouseY, partialTicks);
         final float fullscreenness = preview.getFullscreenness();
         if (fullscreenness < 1.0F) {
             final boolean shouldScissor = fullscreenness > 0.0F;
@@ -261,18 +259,18 @@ public class PuppetConfigScreen extends Screen {
                 ScissorUtil.start(0, 0, width - preview.getWidth(), height);
             }
 
-            doneButton.render(matrixStack, mouseX, mouseY, partialTicks);
-            cancelButton.render(matrixStack, mouseX, mouseY, partialTicks);
-            list.render(matrixStack, mouseX, mouseY, partialTicks);
-            copyPaste.render(matrixStack, mouseX, mouseY, partialTicks);
-            tabs.render(matrixStack, mouseX, mouseY, partialTicks);
-            move.render(matrixStack, mouseX, mouseY, partialTicks);
+            doneButton.render(poseStack, mouseX, mouseY, partialTicks);
+            cancelButton.render(poseStack, mouseX, mouseY, partialTicks);
+            list.render(poseStack, mouseX, mouseY, partialTicks);
+            copyPaste.render(poseStack, mouseX, mouseY, partialTicks);
+            tabs.render(poseStack, mouseX, mouseY, partialTicks);
+            move.render(poseStack, mouseX, mouseY, partialTicks);
 
             if (shouldScissor) {
                 ScissorUtil.stop();
             }
         }
-        confirmPopup.render(matrixStack, mouseX, mouseY, partialTicks);
+        confirmPopup.render(poseStack, mouseX, mouseY, partialTicks);
     }
 
     public void saveAndClose() {
@@ -280,17 +278,17 @@ public class PuppetConfigScreen extends Screen {
         if (!msg.isEmpty()) {
             MuseumNetworking.CHANNEL.sendToServer(msg);
         }
-        this.closeScreen();
-    }
-
-    @Override
-    public void closeScreen() {
-        MC.displayGuiScreen(parent);
+        this.onClose();
     }
 
     @Override
     public void onClose() {
-        MC.keyboardListener.enableRepeatEvents(false);
+        MC.setScreen(parent);
+    }
+
+    @Override
+    public void removed() {
+        MC.keyboardHandler.setSendRepeatsToGui(false);
     }
 
     @Override
@@ -303,15 +301,15 @@ public class PuppetConfigScreen extends Screen {
     }
 
     public void copy() {
-        final CompoundNBT tag = new CompoundNBT();
+        final CompoundTag tag = new CompoundTag();
         puppetCopy.writeModTag(tag);
-        ClientUtil.MC.keyboardListener.setClipboardString(tag.toString());
+        ClientUtil.MC.keyboardHandler.setClipboard(tag.toString());
     }
 
     public void paste() {
         try {
-            final String clipboard = ClientUtil.MC.keyboardListener.getClipboardString();
-            puppetCopy.readModTag(JsonToNBT.getTagFromJson(clipboard));
+            final String clipboard = ClientUtil.MC.keyboardHandler.getClipboard();
+            puppetCopy.readModTag(TagParser.parseTag(clipboard));
             valueWidgets.values().forEach(ValueWidget::detectAndSync);
         } catch (CommandSyntaxException ignored) {
             // bluh

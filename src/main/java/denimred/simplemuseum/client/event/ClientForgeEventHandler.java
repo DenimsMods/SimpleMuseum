@@ -1,7 +1,7 @@
 package denimred.simplemuseum.client.event;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.world.GameType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.GameType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerChangeGameModeEvent;
 import net.minecraftforge.event.TickEvent;
@@ -20,13 +20,13 @@ import denimred.simplemuseum.common.item.CuratorsCaneItem;
 public class ClientForgeEventHandler {
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.side.isClient() && ClientUtil.MC.currentScreen == null) {
-            final PlayerEntity player = event.player;
+        if (event.side.isClient() && ClientUtil.MC.screen == null) {
+            final Player player = event.player;
             if (player == ClientUtil.MC.player && !player.isSpectator()) {
                 final CuratorsCaneItem cane = MuseumItems.CURATORS_CANE.get();
                 final boolean holdingCane =
-                        player.getHeldItemMainhand().getItem() == cane
-                                || player.getHeldItemOffhand().getItem() == cane;
+                        player.getMainHandItem().getItem() == cane
+                                || player.getOffhandItem().getItem() == cane;
                 ClientUtil.setHoldingCane(holdingCane);
                 ClientUtil.selectPuppet(
                         holdingCane ? ClientUtil.getHoveredPuppet(player) : null, false);

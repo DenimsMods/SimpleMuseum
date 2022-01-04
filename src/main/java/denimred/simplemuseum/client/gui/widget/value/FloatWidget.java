@@ -41,14 +41,14 @@ public final class FloatWidget extends ValueWidget<Float, PuppetValue<Float, ?>>
 
     @Override
     public void syncWithValue() {
-        floatTextField.setText(String.valueOf(value.get()));
-        floatTextField.setCursorPositionZero();
+        floatTextField.setValue(String.valueOf(valueRef.get()));
+        floatTextField.moveCursorToStart();
     }
 
     private final class FloatTextField extends BetterTextFieldWidget {
         public FloatTextField() {
-            super(MC.fontRenderer, 0, 0, 0, 20, FloatWidget.this.message);
-            this.setValidator(this::validate);
+            super(MC.font, 0, 0, 0, 20, FloatWidget.this.message);
+            this.setFilter(this::validate);
             this.setResponder(this::respond);
         }
 
@@ -60,8 +60,8 @@ public final class FloatWidget extends ValueWidget<Float, PuppetValue<Float, ?>>
             final Optional<Float> oI = NumberUtil.parseFloat(s);
             if (oI.isPresent()) {
                 final float i = oI.get();
-                this.setTextColor(value.test(i) ? TEXT_VALID : TEXT_INVALID);
-                value.set(i);
+                this.setTextColor(valueRef.test(i) ? TEXT_VALID : TEXT_INVALID);
+                valueRef.set(i);
             } else {
                 this.setTextColor(TEXT_ERROR);
             }

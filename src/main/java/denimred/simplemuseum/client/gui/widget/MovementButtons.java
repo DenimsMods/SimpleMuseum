@@ -1,21 +1,21 @@
 package denimred.simplemuseum.client.gui.widget;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.renderer.texture.ITickable;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3i;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.texture.Tickable;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.function.Function;
 
@@ -27,7 +27,7 @@ import denimred.simplemuseum.common.i18n.lang.GuiLang;
 import denimred.simplemuseum.common.init.MuseumNetworking;
 import denimred.simplemuseum.common.network.messages.c2s.C2SMovePuppet;
 
-public class MovementButtons extends Widget implements ITickable {
+public class MovementButtons extends AbstractWidget implements Tickable {
     public static final int ROTATE_COUNTER_CLOCKWISE = 0;
     public static final int MOVE_AWAY = 1;
     public static final int ROTATE_CLOCKWISE = 2;
@@ -46,17 +46,17 @@ public class MovementButtons extends Widget implements ITickable {
     public MovementButtons(
             int x,
             int y,
-            ITextComponent title,
-            Function<Integer, ITextComponent> titleMapper,
+            Component title,
+            Function<Integer, Component> titleMapper,
             MultiPressable press,
-            Button.ITooltip tooltip) {
+            Button.OnTooltip tooltip) {
         super(x, y, SIZE * DIM, SIZE * DIM, title);
         for (int i = 0; i < buttons.length; i++) {
             buttons[i] = makeButton(x, y, titleMapper, press, tooltip, i);
         }
     }
 
-    public static IFormattableTextComponent getName(int index) {
+    public static MutableComponent getName(int index) {
         switch (index) {
             case ROTATE_COUNTER_CLOCKWISE:
                 return GuiLang.MOVE_ROTATE_CCW.asText();
@@ -77,62 +77,61 @@ public class MovementButtons extends Widget implements ITickable {
             case MOVE_DOWN:
                 return GuiLang.MOVE_DOWN.asText();
         }
-        return new StringTextComponent("Unknown button index: " + index);
+        return new TextComponent("Unknown button index: " + index);
     }
 
     public static void movePuppet(PuppetEntity puppet, int index) {
         final Minecraft mc = Minecraft.getInstance();
-        final Entity viewer = mc.renderViewEntity;
-        final Direction dir =
-                viewer != null ? viewer.getAdjustedHorizontalFacing() : Direction.NORTH;
-        Vector3d pos = puppet.getPositionVec();
+        final Entity viewer = mc.cameraEntity;
+        final Direction dir = viewer != null ? viewer.getMotionDirection() : Direction.NORTH;
+        Vec3 pos = puppet.position();
         float speedMult = Screen.hasShiftDown() ? 0.25F : (Screen.hasControlDown() ? 1.0F : 0.5F);
-        float yaw = puppet.rotationYaw;
+        float yaw = puppet.yRot;
         final float angle = 15.0F * (speedMult * 2.0F);
         switch (index) {
             case ROTATE_COUNTER_CLOCKWISE:
                 yaw -= angle;
                 break;
             case MOVE_AWAY:
-                final Vector3i forward = dir.getDirectionVec();
-                pos = pos.add(Vector3d.copy(forward).scale(speedMult));
+                final Vec3i forward = dir.getNormal();
+                pos = pos.add(Vec3.atLowerCornerOf(forward).scale(speedMult));
                 break;
             case ROTATE_CLOCKWISE:
                 yaw += angle;
                 break;
             case MOVE_LEFT:
-                final Vector3i left = dir.rotateYCCW().getDirectionVec();
-                pos = pos.add(Vector3d.copy(left).scale(speedMult));
+                final Vec3i left = dir.getCounterClockWise().getNormal();
+                pos = pos.add(Vec3.atLowerCornerOf(left).scale(speedMult));
                 break;
             case CENTER:
-                pos = new Vector3d(Math.floor(pos.x) + 0.5D, pos.y, Math.floor(pos.z) + 0.5D);
+                pos = new Vec3(Math.floor(pos.x) + 0.5D, pos.y, Math.floor(pos.z) + 0.5D);
                 break;
             case MOVE_RIGHT:
-                final Vector3i right = dir.rotateY().getDirectionVec();
-                pos = pos.add(Vector3d.copy(right).scale(speedMult));
+                final Vec3i right = dir.getClockWise().getNormal();
+                pos = pos.add(Vec3.atLowerCornerOf(right).scale(speedMult));
                 break;
             case MOVE_UP:
-                pos = pos.add(new Vector3d(0, 1, 0).scale(speedMult));
+                pos = pos.add(new Vec3(0, 1, 0).scale(speedMult));
                 break;
             case MOVE_TOWARDS:
-                final Vector3i back = dir.getOpposite().getDirectionVec();
-                pos = pos.add(Vector3d.copy(back).scale(speedMult));
+                final Vec3i back = dir.getOpposite().getNormal();
+                pos = pos.add(Vec3.atLowerCornerOf(back).scale(speedMult));
                 break;
             case MOVE_DOWN:
-                pos = pos.add(new Vector3d(0, -1, 0).scale(speedMult));
+                pos = pos.add(new Vec3(0, -1, 0).scale(speedMult));
                 break;
         }
         MuseumNetworking.CHANNEL.sendToServer(
-                new C2SMovePuppet(puppet.getUniqueID(), pos, puppet.rotationPitch, yaw));
+                new C2SMovePuppet(puppet.getUUID(), pos, puppet.xRot, yaw));
     }
 
     @Nonnull
     private static MoveButton makeButton(
             int x,
             int y,
-            Function<Integer, ITextComponent> titleMapper,
+            Function<Integer, Component> titleMapper,
             MultiPressable press,
-            Button.ITooltip tooltip,
+            Button.OnTooltip tooltip,
             int i) {
         final int col = i % DIM;
         final int row = (i - col) / DIM;
@@ -140,9 +139,9 @@ public class MovementButtons extends Widget implements ITickable {
     }
 
     @Override
-    public void renderWidget(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
         for (final MoveButton button : buttons) {
-            button.render(matrixStack, mouseX, mouseY, partialTicks);
+            button.render(poseStack, mouseX, mouseY, partialTicks);
         }
     }
 
@@ -219,20 +218,14 @@ public class MovementButtons extends Widget implements ITickable {
         void press(int index);
     }
 
-    private static final class MoveButton extends Button implements ITickable {
+    private static final class MoveButton extends Button implements Tickable {
         private final int col;
         private final int row;
         private boolean down;
 
         public MoveButton(
-                int x,
-                int y,
-                int col,
-                int row,
-                ITextComponent title,
-                IPressable pressedAction,
-                ITooltip onTooltip) {
-            super(x + (SIZE * col), y + (SIZE * row), SIZE, SIZE, title, pressedAction, onTooltip);
+                int x, int y, int col, int row, Component title, OnPress press, OnTooltip tooltip) {
+            super(x + (SIZE * col), y + (SIZE * row), SIZE, SIZE, title, press, tooltip);
             this.col = col;
             this.row = row;
         }
@@ -256,10 +249,9 @@ public class MovementButtons extends Widget implements ITickable {
 
         @SuppressWarnings("deprecation") // >:I Mojang
         @Override
-        public void renderWidget(
-                MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+        public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
             Minecraft minecraft = Minecraft.getInstance();
-            minecraft.getTextureManager().bindTexture(MOVEMENT_BUTTONS_TEXTURE);
+            minecraft.getTextureManager().bind(MOVEMENT_BUTTONS_TEXTURE);
             int yTex = SIZE * row;
             if (!active) {
                 yTex += SIZE * (DIM * 3);
@@ -271,9 +263,9 @@ public class MovementButtons extends Widget implements ITickable {
 
             RenderSystem.color4f(1.0F, 1.0F, 1.0F, alpha);
             RenderSystem.enableDepthTest();
-            blit(matrixStack, x, y, SIZE * col, yTex, width, height, 64, 256);
+            blit(poseStack, x, y, SIZE * col, yTex, width, height, 64, 256);
             if (this.isHovered()) {
-                this.renderToolTip(matrixStack, mouseX, mouseY);
+                this.renderToolTip(poseStack, mouseX, mouseY);
             }
         }
     }

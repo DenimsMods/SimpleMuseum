@@ -36,7 +36,7 @@ public final class ModCompat {
         }
 
         public static boolean isActive() {
-            return isLoaded() && ClientUtil.MC.currentScreen instanceof CryptGuiScreen;
+            return isLoaded() && ClientUtil.MC.screen instanceof CryptGuiScreen;
         }
     }
 }

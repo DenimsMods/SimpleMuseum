@@ -6,7 +6,7 @@ import com.jhlabs.image.HSBAdjustFilter;
 import com.jhlabs.image.ThresholdFilter;
 
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.DirectoryCache;
+import net.minecraft.data.HashCache;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -41,8 +41,8 @@ public class MuseumTextureProvider extends TextureProvider {
     }
 
     @Override
-    public void act(DirectoryCache cache) throws IOException {
-        super.act(cache);
+    public void run(HashCache cache) throws IOException {
+        super.run(cache);
         for (ThresholdRainbow rainbow : thresholdRainbows) {
             rainbow.render(this, cache);
         }
@@ -61,7 +61,7 @@ public class MuseumTextureProvider extends TextureProvider {
             this.frameCount = frameCount;
         }
 
-        public void render(TextureProvider provider, DirectoryCache cache) throws IOException {
+        public void render(TextureProvider provider, HashCache cache) throws IOException {
             final Path input = provider.getPath(source, "png");
             final BufferedImage src = ImageIO.read(input.toFile());
             final int width = src.getWidth();

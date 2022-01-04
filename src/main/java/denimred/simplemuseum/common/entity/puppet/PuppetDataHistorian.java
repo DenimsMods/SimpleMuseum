@@ -1,7 +1,7 @@
 package denimred.simplemuseum.common.entity.puppet;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.common.entity.puppet.manager.PuppetAnimationManager;
@@ -13,12 +13,12 @@ public final class PuppetDataHistorian {
     public static final byte PUPPET_VERSION = 1;
     public static final String VERSION_NBT = "DataVersion";
 
-    public static void writeVersion(CompoundNBT root) {
+    public static void writeVersion(CompoundTag root) {
         root.putByte(VERSION_NBT, PUPPET_VERSION);
     }
 
     @SuppressWarnings({"UnnecessaryReturnStatement", "ConstantConditions"})
-    public static void checkAndUpdate(CompoundNBT root) {
+    public static void checkAndUpdate(CompoundTag root) {
         final byte version = root.getByte(VERSION_NBT);
         // Short circuit for latest version
         if (version == PUPPET_VERSION) {
@@ -48,7 +48,7 @@ public final class PuppetDataHistorian {
     }
 
     /** @return True if all tags in the root were legacy tags, to short circuit later. */
-    private static boolean updateLegacy(CompoundNBT root) {
+    private static boolean updateLegacy(CompoundTag root) {
         final int count = root.size();
         int changes = 0;
         if (remapLegacySchema(root, "Model", PuppetSourceManager.MODEL)) {
@@ -68,10 +68,10 @@ public final class PuppetDataHistorian {
 
     /** @return True if the legacy tag existed and was remapped. */
     private static boolean remapLegacySchema(
-            CompoundNBT root, String oldKey, PuppetValueProvider<?, ?> provider) {
-        final INBT value = root.get(oldKey);
+            CompoundTag root, String oldKey, PuppetValueProvider<?, ?> provider) {
+        final Tag value = root.get(oldKey);
         if (value != null) {
-            final CompoundNBT managerTag = root.getCompound(provider.key.manager);
+            final CompoundTag managerTag = root.getCompound(provider.key.manager);
             managerTag.put(provider.key.provider, value);
             root.put(provider.key.manager, managerTag);
             root.remove(oldKey);

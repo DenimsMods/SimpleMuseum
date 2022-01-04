@@ -1,6 +1,6 @@
 package denimred.simplemuseum.common.entity.puppet.manager.value.standard;
 
-import net.minecraft.entity.EntitySize;
+import net.minecraft.world.entity.EntityDimensions;
 
 import javax.annotation.Nullable;
 
@@ -11,31 +11,35 @@ import denimred.simplemuseum.common.entity.puppet.manager.value.PuppetValueProvi
 import denimred.simplemuseum.common.util.IValueSerializer;
 import denimred.simplemuseum.common.util.ValueSerializers;
 
-public final class EntitySizeProvider extends PuppetValueProvider<EntitySize, EntitySizeValue> {
-    protected final EntitySize min;
-    protected final EntitySize max;
+public final class EntitySizeProvider
+        extends PuppetValueProvider<EntityDimensions, EntitySizeValue> {
+    protected final EntityDimensions min;
+    protected final EntityDimensions max;
 
     public EntitySizeProvider(
-            PuppetKey key, EntitySize defaultValue, EntitySize min, EntitySize max) {
+            PuppetKey key,
+            EntityDimensions defaultValue,
+            EntityDimensions min,
+            EntityDimensions max) {
         this(key, defaultValue, null, min, max);
     }
 
     public EntitySizeProvider(
             PuppetKey key,
-            EntitySize defaultValue,
-            @Nullable Callback<EntitySize> callback,
-            EntitySize min,
-            EntitySize max) {
+            EntityDimensions defaultValue,
+            @Nullable Callback<EntityDimensions> callback,
+            EntityDimensions min,
+            EntityDimensions max) {
         this(key, defaultValue, ValueSerializers.ENTITY_SIZE, callback, min, max);
     }
 
     public EntitySizeProvider(
             PuppetKey key,
-            EntitySize defaultValue,
-            IValueSerializer<EntitySize> serializer,
-            @Nullable Callback<EntitySize> callback,
-            EntitySize min,
-            EntitySize max) {
+            EntityDimensions defaultValue,
+            IValueSerializer<EntityDimensions> serializer,
+            @Nullable Callback<EntityDimensions> callback,
+            EntityDimensions min,
+            EntityDimensions max) {
         super(key, defaultValue, serializer, callback);
         this.min = min;
         this.max = max;
