@@ -5,7 +5,7 @@ plugins {
 
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 
-archivesBaseName = archives_base_name
+archivesBaseName = mod_id
 version = mod_version
 group = maven_group
 
@@ -63,32 +63,51 @@ repositories {
     maven {
         name "ParchmentMC"
         url "https://maven.parchmentmc.net/"
+        content {
+            includeGroup "org.parchmentmc.data"
+        }
     }
     maven {
         name "GeckoLib"
         url "https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/"
+        content {
+            includeGroup "software.bernie.geckolib"
+        }
     }
-    flatDir name: "libs", dirs: "libs"
+    maven {
+        name "CurseMaven"
+        url "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+    flatDir name: "libs", dir: "libs" // Edge case for stuff that doesn't have a maven
+    flatDir name: "mods", dir: "mods" // Convenience for testing with other mods (e.g. modpacks)
 }
 
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
-
-    mappings loom.layered() {
+    forge "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    mappings loom.layered {
         officialMojangMappings()
         parchment("org.parchmentmc.data:parchment-${minecraft_version}:${parchment_version}@zip")
     }
 
-    forge "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-
     // GeckoLib
     modImplementation "software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}"
     // CryptMaster
-    modImplementation "blank:cryptmaster:${cryptmaster_version}-forge"
-    modRuntimeOnly "blank:architectury:${architectury_version}-forge"
-    runtimeOnly "org.jetbrains.kotlin:kotlin-stdlib:${kotlin_stdlib_version}"
+    modImplementation "curse.maven:cryptmaster-441431:${cryptmaster_file}"
+    modRuntimeOnly "curse.maven:architectury-419699:${architectury_file}"
+    modRuntimeOnly "curse.maven:kotlinforforge-351264:${kotlinforforge_file}"
     // http://www.jhlabs.com/ip/filters/index.html (For wacky texture datagen)
-    implementation ":Filters:"
+    implementation "libs:Filters:"
+
+    // Maps everything in the mods directory as a runtime dep
+    fileTree("mods").visit { FileVisitDetails details ->
+        def name = details.file.name
+        name = name.substring(0, name.lastIndexOf('.'))
+        modRuntimeOnly("mods:" + name + ":")
+    }
 }
 
 processResources {

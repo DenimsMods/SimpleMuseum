@@ -25,6 +25,7 @@ eclipse/
 runs/
 logs/
 .cache/
-*.bbmodel
 libs/
+mods/
+*.bbmodel
 *.pdn

@@ -79,9 +79,8 @@ public class PuppetModel extends AnimatedTickingGeoModel<PuppetEntity> {
     }
 
     @Override
-    public void setLivingAnimations(
+    public void codeAnimations(
             PuppetEntity puppet, Integer uniqueID, @Nullable AnimationEvent customPredicate) {
-        super.setLivingAnimations(puppet, uniqueID, customPredicate);
         if (customPredicate != null) {
             final AnimationProcessor<?> processor = this.getAnimationProcessor();
             IBone head = processor.getBone("head");
