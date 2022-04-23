@@ -147,6 +147,10 @@ public class MuseumLanguageProvider extends LanguageProvider {
                 PuppetBehaviorManager.PHYSICAL_SIZE,
                 "Physical Size",
                 "Determines the physical width and height of the puppet. Used for the collision box and other gameplay logic; doesn't affect its appearance.");
+        this.addValueProvider(
+                PuppetBehaviorManager.GOAL_TREE,
+                "AI Goal Tree",
+                "TODO Add This :)");
         // Mod compat lang (datagen is done in dev, no need to worry about classloading)
         this.addCryptMasterTool(MuseumTool.INSTANCE, "Create/Edit Museum Puppet");
     }

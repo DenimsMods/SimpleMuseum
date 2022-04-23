@@ -18,6 +18,7 @@ import java.awt.Color;
 import java.util.Map;
 import java.util.function.Function;
 
+import denimred.simplemuseum.common.entity.puppet.goals.PuppetGoalTree;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 
 public final class ValueSerializers {
@@ -291,6 +292,41 @@ public final class ValueSerializers {
                 @Override
                 public int getTagId() {
                     return Constants.NBT.TAG_LIST;
+                }
+            };
+
+    public static final IValueSerializer<PuppetGoalTree> GOAL_TREE =
+            new IValueSerializer<PuppetGoalTree>() {
+                @Override
+                public PuppetGoalTree read(CompoundTag tag, String key) {
+                    PuppetGoalTree tree = new PuppetGoalTree();
+                    return tree;
+                }
+
+                @Override
+                public void write(CompoundTag tag, String key, PuppetGoalTree value) {
+
+                }
+
+                @Override
+                public PuppetGoalTree read(FriendlyByteBuf buf) {
+                    PuppetGoalTree tree = new PuppetGoalTree();
+                    return tree;
+                }
+
+                @Override
+                public void write(FriendlyByteBuf buf, PuppetGoalTree value) {
+
+                }
+
+                @Override
+                public Class<PuppetGoalTree> getType() {
+                    return PuppetGoalTree.class;
+                }
+
+                @Override
+                public int getTagId() {
+                    return Constants.NBT.TAG_COMPOUND;
                 }
             };
 

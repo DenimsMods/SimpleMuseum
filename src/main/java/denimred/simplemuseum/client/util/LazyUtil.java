@@ -35,6 +35,7 @@ import denimred.simplemuseum.client.gui.widget.value.EntitySizeWidget;
 import denimred.simplemuseum.client.gui.widget.value.FloatWidget;
 import denimred.simplemuseum.client.gui.widget.value.IntWidget;
 import denimred.simplemuseum.client.gui.widget.value.NameplateBehaviorWidget;
+import denimred.simplemuseum.client.gui.widget.value.PuppetGoalTreeWidget;
 import denimred.simplemuseum.client.gui.widget.value.SoundCategoryWidget;
 import denimred.simplemuseum.client.gui.widget.value.SoundWidget;
 import denimred.simplemuseum.client.gui.widget.value.SourceWidget;
@@ -96,6 +97,7 @@ public class LazyUtil {
                         map.put(PuppetRenderManager.IGNORE_LIGHTING, BoolWidget::new);
                         map.put(PuppetBehaviorManager.CUSTOM_NAME, CustomNameWidget::new);
                         map.put(PuppetBehaviorManager.PHYSICAL_SIZE, EntitySizeWidget::new);
+                        map.put(PuppetBehaviorManager.GOAL_TREE, PuppetGoalTreeWidget::new);
                     });
 
     public static String getNbtTagName(int id) {

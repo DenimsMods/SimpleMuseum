@@ -78,6 +78,8 @@
   "puppet.simplemuseum.behavior_manager.custom_name": "Custom Name",
   "puppet.simplemuseum.behavior_manager.custom_name.desc": "Determines the name of the puppet, which will render on its nameplate. \u00A76Note: Currently, you have to use command to alter text effects (color, italics, etc)!",
   "puppet.simplemuseum.behavior_manager.desc": "Manages puppet properties relating to behavior. This includes things like AI, inventory, entity attributes, etc.",
+  "puppet.simplemuseum.behavior_manager.goal_tree": "AI Goal Tree",
+  "puppet.simplemuseum.behavior_manager.goal_tree.desc": "TODO Add This :)",
   "puppet.simplemuseum.behavior_manager.physical_size": "Physical Size",
   "puppet.simplemuseum.behavior_manager.physical_size.desc": "Determines the physical width and height of the puppet. Used for the collision box and other gameplay logic; doesn't affect its appearance.",
   "puppet.simplemuseum.render_manager": "Render Manager",

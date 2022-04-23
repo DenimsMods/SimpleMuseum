@@ -5,8 +5,10 @@ import net.minecraft.world.entity.EntityDimensions;
 
 import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 import denimred.simplemuseum.common.entity.puppet.manager.value.PuppetKey;
+import denimred.simplemuseum.common.entity.puppet.manager.value.standard.PuppetGoalTreeValue;
 import denimred.simplemuseum.common.entity.puppet.manager.value.standard.EntitySizeProvider;
 import denimred.simplemuseum.common.entity.puppet.manager.value.standard.EntitySizeValue;
+import denimred.simplemuseum.common.entity.puppet.manager.value.standard.PuppetGoalTreeProvider;
 import denimred.simplemuseum.common.entity.puppet.manager.value.vanilla.CustomNameProvider;
 import denimred.simplemuseum.common.entity.puppet.manager.value.vanilla.CustomNameValue;
 import denimred.simplemuseum.common.i18n.I18nUtil;
@@ -23,6 +25,7 @@ public final class PuppetBehaviorManager extends PuppetValueManager {
                     (puppet, size) -> puppet.refreshDimensions(),
                     EntityDimensions.scalable(0.25F, 0.25F),
                     EntityDimensions.scalable(10.0F, 10.0F));
+    public static final PuppetGoalTreeProvider GOAL_TREE = new PuppetGoalTreeProvider(key("GoalTree"));
     //    public static final VanillaProvider<Boolean> INVULNERABLE =
     //            new VanillaProvider<>(
     //                    key("Invulnerable"),
@@ -36,6 +39,7 @@ public final class PuppetBehaviorManager extends PuppetValueManager {
 
     public final CustomNameValue customName = this.value(CUSTOM_NAME);
     public final EntitySizeValue physicalSize = this.value(PHYSICAL_SIZE);
+    public final PuppetGoalTreeValue goalTree = this.value(GOAL_TREE);
     //    public final VanillaValue<Boolean> invulnerable = this.value(INVULNERABLE);
     //    public final CheckedValue<String> commandInteract = this.value(COMMAND_INTERACT);
 
