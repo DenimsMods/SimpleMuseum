@@ -29,9 +29,9 @@ public final class MuseumDataSerializers {
     public static final RegistryObject<DataSerializerEntry> ENTITY_SIZE =
             REGISTRY.register(
                     "entity_size", () -> new DataSerializerEntry(ValueSerializers.ENTITY_SIZE));
-    public static final RegistryObject<DataSerializerEntry> BEHAVIOR_TREE =
+    public static final RegistryObject<DataSerializerEntry> GOAL_TREE =
             REGISTRY.register(
-                    "behavior_tree", () -> new DataSerializerEntry(ValueSerializers.GOAL_TREE));
+                    "goal_tree", () -> new DataSerializerEntry(ValueSerializers.GOAL_TREE));
     public static final RegistryObject<DataSerializerEntry> GLOW_COLOR =
             REGISTRY.register(
                     "glow_color", () -> new DataSerializerEntry(ValueSerializers.GLOW_COLOR));

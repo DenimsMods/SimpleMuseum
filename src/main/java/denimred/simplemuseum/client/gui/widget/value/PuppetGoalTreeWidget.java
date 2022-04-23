@@ -3,7 +3,7 @@ package denimred.simplemuseum.client.gui.widget.value;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.TextComponent;
 
-import denimred.simplemuseum.client.gui.screen.BehaviorTreeScreen;
+import denimred.simplemuseum.client.gui.screen.PuppetGoalTreeEditorScreen;
 import denimred.simplemuseum.client.gui.screen.PuppetConfigScreen;
 import denimred.simplemuseum.client.gui.widget.BetterButton;
 import denimred.simplemuseum.common.entity.puppet.goals.PuppetGoalTree;
@@ -20,7 +20,7 @@ public final class PuppetGoalTreeWidget extends ValueWidget<PuppetGoalTree, Pupp
     public PuppetGoalTreeWidget(PuppetConfigScreen parent, int x, int y, int width, int height, PuppetValue<PuppetGoalTree, ?> valueRef) {
         super(parent, x, y, width, height, valueRef);
         button = this.addChild(new BetterButton(0, 0, 100, 20, new TextComponent("Edit"), (btn) -> {
-            Minecraft.getInstance().setScreen(new BehaviorTreeScreen(parent, valueRef.get()));
+            Minecraft.getInstance().setScreen(new PuppetGoalTreeEditorScreen(parent, valueRef.get()));
         }));
     }
 
