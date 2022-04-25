@@ -3,26 +3,26 @@ package denimred.simplemuseum.client.gui.screen;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.TextComponent;
-import net.minecraft.world.entity.ai.goal.RunAroundLikeCrazyGoal;
+import net.minecraft.world.entity.ai.goal.Goal;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import denimred.simplemuseum.client.gui.widget.BetterButton;
-import denimred.simplemuseum.client.gui.widget.LabelWidget;
-import denimred.simplemuseum.client.gui.widget.NestedWidget;
 import denimred.simplemuseum.common.entity.puppet.goals.PuppetGoalTree;
 
 public class PuppetGoalTreeEditorScreen extends Screen {
 
     private final PuppetConfigScreen parent;
     private final PuppetGoalTree tree;
+
+    private PuppetGoalList goalList;
 
     public PuppetGoalTreeEditorScreen(PuppetConfigScreen parent, PuppetGoalTree tree) {
         super(new TextComponent("AI Goal Editor"));
@@ -32,19 +32,19 @@ public class PuppetGoalTreeEditorScreen extends Screen {
 
     @Override
     protected void init() {
-        populateWidgets();
-    }
-
-    public void populateWidgets() {
         buttons.clear();
         children.clear();
+        goalList = addWidget(new PuppetGoalList(minecraft, 25, height - 25, width / 2));
 
-        addButton(new BetterButton(20, height - 25, 20, 20, new TextComponent("+"), btn -> {
-            createGoal();
-        }));
+        addButton(new BetterButton(20, height - 25, 20, 20, new TextComponent("+"), btn -> createGoal()));
 
+        populateList();
+    }
+
+    public void populateList() {
+        goalList.clear();
         for(int i = 0; i < tree.getGoalList().size(); i++)
-            addGoalWidget(25 + (tree.getGoalList().size()-1) * 55);
+            goalList.addGoal(i+1, null);
     }
 
     @Override
@@ -58,9 +58,6 @@ public class PuppetGoalTreeEditorScreen extends Screen {
                 10,
                 0xFFFFFF);
         //Mockup UI
-        //Left - Goal List
-        fill(poseStack, 20, 25, (width / 2) - 5, height - 25, 0xc0101010);
-        fill(poseStack, (width / 2) - 10, 25, (width / 2) - 5, height - 25, 0xFF777777);
         //Right - Goal Editor
         int editorX = (width / 2) + 5;
         fill(poseStack, editorX, 25, width - 20, height - 25, 0x55FFFFFF); //bg1 - Outline
@@ -69,20 +66,13 @@ public class PuppetGoalTreeEditorScreen extends Screen {
         fill(poseStack, editorX + 5, height - 50, editorX + 100, height - 30, 0x55999999); //save goal
         fill(poseStack, width - 110, height - 50, width - 25, height - 30, 0x55999999); //delete goal
 
-        children.forEach(widget -> {
-            if(widget instanceof Widget)
-                ((Widget) widget).render(poseStack, mouseX, mouseY, partialTicks);
-        });
+        this.goalList.render(poseStack, mouseX, mouseY, partialTicks);
         super.render(poseStack, mouseX, mouseY, partialTicks);
     }
 
     private void createGoal() {
         tree.getGoalList().add(null);
-        addGoalWidget(25 + (tree.getGoalList().size()-1) * 55);
-    }
-
-    private void addGoalWidget(int y) {
-        addWidget(new PuppetGoalWidget(20, y, (width / 2) - 35, 50, new TextComponent("Widget")));
+        goalList.addGoal(tree.getGoalList().size(), null);
     }
 
     @Override
@@ -92,22 +82,39 @@ public class PuppetGoalTreeEditorScreen extends Screen {
         tree.getGoalList().clear();
     }
 
-    class PuppetGoalWidget extends NestedWidget {
-        private GoalType goalType;
+    class PuppetGoalList extends ObjectSelectionList<PuppetGoalList.Entry> {
+        int listWidth;
 
-        public PuppetGoalWidget(int x, int y, int width, int height, Component title) {
-            this(x, y, width, height, title, GoalType.Idle);
+        public PuppetGoalList(Minecraft minecraft, int top, int bottom, int width) {
+            super(minecraft, width, bottom - top, top, bottom, 20);
+            setRenderBackground(false);
+            setRenderTopAndBottom(false);
+            this.listWidth = width;
         }
 
-        public PuppetGoalWidget(int x, int y, int width, int height, Component title, GoalType goalType) {
-            super(x, y, width, height, title);
-            this.goalType = goalType;
+        public void addGoal(int priority, Goal.Flag... flags) {
+            addEntry(new Entry(priority, flags));
         }
 
-        @Override
-        public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
-            fill(poseStack, this.x, this.y, this.x + this.width, this.y + this.height, 0x55FFFFFF);
-            fill(poseStack, this.x + 1, this.y + 1, this.x + this.width - 1, this.y + this.height - 1, 0xc0101010);
+        public void clear() {
+            clearEntries();
+        }
+
+        public class Entry extends ObjectSelectionList.Entry<PuppetGoalList.Entry> {
+            private final int priority;
+            private final Goal.Flag[] flags;
+
+            public Entry(int priority, Goal.Flag... flags) {
+                this.priority = priority;
+                this.flags = flags;
+            }
+
+            @Override
+            public void render(PoseStack poseStack, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean isMouseOver, float partialTicks) {
+                fill(poseStack, left, top, left + width, top + height, index % 2 == 0 ? 0xFFFFFFFF : 0xFF777777);
+                drawString(poseStack, font, ""+priority, left, top + (height / 2), 0xFFc1c1c1);
+            }
+
         }
     }
 

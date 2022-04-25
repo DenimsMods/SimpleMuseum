@@ -6,7 +6,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PathPuppetGoal extends PuppetGoal {
+public class FollowPathPuppetGoal extends PuppetGoal {
 
     private final List<Vec3> points = new ArrayList<>();
 
@@ -28,6 +28,11 @@ public class PathPuppetGoal extends PuppetGoal {
 
     @Override
     boolean execute() {
+        return false;
+    }
+
+    @Override
+    public boolean canUse() {
         return false;
     }
 

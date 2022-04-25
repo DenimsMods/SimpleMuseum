@@ -1,6 +1,8 @@
 package denimred.simplemuseum.common.entity.puppet.goals;
 
-public abstract class PuppetGoal {
+import net.minecraft.world.entity.ai.goal.Goal;
+
+public abstract class PuppetGoal extends Goal {
 
     abstract boolean execute();
 
