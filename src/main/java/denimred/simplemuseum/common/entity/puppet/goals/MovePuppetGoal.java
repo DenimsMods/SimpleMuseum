@@ -4,9 +4,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
-public class FollowPathPuppetGoal extends PuppetGoal {
+public class MovePuppetGoal extends PuppetGoal {
+
+    public MovePuppetGoal() {
+        this.setFlags(EnumSet.of(Flag.MOVE));
+    }
 
     private final List<Vec3> points = new ArrayList<>();
 

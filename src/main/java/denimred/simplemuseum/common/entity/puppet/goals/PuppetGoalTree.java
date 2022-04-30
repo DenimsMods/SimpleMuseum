@@ -7,14 +7,14 @@ import java.util.List;
 
 public class PuppetGoalTree {
 
-    private final List<Goal> goalList = new ArrayList<>();
+    private final List<PuppetGoal> goalList = new ArrayList<>();
 
-    public List<Goal> getGoalList() {
+    public List<PuppetGoal> getGoalList() {
         return goalList;
     }
 
-    public Goal[] getGoalArray() {
-        return goalList.toArray(new Goal[]{});
+    public PuppetGoal[] getGoalArray() {
+        return goalList.toArray(new PuppetGoal[]{});
     }
 
 //    private final List<PuppetGoal> goalList = new ArrayList<>();
