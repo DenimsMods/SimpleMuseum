@@ -15,7 +15,7 @@ public class PuppetMovementSelectScreen extends SelectScreen<Movement> {
 
     private final MovePuppetGoal goal;
 
-    protected PuppetMovementSelectScreen(Screen parent, MovePuppetGoal parentGoal) {
+    public PuppetMovementSelectScreen(Screen parent, MovePuppetGoal parentGoal) {
         super(parent, new TextComponent("Select Movement"));
         goal = parentGoal;
     }

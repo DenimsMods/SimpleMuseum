@@ -1,15 +1,18 @@
 package denimred.simplemuseum.common.event;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.common.command.PuppetCommand;
+import denimred.simplemuseum.common.entity.puppet.goals.movement.MovementData;
 import denimred.simplemuseum.common.init.MuseumEntities;
 import denimred.simplemuseum.common.init.MuseumItems;
 
@@ -41,5 +44,12 @@ public final class ForgeEventHandler {
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         event.getDispatcher().register(PuppetCommand.create());
+    }
+
+    @SubscribeEvent
+    public static void onWorldLoad(WorldEvent.Load event) {
+        if(event.getWorld().isClientSide())
+            return;
+        ((ServerLevel)event.getWorld()).getDataStorage().computeIfAbsent(MovementData::new, MovementData.ID);
     }
 }

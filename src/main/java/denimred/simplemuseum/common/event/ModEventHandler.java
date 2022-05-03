@@ -1,7 +1,6 @@
 package denimred.simplemuseum.common.event;
 
 import net.minecraft.data.DataGenerator;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;

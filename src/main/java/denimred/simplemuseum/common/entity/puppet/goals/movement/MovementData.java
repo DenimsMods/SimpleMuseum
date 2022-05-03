@@ -8,10 +8,11 @@ import net.minecraftforge.common.util.Constants;
 import java.util.HashMap;
 
 public class MovementData extends SavedData {
-    public static HashMap<String, Movement> DATA = new HashMap<>();
+    public static final String ID = "sm_movements";
+    public HashMap<String, Movement> data = new HashMap<>();
 
     public MovementData() {
-        super("sm_movements");
+        super(ID);
     }
 
     @Override
@@ -38,7 +39,7 @@ public class MovementData extends SavedData {
     @Override
     public CompoundTag save(CompoundTag tag) {
         ListTag movements = new ListTag();
-        DATA.forEach((id, movement) -> {
+        data.forEach((id, movement) -> {
             CompoundTag movementTag = new CompoundTag();
             movementTag.putString("id", id);
             movementTag.put("data", movement.serializeNBT());
