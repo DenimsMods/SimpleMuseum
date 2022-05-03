@@ -1,4 +1,4 @@
-package denimred.simplemuseum.client.gui.screen;
+package denimred.simplemuseum.client.gui.screen.behavior;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
@@ -14,25 +14,30 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import denimred.simplemuseum.client.gui.screen.PuppetConfigScreen;
+import denimred.simplemuseum.client.gui.screen.SelectScreen;
 import denimred.simplemuseum.client.gui.widget.BetterButton;
 import denimred.simplemuseum.client.gui.widget.LabelWidget;
 import denimred.simplemuseum.client.gui.widget.WidgetList;
 import denimred.simplemuseum.common.entity.puppet.goals.MovePuppetGoal;
 import denimred.simplemuseum.common.entity.puppet.goals.PuppetGoal;
 import denimred.simplemuseum.common.entity.puppet.goals.PuppetGoalTree;
+import denimred.simplemuseum.common.entity.puppet.manager.value.PuppetValue;
 
-public class PuppetGoalTreeEditorScreen extends Screen {
+public class PuppetGoalEditorScreen extends Screen {
 
     private final PuppetConfigScreen parent;
+    private final PuppetValue<PuppetGoalTree, ?> valueRef;
     private final PuppetGoalTree tree;
 
     private PuppetGoalList goalList;
-    private WidgetList<PuppetGoalTreeEditorScreen> editor;
+    private WidgetList<PuppetGoalEditorScreen> editor;
 
-    public PuppetGoalTreeEditorScreen(PuppetConfigScreen parent, PuppetGoalTree tree) {
+    public PuppetGoalEditorScreen(PuppetConfigScreen parent, PuppetValue<PuppetGoalTree, ?> valueRef) {
         super(new TextComponent("AI Goal Editor"));
         this.parent = parent;
-        this.tree = tree;
+        this.valueRef = valueRef;
+        this.tree = valueRef.get();
     }
 
     @Override
@@ -81,9 +86,11 @@ public class PuppetGoalTreeEditorScreen extends Screen {
 
     public void populateEditor(PuppetGoal goal) {
         editor.clear();
-        editor.add(new LabelWidget(0, 0, font, LabelWidget.AnchorX.LEFT, LabelWidget.AnchorY.TOP, FormattedText.of("Test :)")));
-        editor.add(new LabelWidget(0, 0, font, LabelWidget.AnchorX.LEFT, LabelWidget.AnchorY.TOP, FormattedText.of("ioajdijwdioa")));
-        editor.add(new BetterButton(0, 0, 50, 20, new TextComponent("booton"), btn -> System.out.println("hi c:")));
+        if(goal instanceof MovePuppetGoal) {
+            editor.add(new LabelWidget(0,0, font, LabelWidget.AnchorX.LEFT, LabelWidget.AnchorY.TOP, FormattedText.of("Move Goal")));
+            editor.add(new BetterButton(0,0,0,20, new TextComponent("Edit Movement"), btn -> minecraft.setScreen(new PuppetMovementSelectScreen(this, (MovePuppetGoal) goal))));
+
+        }
     }
 
     private void createGoal() {
@@ -139,7 +146,7 @@ public class PuppetGoalTreeEditorScreen extends Screen {
             @Override
             public boolean mouseClicked(double p_mouseClicked_1_, double p_mouseClicked_3_, int p_mouseClicked_5_) {
                 PuppetGoalList.this.setSelected(this);
-                PuppetGoalTreeEditorScreen.this.populateEditor(goal);
+                PuppetGoalEditorScreen.this.populateEditor(goal);
                 return false;
             }
         }
@@ -167,7 +174,7 @@ public class PuppetGoalTreeEditorScreen extends Screen {
     }
 
     enum GoalType {
-        Idle, Wander, Path
+        Movement
     }
 
 }

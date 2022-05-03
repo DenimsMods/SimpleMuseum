@@ -18,7 +18,7 @@ public class NestedWidget extends AbstractWidget implements ITickingWidget {
         super(x, y, width, height, title);
     }
 
-    protected <T extends AbstractWidget> T addChild(T child) {
+    public <T extends AbstractWidget> T addChild(T child) {
         return this.addChild(child, false);
     }
 
