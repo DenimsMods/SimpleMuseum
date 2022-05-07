@@ -8,6 +8,7 @@ import com.mojang.math.Matrix4f;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
@@ -60,7 +61,8 @@ public class ClientForgeEventHandler {
     public static void onRenderWorldLast(RenderWorldLastEvent event) {
         if(MovementEditorClient.isEditing()) {
             Vec3[] positions = MovementEditorClient.getCurrentMovement().getPositions().toArray(new Vec3[]{});
-            VertexConsumer buffer = Minecraft.getInstance().renderBuffers().bufferSource().getBuffer(RenderType.LINES);
+            MultiBufferSource.BufferSource source = Minecraft.getInstance().renderBuffers().bufferSource();
+            VertexConsumer buffer = source.getBuffer(RenderType.LINES);
             Vec3 camPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
 
             event.getMatrixStack().pushPose();
@@ -80,6 +82,7 @@ public class ClientForgeEventHandler {
 
                 lastPos = pos;
             }
+            source.endBatch(RenderType.LINES);
             event.getMatrixStack().popPose();
         }
     }
