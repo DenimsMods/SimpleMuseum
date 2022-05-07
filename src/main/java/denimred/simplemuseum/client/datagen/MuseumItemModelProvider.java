@@ -20,6 +20,7 @@ public class MuseumItemModelProvider extends ItemModelProvider {
     @Override
     protected void registerModels() {
         this.handheld(MuseumItems.CURATORS_CANE);
+        this.handheld(MuseumItems.MOVEMENT_MALLET);
     }
 
     @SuppressWarnings("SameParameterValue")

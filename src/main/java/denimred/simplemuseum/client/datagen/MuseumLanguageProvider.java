@@ -27,6 +27,7 @@ public class MuseumLanguageProvider extends LanguageProvider {
         // Lang for registry objects
         this.addEntityType(MuseumEntities.MUSEUM_PUPPET, "Museum Puppet");
         this.addItem(MuseumItems.CURATORS_CANE, "Curator's Cane");
+        this.addItem(MuseumItems.MOVEMENT_MALLET, "Movement Mallet (WIP)");
         // Gui lang
         for (GuiLang lang : GuiLang.values()) {
             lang.provide(this);

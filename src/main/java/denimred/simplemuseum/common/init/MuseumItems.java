@@ -9,6 +9,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.common.item.CuratorsCaneItem;
+import denimred.simplemuseum.common.item.MovementMalletItem;
 
 public final class MuseumItems {
     public static final DeferredRegister<Item> REGISTRY =
@@ -19,6 +20,16 @@ public final class MuseumItems {
                     "curators_cane",
                     () ->
                             new CuratorsCaneItem(
+                                    new Item.Properties()
+                                            .stacksTo(1)
+                                            .rarity(Rarity.UNCOMMON)
+                                            .tab(CreativeModeTab.TAB_TOOLS)));
+
+    public static final RegistryObject<MovementMalletItem> MOVEMENT_MALLET =
+            REGISTRY.register(
+                    "movement_mallet",
+                    () ->
+                            new MovementMalletItem(
                                     new Item.Properties()
                                             .stacksTo(1)
                                             .rarity(Rarity.UNCOMMON)

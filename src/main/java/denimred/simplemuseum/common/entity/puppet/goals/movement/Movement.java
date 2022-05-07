@@ -87,7 +87,21 @@ public abstract class Movement implements INBTSerializable<CompoundTag> {
         public void deserializeNBT(CompoundTag arg) {
 
         }
+
+        @Override
+        public void addPos(Vec3 pos) {
+
+        }
+
+        @Override
+        public List<Vec3> getPositions() {
+            return null;
+        }
     }
 
-    enum LoopType { NO_LOOP, LOOP, FWD_AND_BCK }
+    public abstract void addPos(Vec3 pos);
+    public abstract List<Vec3> getPositions();
+
+    public enum MoveType { Path, Area }
+    public enum LoopType { NO_LOOP, LOOP, FWD_AND_BCK }
 }
