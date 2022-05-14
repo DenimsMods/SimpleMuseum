@@ -1,20 +1,14 @@
 package denimred.simplemuseum.client.event;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Matrix4f;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerChangeGameModeEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
@@ -25,6 +19,7 @@ import net.minecraftforge.fml.common.Mod;
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.client.MovementEditorClient;
 import denimred.simplemuseum.client.util.ClientUtil;
+import denimred.simplemuseum.common.entity.puppet.goals.movement.Point;
 import denimred.simplemuseum.common.init.MuseumItems;
 import denimred.simplemuseum.common.item.CuratorsCaneItem;
 
@@ -60,7 +55,6 @@ public class ClientForgeEventHandler {
     @SubscribeEvent
     public static void onRenderWorldLast(RenderWorldLastEvent event) {
         if(MovementEditorClient.isEditing()) {
-            Vec3[] positions = MovementEditorClient.getCurrentMovement().getPositions().toArray(new Vec3[]{});
             MultiBufferSource.BufferSource source = Minecraft.getInstance().renderBuffers().bufferSource();
             VertexConsumer buffer = source.getBuffer(RenderType.LINES);
             Vec3 camPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
@@ -70,8 +64,9 @@ public class ClientForgeEventHandler {
 
             Matrix4f pose = event.getMatrixStack().last().pose();
             Vec3 lastPos = null;
-            for(Vec3 pos : positions) {
-                //I don't know what I'm doing with rendering ;-;
+            for(Point point : MovementEditorClient.getCurrentMovement().getMovementPoints()) {
+                Vec3 pos = point.pos;
+                event.getMatrixStack().pushPose();
                 if(lastPos != null) {
                     buffer.vertex(pose, (float) lastPos.x, (float) lastPos.y + 1, (float) lastPos.z).color(1f, 0f, 0f, 1f).endVertex();
                     buffer.vertex(pose, (float) pos.x, (float) pos.y + 1, (float) pos.z).color(1f, 0f, 0f, 1f).endVertex();
