@@ -6,11 +6,12 @@ import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public abstract class Movement implements INBTSerializable<CompoundTag> {
 
-    private final List<Point> movementPoints = new ArrayList<>();
+    private final LinkedList<Point> movementPoints = new LinkedList<>();
 
     public void addPoint(Point pos) {
         movementPoints.add(pos);
@@ -36,6 +37,10 @@ public abstract class Movement implements INBTSerializable<CompoundTag> {
         posList.forEach(pointTag -> addPoint(Point.deserializeNBT((CompoundTag) pointTag)));
     }
 
+    /**
+     *Point-to-Point movement.
+     * Let Minecraft AI fill the inbetweens.
+     */
     public static class Path extends Movement {
         public static final int MOVEMENT_TYPE = 0;
         private LoopType loopType;
@@ -63,18 +68,37 @@ public abstract class Movement implements INBTSerializable<CompoundTag> {
         }
     }
 
+    /**
+     * Area-defined wandering.
+     * If no area is defined, but there are PoIs defined, the puppet will instead choose between these to wander between.
+     */
     public static class Area extends Movement {
         public static final int MOVEMENT_TYPE = 1;
+
+        private List<Point> pointsOfInterest = new ArrayList<>();
 
         @Override
         public CompoundTag serializeNBT(CompoundTag tag) {
             super.serializeNBT(tag);
+            ListTag poiList = new ListTag();
+            pointsOfInterest.forEach(point -> poiList.add(point.serializeNBT()));
+            tag.put("pois", poiList);
             return tag;
         }
 
         @Override
         public void deserializeNBT(CompoundTag tag) {
             super.deserializeNBT(tag);
+            ListTag poiList = tag.getList("pois", Constants.NBT.TAG_COMPOUND);
+            poiList.forEach(poiTag -> addPOI(Point.deserializeNBT((CompoundTag) poiTag)));
+        }
+
+        public void addPOI(Point point) {
+            pointsOfInterest.add(point);
+        }
+
+        public List<Point> getPointsOfInterest() {
+            return pointsOfInterest;
         }
     }
 

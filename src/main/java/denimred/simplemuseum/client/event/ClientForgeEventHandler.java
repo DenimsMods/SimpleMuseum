@@ -16,9 +16,14 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import java.awt.Color;
+
+import javax.annotation.Nullable;
+
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.client.MovementEditorClient;
 import denimred.simplemuseum.client.util.ClientUtil;
+import denimred.simplemuseum.common.entity.puppet.goals.movement.Movement;
 import denimred.simplemuseum.common.entity.puppet.goals.movement.Point;
 import denimred.simplemuseum.common.init.MuseumItems;
 import denimred.simplemuseum.common.item.CuratorsCaneItem;
@@ -55,6 +60,8 @@ public class ClientForgeEventHandler {
     @SubscribeEvent
     public static void onRenderWorldLast(RenderWorldLastEvent event) {
         if(MovementEditorClient.isEditing()) {
+            Movement movement = MovementEditorClient.getCurrentMovement();
+
             MultiBufferSource.BufferSource source = Minecraft.getInstance().renderBuffers().bufferSource();
             VertexConsumer buffer = source.getBuffer(RenderType.LINES);
             Vec3 camPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
@@ -64,21 +71,37 @@ public class ClientForgeEventHandler {
 
             Matrix4f pose = event.getMatrixStack().last().pose();
             Vec3 lastPos = null;
-            for(Point point : MovementEditorClient.getCurrentMovement().getMovementPoints()) {
-                Vec3 pos = point.pos;
+
+            for(Point point : movement.getMovementPoints()) {
                 event.getMatrixStack().pushPose();
-                if(lastPos != null) {
-                    buffer.vertex(pose, (float) lastPos.x, (float) lastPos.y + 1, (float) lastPos.z).color(1f, 0f, 0f, 1f).endVertex();
-                    buffer.vertex(pose, (float) pos.x, (float) pos.y + 1, (float) pos.z).color(1f, 0f, 0f, 1f).endVertex();
-                }
-
-                buffer.vertex(pose, (float)pos.x, (float)pos.y, (float)pos.z).color(1f, 0f, 0f, 1f).endVertex();
-                buffer.vertex(pose, (float)pos.x, (float)pos.y + 1, (float)pos.z).color(1f, 0f, 0f, 1f).endVertex();
-
-                lastPos = pos;
+                renderMovementPoint(point, lastPos, false, pose, buffer);
+                event.getMatrixStack().popPose();
+                lastPos = point.pos;
             }
+
+            if(movement instanceof Movement.Area) {
+                Vec3 pos = movement.getMovementPoints().get(0).pos;
+                buffer.vertex(pose, (float) lastPos.x, (float) lastPos.y + 1, (float) lastPos.z).color(1f, 0f, 0f, 1f).endVertex();
+                buffer.vertex(pose, (float) pos.x, (float) pos.y + 1, (float) pos.z).color(1f, 0f, 0f, 1f).endVertex();
+                for (Point point : ((Movement.Area) movement).getPointsOfInterest())
+                    renderMovementPoint(point, null, true, pose, buffer);
+            }
+
             source.endBatch(RenderType.LINES);
             event.getMatrixStack().popPose();
         }
     }
+
+    private static void renderMovementPoint(Point point, @Nullable Vec3 lastPos, boolean poi, Matrix4f pose, VertexConsumer buffer) {
+        Vec3 pos = point.pos;
+
+        if (lastPos != null && !poi) {
+            buffer.vertex(pose, (float) lastPos.x, (float) lastPos.y + 1, (float) lastPos.z).color(1f, 0f, 0f, 1f).endVertex();
+            buffer.vertex(pose, (float) pos.x, (float) pos.y + 1, (float) pos.z).color(1f, 0f, 0f, 1f).endVertex();
+        }
+        Color c = poi ? new Color(0f, 0f, 1f) : new Color(1f, 0f, 0f);
+        buffer.vertex(pose, (float) pos.x, (float) pos.y, (float) pos.z).color(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, 1f).endVertex();
+        buffer.vertex(pose, (float) pos.x, (float) pos.y + 1, (float) pos.z).color(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, 1f).endVertex();
+    }
+
 }

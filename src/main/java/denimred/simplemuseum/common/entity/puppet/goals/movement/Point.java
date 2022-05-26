@@ -6,10 +6,14 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.Constants;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Point {
     public Vec3 pos;
     public String animation;
     public int minTicks, maxTicks;
+    private List<Point> relativePoints = new ArrayList<>();
 
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
