@@ -2,22 +2,34 @@ package denimred.simplemuseum.client;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.TextComponent;
 
+import denimred.simplemuseum.client.event.AreaHandler;
 import denimred.simplemuseum.common.entity.puppet.goals.movement.Movement;
 
-public class MovementEditorClient {
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
+public class MovementEditorClient {
     private static Movement currentMovement = null;
-    private static EditMode editMode = EditMode.MOVE;
+    private static EditMode editMode = null;
+
+    public static void tick() {
+        if (isEditing() && getEditMode() == EditMode.AREA && ((Movement.Area)currentMovement).isComplete()) {
+            AreaHandler.raytrace();
+        }
+    }
 
     public static Movement createNewMovement(Movement.MoveType moveType) {
         switch (moveType) {
             case Area:
                 currentMovement = new Movement.Area();
+                setEditMode(EditMode.AREA);
                 break;
             case Path:
                 currentMovement = new Movement.Path();
+                setEditMode(EditMode.PATH);
                 break;
         }
         return currentMovement;
@@ -41,8 +53,9 @@ public class MovementEditorClient {
     }
 
     public enum EditMode {
-        MOVE(ChatFormatting.RED),
-        POI(ChatFormatting.AQUA);
+        PATH(ChatFormatting.RED),
+        AREA(ChatFormatting.AQUA),
+        POI(ChatFormatting.GREEN);
 
         ChatFormatting formatting;
         EditMode(ChatFormatting formatting) {

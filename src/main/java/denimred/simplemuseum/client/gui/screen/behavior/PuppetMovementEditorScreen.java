@@ -34,8 +34,12 @@ public class PuppetMovementEditorScreen extends Screen {
         addButton(new BetterButton(width - 102, height - 22, 100, 20, new TextComponent("Confirm"), Button::onPress));
         addButton(new LabelWidget(width / 4, 2, font, LabelWidget.AnchorX.CENTER, LabelWidget.AnchorY.TOP, FormattedText.of("Positions")));
         positionList = addWidget(new WidgetList<>(this, 0, 12, width / 2, height - 36));
-        for(Point point : movement.getMovementPoints()) {
-            positionList.add(new PositionWidget(0, 0, 0, 30, point.pos));
+        if(movement instanceof Movement.Path) {
+            for (Point point : ((Movement.Path) movement).getMovementPoints()) {
+                positionList.add(new PositionWidget(0, 0, 0, 30, point.pos));
+            }
+        } else {
+
         }
     }
 

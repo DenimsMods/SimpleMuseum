@@ -21,11 +21,11 @@ public class MovementData extends SavedData {
         movements.forEach(m -> {
             CompoundTag movementTag = (CompoundTag) m;
             Movement movement;
-            switch (movementTag.getInt("movementType")) {
-                case Movement.Path.MOVEMENT_TYPE:
+            switch (Movement.MoveType.values()[movementTag.getInt("movementType")]) {
+                case Path:
                     movement = new Movement.Path();
                     break;
-                case Movement.Area.MOVEMENT_TYPE:
+                case Area:
                     movement = new Movement.Area();
                     break;
                 default:
