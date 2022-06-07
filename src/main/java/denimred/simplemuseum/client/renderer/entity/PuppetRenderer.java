@@ -5,11 +5,14 @@ import static denimred.simplemuseum.common.entity.puppet.PuppetEasterEggTracker.
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 
 import java.awt.Color;
@@ -17,8 +20,10 @@ import java.awt.Color;
 import javax.annotation.Nullable;
 
 import denimred.simplemuseum.client.renderer.entity.layer.PuppetBannersLayerRenderer;
+import denimred.simplemuseum.client.renderer.entity.layer.PuppetHeldItemLayerRenderer;
 import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 import denimred.simplemuseum.common.entity.puppet.manager.PuppetRenderManager.NameplateBehavior;
+import denimred.simplemuseum.common.init.MuseumItems;
 import software.bernie.geckolib3.geo.render.built.GeoBone;
 import software.bernie.geckolib3.geo.render.built.GeoCube;
 import software.bernie.geckolib3.geo.render.built.GeoModel;
@@ -29,6 +34,7 @@ public class PuppetRenderer extends GeoEntityRenderer<PuppetEntity> {
     public PuppetRenderer(EntityRenderDispatcher dispatcher) {
         super(dispatcher, new PuppetModel());
         this.addLayer(new PuppetBannersLayerRenderer(this, 16, 1.0D));
+        this.addLayer(new PuppetHeldItemLayerRenderer(this));
     }
 
     @Override
@@ -304,4 +310,6 @@ public class PuppetRenderer extends GeoEntityRenderer<PuppetEntity> {
         return nameplateBehavior != NameplateBehavior.NEVER
                 && (super.shouldShowName(puppet) || nameplateBehavior == NameplateBehavior.ALWAYS);
     }
+
+
 }
