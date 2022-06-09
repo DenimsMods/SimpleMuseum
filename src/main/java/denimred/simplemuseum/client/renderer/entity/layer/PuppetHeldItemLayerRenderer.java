@@ -61,7 +61,7 @@ public class PuppetHeldItemLayerRenderer extends GeoLayerRenderer<PuppetEntity> 
         RenderUtils.scale(bone, poseStack);
         RenderUtils.moveBackFromPivot(bone, poseStack);
 
-        for (GeoBone child : bone.childBones)
+        for(GeoBone child : bone.childBones)
             renderBoneAndChildren(child, poseStack, bufferSource, light, puppet);
 
         poseStack.popPose();
