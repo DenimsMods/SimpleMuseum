@@ -24,7 +24,6 @@ import software.bernie.geckolib3.renderers.geo.IGeoRenderer;
 import software.bernie.geckolib3.util.RenderUtils;
 
 public class PuppetHeldItemLayerRenderer extends GeoLayerRenderer<PuppetEntity> {
-    private final HashMap<String, ItemStack> heldItems = new HashMap<>();
 
     public PuppetHeldItemLayerRenderer(IGeoRenderer<PuppetEntity> entityRendererIn) {
         super(entityRendererIn);
@@ -39,8 +38,8 @@ public class PuppetHeldItemLayerRenderer extends GeoLayerRenderer<PuppetEntity> 
     }
 
     private void renderBoneAndChildren(GeoBone bone, PoseStack poseStack, MultiBufferSource bufferSource, int light, PuppetEntity puppet) {
-        if(heldItems.containsKey(bone.name)) {
-            ItemStack itemStack = heldItems.get(bone.name);
+        ItemStack itemStack = puppet.getHeldItem(bone.name);
+        if(itemStack != null) {
             poseStack.pushPose();
 
             RenderUtils.moveToPivot(bone, poseStack);

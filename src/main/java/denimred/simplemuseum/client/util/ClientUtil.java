@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import denimred.simplemuseum.SimpleMuseum;
+import denimred.simplemuseum.client.gui.screen.ItemManagementScreen;
 import denimred.simplemuseum.client.gui.screen.PuppetConfigScreen;
 import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 import denimred.simplemuseum.common.entity.puppet.manager.PuppetRenderManager;
@@ -115,6 +116,10 @@ public class ClientUtil {
 
     public static void openPuppetScreen(PuppetEntity puppet, @Nullable Screen parent) {
         MC.setScreen(new PuppetConfigScreen(puppet, parent));
+    }
+
+    public static void openPuppetItemScreen(PuppetEntity puppet, @Nullable Screen parent) {
+        MC.setScreen(new ItemManagementScreen(puppet, parent));
     }
 
     public static void setCursor(int shape) {

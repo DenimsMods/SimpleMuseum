@@ -30,6 +30,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -79,6 +80,7 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable, IAn
             new Object2ReferenceLinkedOpenHashMap<>();
     private int livingSoundTime;
     @Nullable private Entity possessor;
+    private final HashMap<String, ItemStack> heldItems = new HashMap<>();
 
     public PuppetEntity(EntityType<? extends PuppetEntity> type, Level world) {
         super(type, world);
@@ -573,6 +575,18 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable, IAn
             if (possessor != null) possessor.refreshDimensions();
             if (prev != null) prev.refreshDimensions();
         }
+    }
+
+    public ItemStack getHeldItem(String bone) {
+        return heldItems.get(bone);
+    }
+
+    public void setHeldItem(String bone, ItemStack itemStack) {
+        heldItems.put(bone, itemStack);
+    }
+
+    public void removeHeldItem(String bone) {
+        heldItems.remove(bone);
     }
 
     @Override
