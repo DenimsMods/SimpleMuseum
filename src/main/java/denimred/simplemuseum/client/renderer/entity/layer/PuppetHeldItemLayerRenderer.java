@@ -46,7 +46,7 @@ public class PuppetHeldItemLayerRenderer extends GeoLayerRenderer<PuppetEntity> 
             RenderUtils.rotate(bone, poseStack);
             RenderUtils.scale(bone, poseStack);
             poseStack.translate(0, 0, -0.05);
-            poseStack.scale(.7f, .7f, .7f);
+            poseStack.scale(.75f, .75f, .75f);
 
             Minecraft.getInstance().getItemInHandRenderer().renderItem(puppet, itemStack, ItemTransforms.TransformType.THIRD_PERSON_RIGHT_HAND, false, poseStack, bufferSource, light);
 
