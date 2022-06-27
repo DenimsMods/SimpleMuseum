@@ -54,6 +54,7 @@ import denimred.simplemuseum.common.init.MuseumEntities;
 import denimred.simplemuseum.common.init.MuseumItems;
 import denimred.simplemuseum.common.init.MuseumNetworking;
 import denimred.simplemuseum.common.item.CuratorsCaneItem;
+import denimred.simplemuseum.common.item.HeldItemStack;
 import denimred.simplemuseum.common.network.messages.s2c.ResurrectPuppetSync;
 import denimred.simplemuseum.common.util.GlowColor;
 import denimred.simplemuseum.common.util.IValueSerializer;
@@ -80,7 +81,7 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable, IAn
             new Object2ReferenceLinkedOpenHashMap<>();
     private int livingSoundTime;
     @Nullable private Entity possessor;
-    private final HashMap<String, ItemStack> heldItems = new HashMap<>();
+    private final HashMap<String, HeldItemStack> heldItems = new HashMap<>();
 
     public PuppetEntity(EntityType<? extends PuppetEntity> type, Level world) {
         super(type, world);
@@ -577,11 +578,11 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable, IAn
         }
     }
 
-    public ItemStack getHeldItem(String bone) {
+    public HeldItemStack getHeldItem(String bone) {
         return heldItems.get(bone);
     }
 
-    public void setHeldItem(String bone, ItemStack itemStack) {
+    public void setHeldItem(String bone, HeldItemStack itemStack) {
         heldItems.put(bone, itemStack);
     }
 

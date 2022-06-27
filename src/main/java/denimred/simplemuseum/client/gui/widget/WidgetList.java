@@ -9,6 +9,7 @@ import net.minecraft.network.chat.TextComponent;
 import net.minecraft.util.Mth;
 
 import java.awt.Color;
+import java.util.List;
 
 import denimred.simplemuseum.client.util.ScissorUtil;
 
@@ -56,6 +57,10 @@ public class WidgetList<T extends Screen> extends NestedWidget {
             this.removeChild(widget);
             totalHeight -= widget.getHeight();
         }
+    }
+
+    public List<AbstractWidget> getChildren() {
+        return children;
     }
 
     public void clear() {
