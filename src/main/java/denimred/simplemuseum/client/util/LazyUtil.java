@@ -3,6 +3,7 @@ package denimred.simplemuseum.client.util;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
+import denimred.simplemuseum.client.gui.widget.value.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.nbt.ByteArrayTag;
@@ -28,17 +29,6 @@ import java.util.Map;
 
 import denimred.simplemuseum.client.gui.screen.PuppetConfigScreen;
 import denimred.simplemuseum.client.gui.widget.LabelWidget;
-import denimred.simplemuseum.client.gui.widget.value.AnimationWidget;
-import denimred.simplemuseum.client.gui.widget.value.BoolWidget;
-import denimred.simplemuseum.client.gui.widget.value.CustomNameWidget;
-import denimred.simplemuseum.client.gui.widget.value.EntitySizeWidget;
-import denimred.simplemuseum.client.gui.widget.value.FloatWidget;
-import denimred.simplemuseum.client.gui.widget.value.IntWidget;
-import denimred.simplemuseum.client.gui.widget.value.NameplateBehaviorWidget;
-import denimred.simplemuseum.client.gui.widget.value.SoundCategoryWidget;
-import denimred.simplemuseum.client.gui.widget.value.SoundWidget;
-import denimred.simplemuseum.client.gui.widget.value.SourceWidget;
-import denimred.simplemuseum.client.gui.widget.value.ValueWidget;
 import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 import denimred.simplemuseum.common.entity.puppet.manager.PuppetAnimationManager;
 import denimred.simplemuseum.common.entity.puppet.manager.PuppetAudioManager;
@@ -86,6 +76,8 @@ public class LazyUtil {
                         map.put(PuppetAnimationManager.SITTING, AnimationWidget::new);
                         map.put(PuppetAnimationManager.DEATH, AnimationWidget::new);
                         map.put(PuppetAnimationManager.DEATH_LENGTH, IntWidget::new);
+                        map.put(PuppetAnimationManager.EXPRESSION_ENABLED, BoolWidget::new);
+                        map.put(PuppetAnimationManager.EXPRESSION, ExpressionWidget::new);
                         map.put(PuppetAudioManager.AMBIENT, SoundWidget::new);
                         map.put(PuppetAudioManager.CATEGORY, SoundCategoryWidget::new);
                         map.put(PuppetRenderManager.SCALE, FloatWidget::new);

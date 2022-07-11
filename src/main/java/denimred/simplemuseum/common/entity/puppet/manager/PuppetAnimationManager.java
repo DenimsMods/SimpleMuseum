@@ -1,12 +1,21 @@
 package denimred.simplemuseum.common.entity.puppet.manager;
 
+import denimred.simplemuseum.SimpleMuseum;
+import denimred.simplemuseum.client.resources.data.ExpressionData;
+import denimred.simplemuseum.client.resources.data.ExpressionDataSection;
 import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 import denimred.simplemuseum.common.entity.puppet.manager.value.PuppetKey;
 import denimred.simplemuseum.common.entity.puppet.manager.value.checked.CheckedProvider;
 import denimred.simplemuseum.common.entity.puppet.manager.value.checked.CheckedValue;
+import denimred.simplemuseum.common.entity.puppet.manager.value.primitive.BoolProvider;
+import denimred.simplemuseum.common.entity.puppet.manager.value.primitive.BoolValue;
 import denimred.simplemuseum.common.entity.puppet.manager.value.primitive.IntProvider;
 import denimred.simplemuseum.common.entity.puppet.manager.value.primitive.IntValue;
 import denimred.simplemuseum.common.i18n.I18nUtil;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
 import software.bernie.geckolib3.core.AnimationState;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
@@ -16,6 +25,10 @@ import software.bernie.geckolib3.core.controller.AnimationController;
 import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 import software.bernie.geckolib3.resource.GeckoLibCache;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class PuppetAnimationManager extends PuppetValueManager {
     public static final String NBT_KEY = "AnimationManager";
@@ -65,6 +78,13 @@ public final class PuppetAnimationManager extends PuppetValueManager {
                     PuppetAnimationManager::validateAnimation);
     public static final IntProvider DEATH_LENGTH = new IntProvider(key("DeathLength"), 28, 0, 1200);
 
+    public static final CheckedProvider<String> EXPRESSION =
+            new CheckedProvider<>(
+                    key("Expression"),
+                    "",
+                    PuppetAnimationManager::validateExpression);
+    public static final BoolProvider EXPRESSION_ENABLED = new BoolProvider(key("ExpressionsEnabled"), true);
+
     public final CheckedValue<String> idle = this.value(IDLE);
     public final CheckedValue<String> moving = this.value(MOVING);
     public final CheckedValue<String> idleSneak = this.value(IDLE_SNEAK);
@@ -73,6 +93,13 @@ public final class PuppetAnimationManager extends PuppetValueManager {
     public final CheckedValue<String> sitting = this.value(SITTING);
     public final CheckedValue<String> death = this.value(DEATH);
     public final IntValue deathLength = this.value(DEATH_LENGTH);
+
+    public String animatedExpression = "";
+    public final BoolValue expressionsEnabled = this.value(EXPRESSION_ENABLED);
+    public final CheckedValue<String> expression = this.value(EXPRESSION);
+    private static final Map<ResourceLocation, ExpressionDataSection> EXPRESSION_DATA_CACHE = new HashMap<>();
+
+    // TODO: JAKE WIPE THIS WHEN WE RELOAD RESOURCES
 
     public final AnimationFactory factory = new AnimationFactory(puppet);
     public final AnimationController<PuppetEntity> controller =
@@ -90,6 +117,38 @@ public final class PuppetAnimationManager extends PuppetValueManager {
     // This is kind of stupid
     public static void reloadController(PuppetEntity puppet, Object dummyForMethodReference) {
         puppet.animationManager.controller.markNeedsReload();
+    }
+
+    private static boolean validateExpression(PuppetEntity puppet, String expression) {
+        if (puppet.level.isClientSide || expression.isEmpty()) return true;
+        if (!puppet.sourceManager.model.isValid()) return false;
+        ExpressionDataSection data = getExpressionData(puppet.sourceManager.model.getSafe());
+        if (data == ExpressionDataSection.EMPTY) return false;
+        return data.hasExpression(expression);
+    }
+
+    public static ExpressionDataSection getExpressionData(ResourceLocation location) {
+        if (EXPRESSION_DATA_CACHE.containsKey(location))
+            return EXPRESSION_DATA_CACHE.get(location);
+
+        ResourceManager resourceManager =  Minecraft.getInstance().getResourceManager();
+        try (Resource resource = resourceManager.getResource(location)) {
+
+            ExpressionDataSection expressionData = resource.getMetadata(ExpressionDataSection.SERIALIZER);
+            if (expressionData == null)
+                expressionData = ExpressionDataSection.EMPTY;
+
+            if (!EXPRESSION_DATA_CACHE.containsKey(location))
+                EXPRESSION_DATA_CACHE.put(location, expressionData);
+            return expressionData;
+        } catch (RuntimeException e){
+            SimpleMuseum.LOGGER.debug("Unable to parse metadata from " + location + " : " + e);
+        } catch (IOException e){
+            SimpleMuseum.LOGGER.debug("Using missing model, unable to load " + location + " : " + e);
+        }
+        if (!EXPRESSION_DATA_CACHE.containsKey(location))
+            EXPRESSION_DATA_CACHE.put(location, ExpressionDataSection.EMPTY);
+        return ExpressionDataSection.EMPTY;
     }
 
     private static boolean validateAnimation(PuppetEntity puppet, String anim) {

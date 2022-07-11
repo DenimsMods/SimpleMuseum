@@ -4,6 +4,7 @@ import com.google.common.collect.Multimap;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
+import denimred.simplemuseum.common.entity.puppet.manager.PuppetAnimationManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -298,6 +299,9 @@ public class PuppetConfigScreen extends Screen {
 
     public ResourceLocation getAnimationFile() {
         return puppetCopy.sourceManager.animations.get();
+    }
+    public ResourceLocation getModelFile() {
+        return puppetCopy.sourceManager.model.get();
     }
 
     public void copy() {

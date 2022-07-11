@@ -60,6 +60,7 @@ import denimred.simplemuseum.common.util.MathUtil;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceLinkedOpenHashMap;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.IAnimationTickable;
+import software.bernie.geckolib3.core.event.CustomInstructionKeyframeEvent;
 import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 
@@ -538,11 +539,24 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable, IAn
     @Override
     public void registerControllers(AnimationData data) {
         data.addAnimationController(animationManager.getController());
+        animationManager.getController().registerCustomInstructionListener(this::expressionListener);
     }
 
     @Override
     public AnimationFactory getFactory() {
         return animationManager.factory;
+    }
+
+    private <ENTITY extends IAnimatable> void expressionListener(CustomInstructionKeyframeEvent<ENTITY> event) {
+        if (!animationManager.expression.isValid() && animationManager.expressionsEnabled.get()) {
+            if (event.instructions.startsWith("[expression.")) {
+                animationManager.animatedExpression = event.instructions.substring("[expression.".length(), event.instructions.length() - 1);
+                System.out.println("HAS BRACKET: " + animationManager.animatedExpression);
+            }
+            if (event.instructions.startsWith("expression."))
+                 animationManager.animatedExpression = event.instructions.substring("expression.".length());
+            System.out.println("DOES NOT HAS BRACKET: " + animationManager.animatedExpression);
+        }
     }
 
     public void invalidateCaches() {
