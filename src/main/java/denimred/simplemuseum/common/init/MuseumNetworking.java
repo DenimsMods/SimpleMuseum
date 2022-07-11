@@ -6,6 +6,7 @@ import net.minecraftforge.fml.network.simple.SimpleChannel;
 
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.common.network.messages.bidirectional.CopyPastePuppetData;
+import denimred.simplemuseum.common.network.messages.bidirectional.SyncHeldItems;
 import denimred.simplemuseum.common.network.messages.c2s.C2SCryptMasterRemovePuppet;
 import denimred.simplemuseum.common.network.messages.c2s.C2SCryptMasterSpawnPuppet;
 import denimred.simplemuseum.common.network.messages.c2s.C2SMovePuppet;
@@ -49,5 +50,11 @@ public final class MuseumNetworking {
         ResurrectPuppetSync.register(CHANNEL, ++id);
         // Server <-> Client
         CopyPastePuppetData.register(CHANNEL, ++id);
+        CHANNEL.registerMessage(
+                ++id,
+                SyncHeldItems.class,
+                SyncHeldItems::encode,
+                SyncHeldItems::decode,
+                SyncHeldItems::handle);
     }
 }

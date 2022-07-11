@@ -17,7 +17,6 @@ import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
-import net.minecraft.nbt.TagTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.TextComponent;
@@ -29,14 +28,10 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.util.Constants;
 
-import org.lwjgl.system.CallbackI;
-
-import java.io.DataInputStream;
-import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -50,9 +45,10 @@ import denimred.simplemuseum.client.gui.widget.LabelWidget;
 import denimred.simplemuseum.client.gui.widget.NestedWidget;
 import denimred.simplemuseum.client.gui.widget.WidgetList;
 import denimred.simplemuseum.client.renderer.entity.PuppetRenderer;
-import denimred.simplemuseum.client.util.LazyUtil;
 import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
+import denimred.simplemuseum.common.init.MuseumNetworking;
 import denimred.simplemuseum.common.item.HeldItemStack;
+import denimred.simplemuseum.common.network.messages.bidirectional.SyncHeldItems;
 import software.bernie.geckolib3.geo.render.built.GeoBone;
 import software.bernie.geckolib3.geo.render.built.GeoModel;
 
@@ -142,7 +138,9 @@ public class ItemManagementScreen extends AbstractContainerScreen<ChestMenu> {
 
         saveBtn = addButton(new BetterButton(width - 101, height - 41, 100, 20, new TextComponent("Save"), btn -> saveChanges()));
         cancelBtn = addButton(new BetterButton(width - 101, height - 21, 100, 20, new TextComponent("Close"), btn -> onClose()));
+
         clearBtn = addButton(new BetterButton(leftPos + imageWidth - 2, topPos + 87, 20, 20, new TextComponent("X").withStyle(ChatFormatting.RED), btn -> clearItem()));
+        clearBtn.visible = false;
 
         boolean check = copyData != null && copyData.selected();
         copyData = addButton(new Checkbox(leftPos + imageWidth, topPos + 28, 150, 20, new TextComponent("NBT"), check));
@@ -215,7 +213,14 @@ public class ItemManagementScreen extends AbstractContainerScreen<ChestMenu> {
     }
 
     private void saveChanges() {
+        if(selected != null && selected.heldItem != null) {
+            selected.heldItem.itemStack.setCount(stackSizeEntry.getIntValue());
+            selected.heldItem.itemStack.setTag(serializeNBTList());
 
+            selected.heldItem.armorDisplay = armorDisplay.selected();
+            selected.heldItem.scale = scaleEntry.getFloatValue();
+        }
+        MuseumNetworking.CHANNEL.sendToServer(new SyncHeldItems(puppet.getId(), serializeHeldItems()));
     }
 
     private void clearItem() {
@@ -248,9 +253,11 @@ public class ItemManagementScreen extends AbstractContainerScreen<ChestMenu> {
     public void setSelected(BoneWidget widget) {
         //Save values before swapping
         if(selected != null && selected.heldItem != null) {
-            selected.heldItem.scale = scaleEntry.getFloatValue();
             selected.heldItem.itemStack.setCount(stackSizeEntry.getIntValue());
+            selected.heldItem.itemStack.setTag(serializeNBTList());
+
             selected.heldItem.armorDisplay = armorDisplay.selected();
+            selected.heldItem.scale = scaleEntry.getFloatValue();
         }
 
         //Now we swap
@@ -280,6 +287,7 @@ public class ItemManagementScreen extends AbstractContainerScreen<ChestMenu> {
         nbtWidgets.visible = true;
         copyData.visible = true;
         copySize.visible = true;
+        clearBtn.visible = true;
     }
 
     private void populateBoneList() {
@@ -293,9 +301,8 @@ public class ItemManagementScreen extends AbstractContainerScreen<ChestMenu> {
         nbtWidgets.clear();
         if(itemStack == null || itemStack.isEmpty())
             return;
-        CompoundTag nbt = itemStack.serializeNBT();
-        if(nbt.contains("tag")) {
-            CompoundTag data = nbt.getCompound("tag");
+        CompoundTag data = itemStack.getTag();
+        if(data != null) {
             for (String s : data.getAllKeys()) {
                 Tag tag = data.get(s);
                 nbtWidgets.add(getNBTWidget(s, tag, null));
@@ -324,11 +331,24 @@ public class ItemManagementScreen extends AbstractContainerScreen<ChestMenu> {
         return widget;
     }
 
+    private HashMap<String, HeldItemStack> serializeHeldItems() {
+        HashMap<String, HeldItemStack> map = new HashMap<>();
+        for(AbstractWidget widget : boneWidgets.getChildren()) {
+            BoneWidget boneWidget = (BoneWidget) widget;
+            if(boneWidget.heldItem != null) {
+                HeldItemStack heldItem = boneWidget.heldItem;
+                map.put(boneWidget.boneName, heldItem);
+            }
+        }
+        return map;
+    }
+
     private CompoundTag serializeNBTList() {
         CompoundTag tag = new CompoundTag();
         for(AbstractWidget w : nbtWidgets.getChildren()) {
             try {
                 Tag t = serializeNBTWidgetAndChildren((NBTWidget) w);
+                tag.put(((NBTWidget)w).getKeyEntry().getValue(), t);
             } catch (CommandSyntaxException e) {
                 throw new RuntimeException(e);
             }
@@ -339,7 +359,21 @@ public class ItemManagementScreen extends AbstractContainerScreen<ChestMenu> {
     private Tag serializeNBTWidgetAndChildren(NBTWidget widget) throws CommandSyntaxException {
         Tag tag = null;
         if(widget instanceof NBTCollectionWidget) {
-
+            NBTCollectionWidget collectionWidget = ((NBTCollectionWidget)widget);
+            switch (collectionWidget.type) {
+                case COMPOUND:
+                    tag = new CompoundTag();
+                    for(NBTWidget child : collectionWidget.nbtChildren) {
+                        ((CompoundTag) tag).put(child.getKeyEntry().getValue(), serializeNBTWidgetAndChildren(child));
+                    }
+                    break;
+                case LIST:
+                    tag = new ListTag();
+                    for(NBTWidget child : collectionWidget.nbtChildren) {
+                        ((ListTag) tag).add(serializeNBTWidgetAndChildren(child));
+                    }
+                    break;
+            }
         } else {
             TagParser parser = new TagParser(new StringReader(((NBTEntryWidget)widget).getValue()));
             tag = parser.readValue();

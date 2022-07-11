@@ -35,8 +35,6 @@ import software.bernie.geckolib3.util.RenderUtils;
 
 public class PuppetHeldItemLayerRenderer extends GeoLayerRenderer<PuppetEntity> {
 
-    private final HumanoidModel<LivingEntity> DEFAULT_BIPED_MODEL = new HumanoidModel<>(1.0f);
-
     public PuppetHeldItemLayerRenderer(IGeoRenderer<PuppetEntity> entityRendererIn) {
         super(entityRendererIn);
     }

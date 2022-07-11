@@ -2,6 +2,8 @@ package denimred.simplemuseum.common.entity.puppet;
 
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializer;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -27,6 +29,7 @@ import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.Collections;
@@ -55,6 +58,7 @@ import denimred.simplemuseum.common.init.MuseumItems;
 import denimred.simplemuseum.common.init.MuseumNetworking;
 import denimred.simplemuseum.common.item.CuratorsCaneItem;
 import denimred.simplemuseum.common.item.HeldItemStack;
+import denimred.simplemuseum.common.network.messages.bidirectional.SyncHeldItems;
 import denimred.simplemuseum.common.network.messages.s2c.ResurrectPuppetSync;
 import denimred.simplemuseum.common.util.GlowColor;
 import denimred.simplemuseum.common.util.IValueSerializer;
@@ -205,6 +209,15 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable, IAn
         for (PuppetValueManager manager : managers.values()) {
             manager.write(modTag);
         }
+
+        ListTag heldItemsTag = new ListTag();
+        for(Map.Entry<String, HeldItemStack> pair : heldItems.entrySet()) {
+            CompoundTag pairTag = new CompoundTag();
+            pairTag.putString(HeldItemStack.NBT_BONENAME, pair.getKey());
+            pairTag.put(HeldItemStack.NBT_HELDITEM, pair.getValue().serializeNBT());
+            heldItemsTag.add(pairTag);
+        }
+        modTag.put(HeldItemStack.NBT_LIST, heldItemsTag);
     }
 
     @Override
@@ -218,6 +231,13 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable, IAn
         for (PuppetValueManager manager : managers.values()) {
             manager.read(modTag);
         }
+        ListTag heldItemsTag = modTag.getList(HeldItemStack.NBT_LIST, Constants.NBT.TAG_COMPOUND);
+        HashMap<String, HeldItemStack> map = new HashMap<>();
+        for(Tag tag : heldItemsTag) {
+            CompoundTag heldItemTag = (CompoundTag) tag;
+            map.put(heldItemTag.getString(HeldItemStack.NBT_BONENAME), HeldItemStack.deserializeNBT(heldItemTag.getCompound(HeldItemStack.NBT_HELDITEM)));
+        }
+        this.setHeldItems(map);
     }
 
     @Override
@@ -421,6 +441,9 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable, IAn
                         1.0F);
                 return true;
             }
+            CompoundTag tag = new CompoundTag();
+            save(tag);
+            System.out.println(tag);
         }
         return this.isDead() || entity.equals(possessor);
     }
@@ -488,7 +511,8 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable, IAn
             final OptionalInt id = entityData.get(POSSESSOR_ID);
             final Entity possessor = id.isPresent() ? level.getEntity(id.getAsInt()) : null;
             this.setPossessor(possessor);
-        } else {
+        }
+        else {
             // Sanity check; superclass calls this method before the managers exist
             if (managers != null) {
                 for (PuppetValueManager manager : managers.values()) {
@@ -580,6 +604,20 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable, IAn
 
     public HeldItemStack getHeldItem(String bone) {
         return heldItems.get(bone);
+    }
+
+    public HashMap<String, HeldItemStack> getHeldItems() {
+        return heldItems;
+    }
+
+    public void setHeldItems(HashMap<String, HeldItemStack> map) {
+        this.heldItems.clear();
+        this.heldItems.putAll(map);
+        if(!level.isClientSide) {
+            MuseumNetworking.CHANNEL.send(
+                    PacketDistributor.TRACKING_ENTITY.with(() -> this),
+                    new SyncHeldItems(getId(), getHeldItems()));
+        }
     }
 
     public void setHeldItem(String bone, HeldItemStack itemStack) {
