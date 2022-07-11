@@ -29,8 +29,7 @@ public class CuratorsCaneItem extends SimpleFoiledItem {
             if (!player.level.isClientSide) {
                 return InteractionResult.CONSUME;
             } else {
-                ClientUtil.openPuppetItemScreen((PuppetEntity) target, null);
-//                ClientUtil.openPuppetScreen((PuppetEntity) target, null);
+                ClientUtil.openPuppetScreen((PuppetEntity) target, null);
                 return InteractionResult.SUCCESS;
             }
         }
