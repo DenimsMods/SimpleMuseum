@@ -97,7 +97,7 @@ public final class PuppetAnimationManager extends PuppetValueManager {
     public String animatedExpression = "";
     public final BoolValue expressionsEnabled = this.value(EXPRESSION_ENABLED);
     public final CheckedValue<String> expression = this.value(EXPRESSION);
-    private static final Map<ResourceLocation, ExpressionDataSection> EXPRESSION_DATA_CACHE = new HashMap<>();
+    public static final Map<ResourceLocation, ExpressionDataSection> EXPRESSION_DATA_CACHE = new HashMap<>();
 
     // TODO: JAKE WIPE THIS WHEN WE RELOAD RESOURCES
 
@@ -140,6 +140,7 @@ public final class PuppetAnimationManager extends PuppetValueManager {
 
             if (!EXPRESSION_DATA_CACHE.containsKey(location))
                 EXPRESSION_DATA_CACHE.put(location, expressionData);
+            SimpleMuseum.LOGGER.debug("Stored [" + location + "] into the Expression Data Cache");
             return expressionData;
         } catch (RuntimeException e){
             SimpleMuseum.LOGGER.debug("Unable to parse metadata from " + location + " : " + e);

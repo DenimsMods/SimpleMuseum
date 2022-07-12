@@ -14,7 +14,6 @@ import java.util.List;
 
 public class ExpressionDataSerializer implements MetadataSectionSerializer<ExpressionDataSection> {
 
-    @Override
     public ExpressionDataSection fromJson(JsonObject json) {
         List<ExpressionData> expressionList = Lists.newArrayList();
 
@@ -92,7 +91,6 @@ public class ExpressionDataSerializer implements MetadataSectionSerializer<Expre
         }
     }
 
-    @Override
     public String getMetadataSectionName() {
         return "model";
     }

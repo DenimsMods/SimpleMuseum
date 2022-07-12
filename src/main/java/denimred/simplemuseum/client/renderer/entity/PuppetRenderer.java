@@ -115,10 +115,11 @@ public class PuppetRenderer extends GeoEntityRenderer<PuppetEntity> {
         Matrix3f matrix3f = stack.last().normal();
         Matrix4f matrix4f = stack.last().pose();
 
-        boolean isExpressionValid =
-                puppet.animationManager.expressionsEnabled.get() &&
-                (puppet.animationManager.expression.isValid() || !puppet.animationManager.animatedExpression.equals(""));
-        String currExpression = puppet.animationManager.expression.isValid() ? puppet.animationManager.expression.get() : puppet.animationManager.animatedExpression;
+        boolean isExpressionValid = puppet.animationManager.expressionsEnabled.get() &&
+                (puppet.animationManager.expression.isValid() || !puppet.animationManager.animatedExpression.isEmpty());
+        String currExpression = puppet.animationManager.expression.isValid() && !puppet.animationManager.expression.get().isEmpty() ?
+                puppet.animationManager.expression.get() :
+                puppet.animationManager.animatedExpression;
         ExpressionDataSection expressionDataSection = isExpressionValid ?
                 PuppetAnimationManager.getExpressionData(puppet.sourceManager.model.getSafe()) : // Retrieve expression section from puppet's animation manager
                 ExpressionDataSection.EMPTY;
@@ -132,18 +133,13 @@ public class PuppetRenderer extends GeoEntityRenderer<PuppetEntity> {
                                 expressionData.areas.stream().filter((x) -> x.getCube() == cubeID).findFirst().get() : // Get the cube by ID within the bone
                         null : null : null;
 
-        if (faceData != null) {
-            double[] textureSize = new double[]{getGeoModelProvider().getModel(puppet.sourceManager.model.getSafe()).properties.getTextureWidth(), getGeoModelProvider().getModel(puppet.sourceManager.model.getSafe()).properties.getTextureHeight()};
-
-            for (GeoQuad quad : cube.quads) {
-                if (quad == null)
-                    continue;
+        for (GeoQuad quad : cube.quads) {
+            if (quad == null)
+                continue;
+            if (faceData != null ? faceData.getFace() == quad.direction : false) {
+                double[] textureSize = new double[]{getGeoModelProvider().getModel(puppet.sourceManager.model.getSafe()).properties.getTextureWidth(), getGeoModelProvider().getModel(puppet.sourceManager.model.getSafe()).properties.getTextureHeight()};
                 renderQuadWithExpression(matrix3f, matrix4f, textureSize, faceData, cube, quad, bufferIn, packedLightIn, packedOverlayIn, red, green, blue, alpha);
-            }
-        } else {
-            for (GeoQuad quad : cube.quads) {
-                if (quad == null)
-                    continue;
+            } else {
                 renderQuad(matrix3f, matrix4f, cube, quad, bufferIn, packedLightIn, packedOverlayIn, red, green, blue, alpha);
             }
         }

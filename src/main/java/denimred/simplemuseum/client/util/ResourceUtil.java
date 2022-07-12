@@ -1,5 +1,6 @@
 package denimred.simplemuseum.client.util;
 
+import denimred.simplemuseum.common.entity.puppet.manager.PuppetAnimationManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.resources.ResourceLocation;
@@ -75,6 +76,8 @@ public class ResourceUtil {
             for (List<ResourceLocation> value : RESOURCE_CACHE.values()) {
                 value.clear();
             }
+
+            PuppetAnimationManager.EXPRESSION_DATA_CACHE.clear();
             RESOURCE_CACHE.clear();
             ClientUtil.MODEL_BOUNDS.clear();
 

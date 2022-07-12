@@ -548,14 +548,12 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable, IAn
     }
 
     private <ENTITY extends IAnimatable> void expressionListener(CustomInstructionKeyframeEvent<ENTITY> event) {
-        if (!animationManager.expression.isValid() && animationManager.expressionsEnabled.get()) {
-            if (event.instructions.startsWith("[expression.")) {
+        if (animationManager.expressionsEnabled.get()) {
+            if (event.instructions.startsWith("[expression."))
                 animationManager.animatedExpression = event.instructions.substring("[expression.".length(), event.instructions.length() - 1);
-                System.out.println("HAS BRACKET: " + animationManager.animatedExpression);
-            }
             if (event.instructions.startsWith("expression."))
-                 animationManager.animatedExpression = event.instructions.substring("expression.".length());
-            System.out.println("DOES NOT HAS BRACKET: " + animationManager.animatedExpression);
+                animationManager.animatedExpression = event.instructions.substring("expression.".length());
+
         }
     }
 
