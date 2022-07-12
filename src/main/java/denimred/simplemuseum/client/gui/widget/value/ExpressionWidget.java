@@ -78,7 +78,7 @@ public final class ExpressionWidget extends ValueWidget<String, CheckedValue<Str
         final ExpressionDataSection dataSection = PuppetAnimationManager.getExpressionData(expressionLoc);
         final String expression = expressionField.getValue();
         final boolean fileExists = dataSection != null;
-        if (!fileExists || expression.isEmpty() || !dataSection.hasExpression(expression)) {
+        if (!fileExists || expression.isEmpty() || dataSection.hasExpression(expression)) {
             expressionField.setTextColor(BetterTextFieldWidget.TEXT_VALID);
         } else {
             expressionField.setTextColor(BetterTextFieldWidget.TEXT_INVALID);

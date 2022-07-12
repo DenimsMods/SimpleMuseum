@@ -76,7 +76,7 @@ public class LazyUtil {
                         map.put(PuppetAnimationManager.SITTING, AnimationWidget::new);
                         map.put(PuppetAnimationManager.DEATH, AnimationWidget::new);
                         map.put(PuppetAnimationManager.DEATH_LENGTH, IntWidget::new);
-                        map.put(PuppetAnimationManager.EXPRESSION_ENABLED, BoolWidget::new);
+                        map.put(PuppetAnimationManager.EXPRESSIONS_ENABLED, BoolWidget::new);
                         map.put(PuppetAnimationManager.EXPRESSION, ExpressionWidget::new);
                         map.put(PuppetAudioManager.AMBIENT, SoundWidget::new);
                         map.put(PuppetAudioManager.CATEGORY, SoundCategoryWidget::new);

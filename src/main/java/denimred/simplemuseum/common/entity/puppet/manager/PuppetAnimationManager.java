@@ -83,7 +83,7 @@ public final class PuppetAnimationManager extends PuppetValueManager {
                     key("Expression"),
                     "",
                     PuppetAnimationManager::validateExpression);
-    public static final BoolProvider EXPRESSION_ENABLED = new BoolProvider(key("ExpressionsEnabled"), true);
+    public static final BoolProvider EXPRESSIONS_ENABLED = new BoolProvider(key("ExpressionsEnabled"), true);
 
     public final CheckedValue<String> idle = this.value(IDLE);
     public final CheckedValue<String> moving = this.value(MOVING);
@@ -95,7 +95,7 @@ public final class PuppetAnimationManager extends PuppetValueManager {
     public final IntValue deathLength = this.value(DEATH_LENGTH);
 
     public String animatedExpression = "";
-    public final BoolValue expressionsEnabled = this.value(EXPRESSION_ENABLED);
+    public final BoolValue expressionsEnabled = this.value(EXPRESSIONS_ENABLED);
     public final CheckedValue<String> expression = this.value(EXPRESSION);
     public static final Map<ResourceLocation, ExpressionDataSection> EXPRESSION_DATA_CACHE = new HashMap<>();
 
