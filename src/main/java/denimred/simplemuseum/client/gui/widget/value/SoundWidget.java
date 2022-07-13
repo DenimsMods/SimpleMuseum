@@ -7,8 +7,10 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.client.gui.screen.PuppetConfigScreen;
@@ -124,8 +126,10 @@ public final class SoundWidget
 
         @Override
         protected CompletableFuture<List<ResourceLocation>> getEntriesAsync() {
-            return CompletableFuture.completedFuture(
-                    new ArrayList<>(MC.getSoundManager().getAvailableSounds()));
+            ArrayList<ResourceLocation> list = new ArrayList<>(MC.getSoundManager().getAvailableSounds());
+            Collections.sort(list);
+
+            return CompletableFuture.completedFuture(list);
         }
     }
 }

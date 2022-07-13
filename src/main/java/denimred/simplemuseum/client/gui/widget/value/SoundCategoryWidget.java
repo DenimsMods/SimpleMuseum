@@ -6,8 +6,10 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraftforge.fml.client.gui.widget.ExtendedButton;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import denimred.simplemuseum.client.gui.screen.PuppetConfigScreen;
 import denimred.simplemuseum.client.gui.screen.SelectScreen;
@@ -78,7 +80,10 @@ public final class SoundCategoryWidget
 
         @Override
         protected CompletableFuture<List<SoundSource>> getEntriesAsync() {
-            return CompletableFuture.completedFuture(Arrays.asList(SoundSource.values()));
+            List<SoundSource> list = Arrays.asList(SoundSource.values());
+            Collections.sort(list);
+
+            return CompletableFuture.completedFuture(list);
         }
     }
 }

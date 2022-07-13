@@ -133,11 +133,9 @@ public final class AnimationWidget extends ValueWidget<String, CheckedValue<Stri
             final ResourceLocation loc = AnimationWidget.this.parent.getAnimationFile();
             final AnimationFile file = GeckoLibCache.getInstance().getAnimations().get(loc);
             if (file != null) {
-                return CompletableFuture.supplyAsync(
-                        () ->
-                                file.getAllAnimations().stream()
-                                        .map(anim -> anim.animationName)
-                                        .collect(Collectors.toList()));
+                List<String> list = file.getAllAnimations().stream().map(anim -> anim.animationName).sorted().collect(Collectors.toList());
+
+                return CompletableFuture.supplyAsync(() -> list);
             }
             return CompletableFuture.completedFuture(Collections.emptyList());
         }
