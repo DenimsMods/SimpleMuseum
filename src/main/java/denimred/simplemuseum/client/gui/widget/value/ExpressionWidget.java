@@ -132,11 +132,9 @@ public final class ExpressionWidget extends ValueWidget<String, CheckedValue<Str
             final ResourceLocation loc = ExpressionWidget.this.parent.getModelFile();
             final ExpressionDataSection file = PuppetAnimationManager.getExpressionData(loc);
             if (file != null) {
-                return CompletableFuture.supplyAsync(
-                        () ->
-                                file.getExpressionList().stream()
-                                        .map(Expression -> Expression.name)
-                                        .collect(Collectors.toList()));
+                List<String> list = file.getExpressionList().stream().map(expression -> expression.name).sorted().collect(Collectors.toList());
+
+                return CompletableFuture.supplyAsync(() -> list);
             }
             return CompletableFuture.completedFuture(Collections.emptyList());
         }
