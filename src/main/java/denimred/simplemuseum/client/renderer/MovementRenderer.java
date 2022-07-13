@@ -27,7 +27,7 @@ import denimred.simplemuseum.common.entity.puppet.goals.movement.Point;
 
 public class MovementRenderer {
 
-    public static void render(PoseStack matrixStack) {
+    public static void render(PoseStack poseStack) {
         if(MovementEditorClient.isEditing()) {
             Movement movement = MovementEditorClient.getCurrentMovement();
 
@@ -35,39 +35,47 @@ public class MovementRenderer {
             VertexConsumer buffer = source.getBuffer(RenderType.LINES);
             Vec3 camPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
 
-            matrixStack.pushPose();
-            matrixStack.translate(-camPos.x, -camPos.y, -camPos.z);
+            poseStack.pushPose();
+            poseStack.translate(-camPos.x, -camPos.y, -camPos.z);
 
-            Matrix4f pose = matrixStack.last().pose();
+            Matrix4f pose = poseStack.last().pose();
             Vec3 lastPos = null;
 
             if(movement instanceof Movement.Path) {
                 for (Point point : ((Movement.Path)movement).getMovementPoints()) {
-                    matrixStack.pushPose();
-                    renderMovementPoint(point, lastPos, false, pose, buffer);
-                    matrixStack.popPose();
+                    renderMovementPoint(point, lastPos, false, pose, poseStack, buffer);
                     lastPos = point.pos;
                 }
             }
 
             source.endBatch(RenderType.LINES);
-            matrixStack.popPose();
+            poseStack.popPose();
 
             if(movement instanceof Movement.Area && ((Movement.Area)movement).isComplete())
-                AreaHandler.render(matrixStack);
+                AreaHandler.render(poseStack);
         }
     }
 
-    private static void renderMovementPoint(Point point, @Nullable Vec3 lastPos, boolean poi, Matrix4f pose, VertexConsumer buffer) {
+    private static void renderMovementPoint(Point point, @Nullable Vec3 lastPos, boolean child, Matrix4f pose, PoseStack poseStack, VertexConsumer buffer) {
         Vec3 pos = point.pos;
+        poseStack.pushPose();
 
-        if (lastPos != null && !poi) {
+        if (lastPos != null && !child) {
             buffer.vertex(pose, (float) lastPos.x, (float) lastPos.y + 1, (float) lastPos.z).color(1f, 0f, 0f, 1f).endVertex();
             buffer.vertex(pose, (float) pos.x, (float) pos.y + 1, (float) pos.z).color(1f, 0f, 0f, 1f).endVertex();
         }
-        Color c = poi ? new Color(0f, 0f, 1f) : new Color(1f, 0f, 0f);
+        Color c = child ? new Color(0f, 0f, 1f) : new Color(1f, 0f, 0f);
         buffer.vertex(pose, (float) pos.x, (float) pos.y, (float) pos.z).color(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, 1f).endVertex();
         buffer.vertex(pose, (float) pos.x, (float) pos.y + 1, (float) pos.z).color(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, 1f).endVertex();
+
+        if(!point.childPoints.isEmpty()) {
+            Vec3 lastChildPos = null;
+            for (Point childPoint : point.childPoints) {
+                renderMovementPoint(childPoint, lastChildPos, true, pose, poseStack, buffer);
+                lastChildPos = point.pos;
+            }
+        }
+        poseStack.popPose();
     }
 
     private static void renderFace(Matrix4f pose, VertexConsumer buffer, Direction direction, AABB area) {
