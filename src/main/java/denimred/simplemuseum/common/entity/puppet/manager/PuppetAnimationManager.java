@@ -22,6 +22,7 @@ import software.bernie.geckolib3.core.PlayState;
 import software.bernie.geckolib3.core.builder.Animation;
 import software.bernie.geckolib3.core.builder.AnimationBuilder;
 import software.bernie.geckolib3.core.controller.AnimationController;
+import software.bernie.geckolib3.core.event.CustomInstructionKeyframeEvent;
 import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 import software.bernie.geckolib3.resource.GeckoLibCache;
@@ -108,6 +109,7 @@ public final class PuppetAnimationManager extends PuppetValueManager {
     public PuppetAnimationManager(PuppetEntity puppet) {
         super(puppet, NBT_KEY, TRANSLATION_KEY);
         controller.registerSoundListener(puppet.audioManager::playAnimSound);
+        controller.registerCustomInstructionListener(this::expressionListener);
     }
 
     private static PuppetKey key(String provider) {
@@ -150,6 +152,13 @@ public final class PuppetAnimationManager extends PuppetValueManager {
         if (!EXPRESSION_DATA_CACHE.containsKey(location))
             EXPRESSION_DATA_CACHE.put(location, ExpressionDataSection.EMPTY);
         return ExpressionDataSection.EMPTY;
+    }
+
+    private <T extends IAnimatable> void expressionListener(CustomInstructionKeyframeEvent<T> event) {
+        if (expressionsEnabled.get()) {
+            if (event.instructions.startsWith("expression."))
+                animatedExpression = event.instructions.substring("expression.".length());
+        }
     }
 
     private static boolean validateAnimation(PuppetEntity puppet, String anim) {
