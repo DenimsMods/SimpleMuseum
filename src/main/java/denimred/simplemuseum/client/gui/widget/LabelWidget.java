@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.FormattedText;
@@ -106,24 +107,9 @@ public class LabelWidget extends AbstractWidget {
 
             isHovered = mouseX >= left && mouseY >= top && mouseX < right && mouseY < bottom;
 
-            if (wasHovered != this.isHovered()) {
-                if (this.isHovered()) {
-                    if (focused) {
-                        this.queueNarration(200);
-                    } else {
-                        this.queueNarration(750);
-                    }
-                } else {
-                    nextNarration = Long.MAX_VALUE;
-                }
-            }
-
             if (visible) {
                 this.renderButton(poseStack, mouseX, mouseY, partialTicks);
             }
-
-            this.narrate();
-            wasHovered = this.isHovered();
         }
     }
 
@@ -168,7 +154,7 @@ public class LabelWidget extends AbstractWidget {
 
             font.drawShadow(poseStack, Language.getInstance().getVisualOrder(text), x, y, -1);
         }
-        if (tooltip != null && this.isHovered()) {
+        if (tooltip != null && this.isHoveredOrFocused()) {
             tooltip.render(this, poseStack, mouseX, mouseY);
         }
     }
@@ -208,6 +194,11 @@ public class LabelWidget extends AbstractWidget {
             }
         }
         this.setTexts(wrapped);
+    }
+
+    @Override
+    public void updateNarration(NarrationElementOutput narrationElementOutput) {
+        // no-op
     }
 
     public enum AnchorX {

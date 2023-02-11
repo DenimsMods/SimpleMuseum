@@ -3,6 +3,7 @@ package denimred.simplemuseum.client.gui.widget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
@@ -76,13 +77,14 @@ public class IconButton extends BetterButton {
     @SuppressWarnings("deprecation") // >:I Mojang
     @Override
     public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
-        TEXTURE_MANAGER.bind(resourceLocation);
-        final int yTex = yTexStart + (yDiffText * this.getYImage(this.isHovered()));
-        RenderSystem.color4f(1.0F, 1.0F, 1.0F, alpha);
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShaderTexture(0, resourceLocation);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
+        final int yTex = yTexStart + (yDiffText * this.getYImage(this.isHoveredOrFocused()));
         RenderSystem.enableDepthTest();
         RenderSystem.enableBlend();
         blit(poseStack, x, y, xTexStart, yTex, width, height, textureWidth, textureHeight);
-        if (this.isHovered()) {
+        if (this.isHoveredOrFocused()) {
             this.renderToolTip(poseStack, mouseX, mouseY);
         }
         RenderSystem.disableBlend();

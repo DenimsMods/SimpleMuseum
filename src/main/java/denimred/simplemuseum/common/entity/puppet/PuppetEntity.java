@@ -422,9 +422,8 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable, IAn
     }
 
     @Override
-    protected SoundEvent getFallDamageSound(int heightIn) {
-        // TODO: Make this configurable
-        return SoundEvents.ARMOR_STAND_FALL;
+    public Fallsounds getFallSounds() {
+        return new Fallsounds(SoundEvents.ARMOR_STAND_FALL, SoundEvents.ARMOR_STAND_FALL);
     }
 
     @Override
@@ -508,7 +507,7 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable, IAn
         if (Double.isNaN(d0)) {
             d0 = 1.0D;
         }
-        d0 = d0 * 64.0D * viewScale;
+        d0 = d0 * 64.0D * getViewScale();
         return distance < d0 * d0;
     }
 
@@ -518,8 +517,8 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable, IAn
     }
 
     @Override
-    public boolean isGlowing() {
-        return super.isGlowing() || level.isClientSide && ClientUtil.shouldPuppetGlow(this);
+    public boolean isCurrentlyGlowing() {
+        return super.isCurrentlyGlowing() || level.isClientSide && ClientUtil.shouldPuppetGlow(this);
     }
 
     @Override

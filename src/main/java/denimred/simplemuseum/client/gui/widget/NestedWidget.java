@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 
@@ -190,5 +191,10 @@ public class NestedWidget extends AbstractWidget implements ITickingWidget {
                 ((ITickingWidget) child).tick();
             }
         }
+    }
+
+    @Override
+    public void updateNarration(NarrationElementOutput narrationElementOutput) {
+        // no-op
     }
 }

@@ -6,7 +6,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.Tickable;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -213,6 +215,11 @@ public class MovementButtons extends AbstractWidget implements Tickable {
         }
     }
 
+    @Override
+    public void updateNarration(NarrationElementOutput narrationElementOutput) {
+        // no-op
+    }
+
     @FunctionalInterface
     public interface MultiPressable {
         void press(int index);
@@ -250,21 +257,21 @@ public class MovementButtons extends AbstractWidget implements Tickable {
         @SuppressWarnings("deprecation") // >:I Mojang
         @Override
         public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
-            Minecraft minecraft = Minecraft.getInstance();
-            minecraft.getTextureManager().bind(MOVEMENT_BUTTONS_TEXTURE);
+            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShaderTexture(0, MOVEMENT_BUTTONS_TEXTURE);
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
             int yTex = SIZE * row;
             if (!active) {
                 yTex += SIZE * (DIM * 3);
             } else if (down) {
                 yTex += SIZE * (DIM * 2);
-            } else if (this.isHovered()) {
+            } else if (this.isHoveredOrFocused()) {
                 yTex += SIZE * DIM;
             }
 
-            RenderSystem.color4f(1.0F, 1.0F, 1.0F, alpha);
             RenderSystem.enableDepthTest();
             blit(poseStack, x, y, SIZE * col, yTex, width, height, 64, 256);
-            if (this.isHovered()) {
+            if (this.isHoveredOrFocused()) {
                 this.renderToolTip(poseStack, mouseX, mouseY);
             }
         }

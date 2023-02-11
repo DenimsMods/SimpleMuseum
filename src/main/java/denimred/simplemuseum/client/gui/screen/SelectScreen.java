@@ -59,7 +59,7 @@ public abstract class SelectScreen<T> extends Screen {
                         20,
                         GuiLang.SEARCH.asText());
 
-        this.addButton(
+        this.addRenderableWidget(
                 new Button(
                         remainingX,
                         bottom - 20 - (20 + (margin / 2)),
@@ -67,7 +67,7 @@ public abstract class SelectScreen<T> extends Screen {
                         20,
                         CommonComponents.GUI_DONE,
                         b -> this.saveAndClose()));
-        this.addButton(
+        this.addRenderableWidget(
                 new Button(
                         remainingX,
                         bottom - 20,
@@ -86,7 +86,7 @@ public abstract class SelectScreen<T> extends Screen {
                         list.setScrollAmount(0.0D);
                     }
                 });
-        children.add(search);
+        addWidget(search);
 
         list.setLeftPos(margin);
         list.setRenderBackground(false);
@@ -99,7 +99,7 @@ public abstract class SelectScreen<T> extends Screen {
                             selected = entry;
                             list.setSelected(entry);
                         });
-        children.add(list);
+        addWidget(list);
     }
 
     @Override
@@ -295,6 +295,11 @@ public abstract class SelectScreen<T> extends Screen {
                 SelectScreen.this.setSelected(this);
                 ListWidget.this.setSelected(this);
                 return false;
+            }
+
+            @Override
+            public Component getNarration() {
+                return new TextComponent(value.toString());
             }
         }
     }

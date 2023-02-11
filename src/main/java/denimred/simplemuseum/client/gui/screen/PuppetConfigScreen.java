@@ -10,6 +10,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
@@ -17,7 +18,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.fml.client.gui.GuiUtils;
+import net.minecraftforge.client.gui.GuiUtils;
 
 import org.lwjgl.glfw.GLFW;
 
@@ -71,12 +72,6 @@ public class PuppetConfigScreen extends Screen {
     }
 
     @Override
-    public void init(Minecraft minecraft, int width, int height) {
-        minecraft.keyboardHandler.setSendRepeatsToGui(true);
-        super.init(minecraft, width, height);
-    }
-
-    @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         for (GuiEventListener child : this.children()) {
             if (child.mouseClicked(mouseX, mouseY, button)) {
@@ -126,12 +121,13 @@ public class PuppetConfigScreen extends Screen {
 
     @Override
     protected void init() {
+        minecraft.keyboardHandler.setSendRepeatsToGui(true);
         // Order is important to make sure clicks are consumed correctly
-        confirmPopup = this.addButton(new ConfirmPopupWidget(width / 2, height / 2, font));
+        confirmPopup = this.addRenderableWidget(new ConfirmPopupWidget(width / 2, height / 2, font));
         confirmPopup.setBlitOffset(1000);
         final int third = width / 3;
         preview =
-                this.addButton(
+                this.addRenderableWidget(
                         new PuppetPreviewWidget(
                                 this,
                                 third * 2,
@@ -140,10 +136,10 @@ public class PuppetConfigScreen extends Screen {
                                 height,
                                 puppetCopy,
                                 this::renderWidgetTooltip));
-        list = this.addButton(new WidgetList<>(this, 2, 24, third * 2 - 4, height - 48));
-        copyPaste = this.addButton(new CopyPasteButtons(this, 2, 2));
+        list = this.addRenderableWidget(new WidgetList<>(this, 2, 24, third * 2 - 4, height - 48));
+        copyPaste = this.addRenderableWidget(new CopyPasteButtons(this, 2, 2));
         move =
-                this.addButton(
+                this.addRenderableWidget(
                         new IconButton(
                                 48,
                                 2,
@@ -159,7 +155,7 @@ public class PuppetConfigScreen extends Screen {
                                 this::renderWidgetTooltip,
                                 GuiLang.PUPPET_MOVE.asText()));
         tabs =
-                this.addButton(
+                this.addRenderableWidget(
                         new ManagerTabs(
                                 this,
                                 third - (20 * puppetCopy.getManagers().size()) / 2,
@@ -174,7 +170,7 @@ public class PuppetConfigScreen extends Screen {
                                 }));
         final int bw = (third * 2) / 3;
         doneButton =
-                this.addButton(
+                this.addRenderableWidget(
                         new BetterButton(
                                 third - bw,
                                 height - 22,
@@ -183,7 +179,7 @@ public class PuppetConfigScreen extends Screen {
                                 new TextComponent("Done"),
                                 b -> this.saveAndClose()));
         cancelButton =
-                this.addButton(
+                this.addRenderableWidget(
                         new BetterButton(
                                 third,
                                 height - 22,
@@ -214,14 +210,13 @@ public class PuppetConfigScreen extends Screen {
     }
 
     @Override
-    public void renderWrappedToolTip(
+    protected void renderTooltipInternal(
             PoseStack poseStack,
-            List<? extends FormattedText> lines,
+            List<ClientTooltipComponent> lines,
             int mouseX,
-            int mouseY,
-            Font font) {
+            int mouseY) {
         ScissorUtil.push();
-        GuiUtils.drawHoveringText(poseStack, lines, mouseX, mouseY, width, height, -1, font);
+        renderComponentTooltip(poseStack, (List<? extends FormattedText>) lines, mouseX, mouseY, font);
         ScissorUtil.pop();
     }
 
@@ -243,7 +238,7 @@ public class PuppetConfigScreen extends Screen {
             lines.addAll(desc.getAdvancedDescription());
         }
         ScissorUtil.push();
-        GuiUtils.drawHoveringText(poseStack, lines, mouseX, mouseY, width, height, 200, font);
+        renderComponentTooltip(poseStack, lines, mouseX, mouseY, font);
         ScissorUtil.pop();
     }
 

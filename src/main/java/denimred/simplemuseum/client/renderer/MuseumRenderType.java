@@ -2,6 +2,7 @@ package denimred.simplemuseum.client.renderer;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
@@ -14,7 +15,7 @@ import denimred.simplemuseum.SimpleMuseum;
 public final class MuseumRenderType extends RenderType {
     @SuppressWarnings("ConstantConditions")
     private MuseumRenderType() {
-        super(null, null, 0, 0, false, false, null, null);
+        super(null, null, VertexFormat.Mode.LINES, 0, false, false, null, null);
         throw new UnsupportedOperationException("Utility class instantiation");
     }
 

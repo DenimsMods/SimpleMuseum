@@ -7,7 +7,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.event.GuiScreenEvent.BackgroundDrawnEvent;
+import net.minecraftforge.client.event.ScreenEvent.BackgroundDrawnEvent;
 import net.minecraftforge.common.MinecraftForge;
 
 import javax.annotation.Nullable;
@@ -39,11 +39,11 @@ public class MovePuppetScreen extends PuppetScreen {
     }
 
     @Override
-    protected void init() {
+    public void init() {
         state.save();
 
         final Button backButton =
-                this.addButton(
+                this.addRenderableWidget(
                         new Button(
                                 MARGIN,
                                 MARGIN,
@@ -122,7 +122,7 @@ public class MovePuppetScreen extends PuppetScreen {
                                 () -> NumberUtil.parseString(puppet.yRot)));
         final int buttonsY = yawField.y + yawField.getHeight() + MARGIN;
         applyButton =
-                this.addButton(
+                this.addRenderableWidget(
                         new Button(
                                 MARGIN,
                                 buttonsY,
@@ -156,7 +156,7 @@ public class MovePuppetScreen extends PuppetScreen {
                                     yawField.reset();
                                 }));
         resetButton =
-                this.addButton(
+                this.addRenderableWidget(
                         new Button(
                                 applyButton.x + applyButton.getWidth() + MARGIN,
                                 buttonsY,

@@ -2,9 +2,10 @@ package denimred.simplemuseum.client.gui.widget.value;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraftforge.fml.client.gui.widget.ExtendedButton;
+import net.minecraftforge.client.gui.widget.ExtendedButton;
 
 import denimred.simplemuseum.client.gui.screen.PuppetConfigScreen;
 import denimred.simplemuseum.common.entity.puppet.manager.value.PuppetValue;
@@ -70,5 +71,10 @@ public final class BoolWidget extends ValueWidget<Boolean, PuppetValue<Boolean, 
                 valueRef.get()
                         ? msgTrue.setStyle(msgTrue.getStyle())
                         : msgFalse.setStyle(msgFalse.getStyle()));
+    }
+
+    @Override
+    public void updateNarration(NarrationElementOutput narrationElementOutput) {
+        // no-op
     }
 }

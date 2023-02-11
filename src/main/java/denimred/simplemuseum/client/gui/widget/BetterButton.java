@@ -3,7 +3,7 @@ package denimred.simplemuseum.client.gui.widget;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.fml.client.gui.widget.ExtendedButton;
+import net.minecraftforge.client.gui.widget.ExtendedButton;
 
 // Forge pls
 public class BetterButton extends ExtendedButton {

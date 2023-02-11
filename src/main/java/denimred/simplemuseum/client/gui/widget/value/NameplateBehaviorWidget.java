@@ -1,8 +1,9 @@
 package denimred.simplemuseum.client.gui.widget.value;
 
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.TextComponent;
-import net.minecraftforge.fml.client.gui.widget.ExtendedButton;
+import net.minecraftforge.client.gui.widget.ExtendedButton;
 
 import java.util.Arrays;
 import java.util.List;
@@ -56,6 +57,11 @@ public final class NameplateBehaviorWidget
     @Override
     public void syncWithValue() {
         button.setMessage(new TextComponent(valueRef.get().name()));
+    }
+
+    @Override
+    public void updateNarration(NarrationElementOutput narrationElementOutput) {
+        // no-op
     }
 
     private final class AnimSelectScreen extends SelectScreen<NameplateBehavior> {

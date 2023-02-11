@@ -42,7 +42,7 @@ public class C2SCryptMasterRemovePuppet {
             if (entity instanceof PuppetEntity) {
                 if (world.hasChunkAt(entity.blockPosition()) && ((PuppetEntity) entity).exists()) {
                     // TODO: Do permissions check?
-                    entity.remove();
+                    entity.remove(Entity.RemovalReason.DISCARDED);
                 }
             }
         }

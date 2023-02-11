@@ -42,9 +42,8 @@ public abstract class PuppetScreen extends Screen {
     }
 
     @Override
-    public void init(Minecraft minecraft, int width, int height) {
+    public void init() {
         minecraft.keyboardHandler.setSendRepeatsToGui(true);
-        super.init(minecraft, width, height);
     }
 
     @Override

@@ -6,6 +6,7 @@ import com.mojang.authlib.minecraft.MinecraftProfileTexture.Type;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.resources.SkinManager;
 import net.minecraft.network.chat.Component;
@@ -40,18 +41,19 @@ public class PlayerIconButton extends IconButton {
 
     @Override
     public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
-        TEXTURE_MANAGER.bind(resourceLocation);
-        final int yTex = yTexStart + (yDiffText * this.getYImage(this.isHovered()));
-        RenderSystem.color4f(1.0F, 1.0F, 1.0F, alpha);
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShaderTexture(0, resourceLocation);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
+        final int yTex = yTexStart + (yDiffText * this.getYImage(this.isHoveredOrFocused()));
         RenderSystem.enableDepthTest();
         RenderSystem.enableBlend();
         blit(poseStack, x, y, xTexStart, yTex, width, height, textureWidth, textureHeight);
-        TEXTURE_MANAGER.bind(skinLocation);
-        RenderSystem.color4f(0.3F, 0.3F, 0.3F, alpha);
+        RenderSystem.setShaderTexture(0, skinLocation);
+        RenderSystem.setShaderColor(0.3F, 0.3F, 0.3F, alpha);
         blitFace(poseStack, x + 4, y + 4, 13);
-        RenderSystem.color4f(1.0F, 1.0F, 1.0F, alpha);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha);
         blitFace(poseStack, x + 3, y + 3, 13);
-        if (this.isHovered()) {
+        if (this.isHoveredOrFocused()) {
             this.renderToolTip(poseStack, mouseX, mouseY);
         }
     }

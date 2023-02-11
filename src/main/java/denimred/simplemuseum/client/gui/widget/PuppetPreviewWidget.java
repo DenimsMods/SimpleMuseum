@@ -9,6 +9,7 @@ import com.mojang.math.Vector3f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -319,7 +320,7 @@ public class PuppetPreviewWidget extends AbstractWidget {
             entityPS.pushPose();
             entityPS.translate(-0.5F, yOff - 1.0F, -0.5F);
             MC.getBlockRenderer()
-                    .renderBlock(
+                    .renderSingleBlock(
                             Blocks.GRASS_BLOCK.defaultBlockState(),
                             entityPS,
                             buffers,
@@ -355,7 +356,7 @@ public class PuppetPreviewWidget extends AbstractWidget {
                 entityPS.pushPose();
                 entityPS.translate(xOff - 0.5F, yOff - 1.0F, -0.5F);
                 MC.getBlockRenderer()
-                        .renderBlock(
+                        .renderSingleBlock(
                                 Blocks.GRASS_BLOCK.defaultBlockState(),
                                 entityPS,
                                 buffers,
@@ -471,5 +472,10 @@ public class PuppetPreviewWidget extends AbstractWidget {
             }
         }
         return super.isMouseOver(mouseX, mouseY);
+    }
+
+    @Override
+    public void updateNarration(NarrationElementOutput narrationElementOutput) {
+        // no-op
     }
 }
