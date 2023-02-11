@@ -9,6 +9,8 @@ import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.EntityRendererProvider.Context;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.AABB;
 
@@ -26,8 +28,8 @@ import software.bernie.geckolib3.renderers.geo.GeoEntityRenderer;
 import software.bernie.geckolib3.util.RenderUtils;
 
 public class PuppetRenderer extends GeoEntityRenderer<PuppetEntity> {
-    public PuppetRenderer(EntityRenderDispatcher dispatcher) {
-        super(dispatcher, new PuppetModel());
+    public PuppetRenderer(Context context) {
+        super(context, new PuppetModel());
         this.addLayer(new PuppetBannersLayerRenderer(this, 16, 1.0D));
     }
 

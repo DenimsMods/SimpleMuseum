@@ -3,8 +3,8 @@ package denimred.simplemuseum.client.event;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ClientPlayerChangeGameModeEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -35,7 +35,7 @@ public class ClientForgeEventHandler {
     }
 
     @SubscribeEvent
-    public static void onClientPlayerChangeGameMode(ClientPlayerChangeGameModeEvent event) {
+    public static void onPlayerChangeGameMode(PlayerEvent.PlayerChangeGameModeEvent event) {
         if (event.getNewGameMode() == GameType.SPECTATOR) {
             ClientUtil.setHoldingCane(false);
             ClientUtil.deselectPuppet(false);

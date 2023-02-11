@@ -21,7 +21,6 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.TagType;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
-import net.minecraftforge.common.util.Constants.NBT;
 
 import java.util.LinkedList;
 import java.util.Map;
@@ -52,24 +51,26 @@ import it.unimi.dsi.fastutil.ints.Int2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 
+import static net.minecraft.nbt.Tag.*;
+
 public class LazyUtil {
     private static final Map<Integer, TagType<?>> NBT_TYPES =
             Util.make(
                     new Int2ReferenceOpenHashMap<>(),
                     map -> {
-                        map.put(NBT.TAG_END, EndTag.TYPE);
-                        map.put(NBT.TAG_BYTE, ByteTag.TYPE);
-                        map.put(NBT.TAG_SHORT, ShortTag.TYPE);
-                        map.put(NBT.TAG_INT, IntTag.TYPE);
-                        map.put(NBT.TAG_LONG, LongTag.TYPE);
-                        map.put(NBT.TAG_FLOAT, FloatTag.TYPE);
-                        map.put(NBT.TAG_DOUBLE, DoubleTag.TYPE);
-                        map.put(NBT.TAG_BYTE_ARRAY, ByteArrayTag.TYPE);
-                        map.put(NBT.TAG_STRING, StringTag.TYPE);
-                        map.put(NBT.TAG_LIST, ListTag.TYPE);
-                        map.put(NBT.TAG_COMPOUND, CompoundTag.TYPE);
-                        map.put(NBT.TAG_INT_ARRAY, IntArrayTag.TYPE);
-                        map.put(NBT.TAG_LONG_ARRAY, LongArrayTag.TYPE);
+                        map.put(TAG_END, EndTag.TYPE);
+                        map.put(TAG_BYTE, ByteTag.TYPE);
+                        map.put(TAG_SHORT, ShortTag.TYPE);
+                        map.put(TAG_INT, IntTag.TYPE);
+                        map.put(TAG_LONG, LongTag.TYPE);
+                        map.put(TAG_FLOAT, FloatTag.TYPE);
+                        map.put(TAG_DOUBLE, DoubleTag.TYPE);
+                        map.put(TAG_BYTE_ARRAY, ByteArrayTag.TYPE);
+                        map.put(TAG_STRING, StringTag.TYPE);
+                        map.put(TAG_LIST, ListTag.TYPE);
+                        map.put(TAG_COMPOUND, CompoundTag.TYPE);
+                        map.put(TAG_INT_ARRAY, IntArrayTag.TYPE);
+                        map.put(TAG_LONG_ARRAY, LongArrayTag.TYPE);
                     });
     private static final Map<PuppetValueProvider<?, ?>, ValueWidgetFactory> VALUE_WIDGET_FACTORIES =
             Util.make(

@@ -1,9 +1,9 @@
 plugins {
-    id "dev.architectury.loom" version "0.10.0-SNAPSHOT"
+    id "dev.architectury.loom" version "0.12.0-SNAPSHOT"
     id "maven-publish"
 }
 
-sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_17
 
 archivesBaseName = mod_id
 version = mod_version
@@ -91,16 +91,17 @@ dependencies {
     mappings loom.layered {
         officialMojangMappings()
         parchment("org.parchmentmc.data:parchment-${minecraft_version}:${parchment_version}@zip")
+        mappings(rootProject.file("geckolib-fix.mapping")) {
+            enigmaMappings()
+        }
     }
 
     // GeckoLib
-    modImplementation "software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}"
+    modImplementation "software.bernie.geckolib:geckolib-forge-1.18:${geckolib_version}"
     // CryptMaster
-    modImplementation "curse.maven:cryptmaster-441431:${cryptmaster_file}"
-    modRuntimeOnly "curse.maven:architectury-419699:${architectury_file}"
-    modRuntimeOnly "curse.maven:kotlinforforge-351264:${kotlinforforge_file}"
-    // http://www.jhlabs.com/ip/filters/index.html (For wacky texture datagen)
-    implementation "libs:Filters:"
+    //modImplementation "curse.maven:cryptmaster-441431:${cryptmaster_file}"
+    //modRuntimeOnly "curse.maven:architectury-419699:${architectury_file}"
+    //modRuntimeOnly "curse.maven:kotlinforforge-351264:${kotlinforforge_file}"
 
     // Maps everything in the mods directory as a runtime dep
     fileTree("mods").visit { FileVisitDetails details ->
@@ -118,11 +119,7 @@ processResources {
 
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
-
-    def targetVersion = 8
-    if (JavaVersion.current().isJava9Compatible()) {
-        options.release = targetVersion
-    }
+    options.release = 17
 }
 
 java {

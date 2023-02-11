@@ -7,15 +7,21 @@ import denimred.simplemuseum.common.entity.puppet.manager.value.checked.CheckedV
 import denimred.simplemuseum.common.entity.puppet.manager.value.primitive.IntProvider;
 import denimred.simplemuseum.common.entity.puppet.manager.value.primitive.IntValue;
 import denimred.simplemuseum.common.i18n.I18nUtil;
+import org.openjdk.nashorn.api.tree.LoopTree;
 import software.bernie.geckolib3.core.AnimationState;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
 import software.bernie.geckolib3.core.builder.Animation;
 import software.bernie.geckolib3.core.builder.AnimationBuilder;
+import software.bernie.geckolib3.core.builder.ILoopType;
 import software.bernie.geckolib3.core.controller.AnimationController;
 import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
+import software.bernie.geckolib3.core.manager.InstancedAnimationFactory;
 import software.bernie.geckolib3.resource.GeckoLibCache;
+
+import static software.bernie.geckolib3.core.builder.ILoopType.EDefaultLoopTypes.LOOP;
+import static software.bernie.geckolib3.core.builder.ILoopType.EDefaultLoopTypes.PLAY_ONCE;
 
 public final class PuppetAnimationManager extends PuppetValueManager {
     public static final String NBT_KEY = "AnimationManager";
@@ -74,7 +80,7 @@ public final class PuppetAnimationManager extends PuppetValueManager {
     public final CheckedValue<String> death = this.value(DEATH);
     public final IntValue deathLength = this.value(DEATH_LENGTH);
 
-    public final AnimationFactory factory = new AnimationFactory(puppet);
+    public final AnimationFactory factory = new InstancedAnimationFactory(puppet);
     public final AnimationController<PuppetEntity> controller =
             new AnimationController<>(puppet, "controller", 3, this::getAnimState);
 
@@ -122,7 +128,7 @@ public final class PuppetAnimationManager extends PuppetValueManager {
             }
             // Continue playing the current non-looping animation until it's done
             final Animation current = controller.getCurrentAnimation();
-            if (current != null && !current.loop && state != AnimationState.Stopped) {
+            if (current != null && !current.loop.isRepeatingAfterEnd() && state != AnimationState.Stopped) {
                 return PlayState.CONTINUE;
             }
             // Sitting animation, override moving
@@ -154,7 +160,8 @@ public final class PuppetAnimationManager extends PuppetValueManager {
         if (checked.isValid()) {
             final String anim = checked.getSafe();
             if (!anim.isEmpty()) {
-                controller.setAnimation(new AnimationBuilder().addAnimation(anim, loop));
+                // TODO: Loop changes may cause issues
+                controller.setAnimation(new AnimationBuilder().addAnimation(anim, loop ? LOOP : PLAY_ONCE));
                 return true;
             }
         }
@@ -163,7 +170,7 @@ public final class PuppetAnimationManager extends PuppetValueManager {
 
     public void playAnimOnce(String anim) {
         if (validateAnimation(puppet, anim, false)) {
-            controller.setAnimation(new AnimationBuilder().addAnimation(anim, false));
+            controller.setAnimation(new AnimationBuilder().addAnimation(anim, PLAY_ONCE));
             controller.markNeedsReload();
         }
     }

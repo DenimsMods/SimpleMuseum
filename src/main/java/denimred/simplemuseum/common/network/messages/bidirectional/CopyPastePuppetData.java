@@ -8,8 +8,6 @@ import net.minecraft.nbt.TagParser;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.fml.network.NetworkEvent;
-import net.minecraftforge.fml.network.simple.SimpleChannel;
 
 import java.util.function.Supplier;
 
@@ -18,6 +16,8 @@ import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
 import denimred.simplemuseum.common.i18n.lang.MiscLang;
 import denimred.simplemuseum.common.init.MuseumNetworking;
 import denimred.simplemuseum.common.network.NetworkUtil;
+import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.network.simple.SimpleChannel;
 
 public final class CopyPastePuppetData {
     private static final int REQUEST_COPY = 0;

@@ -1,12 +1,13 @@
 package denimred.simplemuseum.common.util;
 
-import static net.minecraftforge.common.util.Constants.NBT.TAG_BYTE;
-import static net.minecraftforge.common.util.Constants.NBT.TAG_INT;
 
 import net.minecraft.nbt.CompoundTag;
 
 import java.awt.Color;
 import java.util.Objects;
+
+import static net.minecraft.nbt.Tag.TAG_BYTE;
+import static net.minecraft.nbt.Tag.TAG_INT;
 
 public final class GlowColor {
     public static final GlowColor DEFAULT = new GlowColor(Color.WHITE, true);

@@ -1,7 +1,5 @@
 package denimred.simplemuseum.common.entity.puppet.manager;
 
-import static net.minecraftforge.common.util.Constants.NBT.TAG_COMPOUND;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.MutableComponent;
@@ -24,6 +22,8 @@ import denimred.simplemuseum.common.entity.puppet.manager.value.checked.CheckedV
 import denimred.simplemuseum.common.i18n.Descriptive;
 import denimred.simplemuseum.common.i18n.I18nUtil;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceLinkedOpenHashMap;
+
+import static net.minecraft.nbt.Tag.TAG_COMPOUND;
 
 public abstract class PuppetValueManager implements Descriptive {
     public final PuppetEntity puppet;

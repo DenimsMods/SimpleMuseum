@@ -29,7 +29,6 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 
-@SuppressWarnings("UnstableApiUsage")
 public abstract class TextureProvider implements DataProvider {
     protected static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     protected static final MinecraftSessionService SESSION =

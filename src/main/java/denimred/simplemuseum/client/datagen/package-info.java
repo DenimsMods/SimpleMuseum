@@ -2,6 +2,6 @@
 @MethodsReturnNonnullByDefault
 package denimred.simplemuseum.client.datagen;
 
-import javax.annotation.ParametersAreNonnullByDefault;
+import net.minecraft.MethodsReturnNonnullByDefault;
 
-import mcp.MethodsReturnNonnullByDefault;
+import javax.annotation.ParametersAreNonnullByDefault;

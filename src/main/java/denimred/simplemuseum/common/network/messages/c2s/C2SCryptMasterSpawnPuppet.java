@@ -5,11 +5,11 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
 import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
+import net.minecraftforge.network.NetworkEvent;
 
 public class C2SCryptMasterSpawnPuppet {
     private final Vec3 pos;

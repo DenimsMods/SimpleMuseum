@@ -1,5 +1,6 @@
 package denimred.simplemuseum.common.util;
 
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.FloatTag;
@@ -12,13 +13,13 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntityDimensions;
-import net.minecraftforge.common.util.Constants;
 
-import java.awt.Color;
+import java.awt.*;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import static net.minecraft.nbt.Tag.*;
 
 public final class ValueSerializers {
     public static final IValueSerializer<Boolean> BOOLEAN =
@@ -40,7 +41,7 @@ public final class ValueSerializers {
 
                 @Override
                 public int getTagId() {
-                    return Constants.NBT.TAG_BYTE;
+                    return TAG_BYTE;
                 }
             };
 
@@ -73,7 +74,7 @@ public final class ValueSerializers {
 
                 @Override
                 public int getTagId() {
-                    return Constants.NBT.TAG_INT;
+                    return TAG_INT;
                 }
             };
 
@@ -96,7 +97,7 @@ public final class ValueSerializers {
 
                 @Override
                 public int getTagId() {
-                    return Constants.NBT.TAG_FLOAT;
+                    return TAG_FLOAT;
                 }
             };
 
@@ -119,7 +120,7 @@ public final class ValueSerializers {
 
                 @Override
                 public int getTagId() {
-                    return Constants.NBT.TAG_STRING;
+                    return TAG_STRING;
                 }
             };
 
@@ -157,7 +158,7 @@ public final class ValueSerializers {
 
                 @Override
                 public int getTagId() {
-                    return Constants.NBT.TAG_STRING;
+                    return TAG_STRING;
                 }
             };
 
@@ -181,12 +182,12 @@ public final class ValueSerializers {
 
                 @Override
                 public int getTagId() {
-                    return Constants.NBT.TAG_STRING;
+                    return TAG_STRING;
                 }
             };
 
     public static final IValueSerializer<Color> COLOR =
-            new IValueSerializer<Color>() {
+            new IValueSerializer<>() {
                 @Override
                 public Color read(CompoundTag tag, String key) {
                     return new Color(tag.getInt(key));
@@ -219,15 +220,19 @@ public final class ValueSerializers {
 
                 @Override
                 public int getTagId() {
-                    return Constants.NBT.TAG_INT;
+                    return TAG_INT;
                 }
             };
 
     public static final IValueSerializer<SoundSource> SOUND_CATEGORY =
-            new IValueSerializer<SoundSource>() {
+            new IValueSerializer<>() {
+                private static final Map<String, SoundSource> SOUND_SOURCES = Util.make(new HashMap<>(), map -> {
+                    for (SoundSource s : SoundSource.values()) map.put(s.getName(), s);
+                });
+
                 @Override
                 public SoundSource read(CompoundTag tag, String key) {
-                    return SoundSource.BY_NAME.get(tag.getString(key));
+                    return SOUND_SOURCES.get(tag.getString(key));
                 }
 
                 @Override
@@ -252,15 +257,15 @@ public final class ValueSerializers {
 
                 @Override
                 public int getTagId() {
-                    return Constants.NBT.TAG_STRING;
+                    return TAG_STRING;
                 }
             };
 
     public static final IValueSerializer<EntityDimensions> ENTITY_SIZE =
-            new IValueSerializer<EntityDimensions>() {
+            new IValueSerializer<>() {
                 @Override
                 public EntityDimensions read(CompoundTag tag, String key) {
-                    final ListTag list = tag.getList(key, Constants.NBT.TAG_FLOAT);
+                    final ListTag list = tag.getList(key, TAG_FLOAT);
                     return EntityDimensions.scalable(list.getFloat(0), list.getFloat(1));
                 }
 
@@ -290,12 +295,12 @@ public final class ValueSerializers {
 
                 @Override
                 public int getTagId() {
-                    return Constants.NBT.TAG_LIST;
+                    return TAG_LIST;
                 }
             };
 
     public static final IValueSerializer<GlowColor> GLOW_COLOR =
-            new IValueSerializer<GlowColor>() {
+            new IValueSerializer<>() {
                 @Override
                 public GlowColor read(CompoundTag tag, String key) {
                     return GlowColor.deserialize(tag.getCompound(key));
@@ -324,7 +329,7 @@ public final class ValueSerializers {
 
                 @Override
                 public int getTagId() {
-                    return Constants.NBT.TAG_COMPOUND;
+                    return TAG_COMPOUND;
                 }
             };
 
@@ -387,7 +392,7 @@ public final class ValueSerializers {
 
             @Override
             public int getTagId() {
-                return Constants.NBT.TAG_INT;
+                return TAG_INT;
             }
         };
     }

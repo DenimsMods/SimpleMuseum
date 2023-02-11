@@ -5,10 +5,8 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.resource.IResourceType;
-import net.minecraftforge.resource.ISelectiveResourceReloadListener;
-import net.minecraftforge.resource.VanillaResourceType;
 
 import java.io.IOException;
 import java.util.Comparator;
@@ -66,25 +64,23 @@ public class ResourceUtil {
             final ReloadableResourceManager manager =
                     (ReloadableResourceManager) ClientUtil.MC.getResourceManager();
             manager.registerReloadListener(
-                    (ISelectiveResourceReloadListener) ResourceUtil::onResourceReload);
+                    (ResourceManagerReloadListener) ResourceUtil::onResourceReload);
         }
     }
 
-    private static void onResourceReload(ResourceManager manager, Predicate<IResourceType> types) {
-        if (types.test(VanillaResourceType.MODELS) || types.test(VanillaResourceType.TEXTURES)) {
-            for (List<ResourceLocation> value : RESOURCE_CACHE.values()) {
-                value.clear();
-            }
-            RESOURCE_CACHE.clear();
-            ClientUtil.MODEL_BOUNDS.clear();
+    private static void onResourceReload(ResourceManager manager) {
+        for (List<ResourceLocation> value : RESOURCE_CACHE.values()) {
+            value.clear();
+        }
+        RESOURCE_CACHE.clear();
+        ClientUtil.MODEL_BOUNDS.clear();
 
-            final ClientLevel level = ClientUtil.MC.level;
-            if (level != null) {
-                // This is stupid but it's simple and I'm lazy :)
-                for (Entity entity : level.entitiesForRendering()) {
-                    if (entity instanceof PuppetEntity) {
-                        ((PuppetEntity) entity).invalidateCaches();
-                    }
+        final ClientLevel level = ClientUtil.MC.level;
+        if (level != null) {
+            // This is stupid but it's simple and I'm lazy :)
+            for (Entity entity : level.entitiesForRendering()) {
+                if (entity instanceof PuppetEntity) {
+                    ((PuppetEntity) entity).invalidateCaches();
                 }
             }
         }

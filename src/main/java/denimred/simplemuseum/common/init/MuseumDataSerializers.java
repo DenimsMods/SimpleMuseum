@@ -1,6 +1,5 @@
 package denimred.simplemuseum.common.init;
 
-import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DataSerializerEntry;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -8,11 +7,12 @@ import net.minecraftforge.registries.ForgeRegistries;
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.common.entity.puppet.manager.PuppetRenderManager;
 import denimred.simplemuseum.common.util.ValueSerializers;
+import net.minecraftforge.registries.RegistryObject;
 
 @SuppressWarnings("unused")
 public final class MuseumDataSerializers {
     public static final DeferredRegister<DataSerializerEntry> REGISTRY =
-            DeferredRegister.create(ForgeRegistries.DATA_SERIALIZERS, SimpleMuseum.MOD_ID);
+            DeferredRegister.create(ForgeRegistries.Keys.DATA_SERIALIZERS, SimpleMuseum.MOD_ID);
 
     public static final RegistryObject<DataSerializerEntry> INTEGER =
             REGISTRY.register("integer", () -> new DataSerializerEntry(ValueSerializers.INTEGER));

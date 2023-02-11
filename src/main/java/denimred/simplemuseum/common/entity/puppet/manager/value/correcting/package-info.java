@@ -2,6 +2,6 @@
 @MethodsReturnNonnullByDefault
 package denimred.simplemuseum.common.entity.puppet.manager.value.correcting;
 
-import javax.annotation.ParametersAreNonnullByDefault;
+import net.minecraft.MethodsReturnNonnullByDefault;
 
-import mcp.MethodsReturnNonnullByDefault;
+import javax.annotation.ParametersAreNonnullByDefault;

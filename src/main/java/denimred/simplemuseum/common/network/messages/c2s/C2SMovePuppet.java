@@ -7,12 +7,12 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.UUID;
 import java.util.function.Supplier;
 
 import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
+import net.minecraftforge.network.NetworkEvent;
 
 @Deprecated
 public class C2SMovePuppet {

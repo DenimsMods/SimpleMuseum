@@ -1,0 +1,7 @@
+COMMENT GeckoLib 1.18 has a mappings conflict with MojMap, so this Enigma mapping file remaps GeckoLib's problematic methods
+COMMENT TODO: Remove this file in 1.19+ since GeckoLib fixed the mappings issue themselves
+
+CLASS software/bernie/geckolib3/renderers/geo/IGeoRenderer
+	METHOD getTextureLocation getTextureLocation_geckolib (Ljava/lang/Object;)Lnet/minecraft/class_2960;
+CLASS software/bernie/geckolib3/renderers/geo/GeoProjectilesRenderer
+	METHOD getTextureLocation getTextureLocation_geckolib (Lnet/minecraft/class_1297;)Lnet/minecraft/class_2960;

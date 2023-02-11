@@ -2,6 +2,6 @@
 @MethodsReturnNonnullByDefault
 package denimred.simplemuseum.client.gui.widget;
 
-import javax.annotation.ParametersAreNonnullByDefault;
+import net.minecraft.MethodsReturnNonnullByDefault;
 
-import mcp.MethodsReturnNonnullByDefault;
+import javax.annotation.ParametersAreNonnullByDefault;

@@ -3,9 +3,6 @@ package denimred.simplemuseum.common.network.messages.c2s;
 import com.mojang.datafixers.util.Pair;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkEvent;
-import net.minecraftforge.fml.network.simple.SimpleChannel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +19,9 @@ import denimred.simplemuseum.common.entity.puppet.manager.value.PuppetValueProvi
 import denimred.simplemuseum.common.network.NetworkUtil;
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.EncoderException;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.network.simple.SimpleChannel;
 
 public class ConfigurePuppet {
     private final int puppetId;

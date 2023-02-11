@@ -15,7 +15,6 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +24,7 @@ import denimred.simplemuseum.common.i18n.lang.MiscLang;
 import denimred.simplemuseum.common.init.MuseumNetworking;
 import denimred.simplemuseum.common.network.messages.bidirectional.CopyPastePuppetData;
 import denimred.simplemuseum.common.network.messages.s2c.PlayPuppetAnimation;
+import net.minecraftforge.network.PacketDistributor;
 
 public final class PuppetCommand {
     public static final SimpleCommandExceptionType NOT_A_PUPPET =

@@ -3,7 +3,6 @@ package denimred.simplemuseum.client.datagen;
 import net.minecraft.data.DataGenerator;
 import net.minecraftforge.common.data.LanguageProvider;
 
-import cryptcraft.cryptmaster.plugin.client.UtilityTool;
 import denimred.simplemuseum.common.entity.puppet.manager.PuppetAnimationManager;
 import denimred.simplemuseum.common.entity.puppet.manager.PuppetAudioManager;
 import denimred.simplemuseum.common.entity.puppet.manager.PuppetBehaviorManager;
@@ -15,7 +14,6 @@ import denimred.simplemuseum.common.i18n.lang.GuiLang;
 import denimred.simplemuseum.common.i18n.lang.MiscLang;
 import denimred.simplemuseum.common.init.MuseumEntities;
 import denimred.simplemuseum.common.init.MuseumItems;
-import denimred.simplemuseum.modcompat.cryptmaster.MuseumTool;
 
 public class MuseumLanguageProvider extends LanguageProvider {
     public MuseumLanguageProvider(DataGenerator gen, String modId, String locale) {
@@ -147,8 +145,6 @@ public class MuseumLanguageProvider extends LanguageProvider {
                 PuppetBehaviorManager.PHYSICAL_SIZE,
                 "Physical Size",
                 "Determines the physical width and height of the puppet. Used for the collision box and other gameplay logic; doesn't affect its appearance.");
-        // Mod compat lang (datagen is done in dev, no need to worry about classloading)
-        this.addCryptMasterTool(MuseumTool.INSTANCE, "Create/Edit Museum Puppet");
     }
 
     private void addValueProvider(PuppetValueProvider<?, ?> provider, String title, String desc) {
@@ -158,10 +154,5 @@ public class MuseumLanguageProvider extends LanguageProvider {
     private void addDescriptive(String key, String title, String desc) {
         this.add(key, title);
         this.add(I18nUtil.desc(key), desc);
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    private void addCryptMasterTool(UtilityTool tool, String name) {
-        this.add(tool.getTooltip().getKey(), name);
     }
 }

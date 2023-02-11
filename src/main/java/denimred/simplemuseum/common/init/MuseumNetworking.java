@@ -1,8 +1,6 @@
 package denimred.simplemuseum.common.init;
 
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.fml.network.NetworkRegistry;
-import net.minecraftforge.fml.network.simple.SimpleChannel;
 
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.common.network.messages.bidirectional.CopyPastePuppetData;
@@ -12,6 +10,8 @@ import denimred.simplemuseum.common.network.messages.c2s.C2SMovePuppet;
 import denimred.simplemuseum.common.network.messages.c2s.ConfigurePuppet;
 import denimred.simplemuseum.common.network.messages.s2c.PlayPuppetAnimation;
 import denimred.simplemuseum.common.network.messages.s2c.ResurrectPuppetSync;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.simple.SimpleChannel;
 
 public final class MuseumNetworking {
     public static final String NETWORK_VERSION = "3";

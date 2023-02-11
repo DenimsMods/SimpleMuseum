@@ -4,12 +4,12 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.UUID;
 import java.util.function.Supplier;
 
 import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
+import net.minecraftforge.network.NetworkEvent;
 
 public class C2SCryptMasterRemovePuppet {
     private final UUID uuid;

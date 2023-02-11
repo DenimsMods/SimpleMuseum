@@ -27,7 +27,6 @@ import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -58,6 +57,7 @@ import denimred.simplemuseum.common.util.GlowColor;
 import denimred.simplemuseum.common.util.IValueSerializer;
 import denimred.simplemuseum.common.util.MathUtil;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceLinkedOpenHashMap;
+import net.minecraftforge.network.PacketDistributor;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.IAnimationTickable;
 import software.bernie.geckolib3.core.manager.AnimationData;
@@ -296,7 +296,7 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable, IAn
     @Override
     public void kill() {
         if (!this.isDamageable()) {
-            this.remove();
+            this.remove(RemovalReason.KILLED);
         } else {
             super.kill();
         }
@@ -305,7 +305,7 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable, IAn
     @Override
     public void die(DamageSource cause) {
         if (this.isCompletelyDead() && cause == DamageSource.OUT_OF_WORLD) {
-            this.remove();
+            this.remove(RemovalReason.KILLED);
         } else {
             super.die(cause);
         }
@@ -340,8 +340,7 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable, IAn
     }
 
     public boolean exists() {
-        //noinspection deprecation
-        return !removed;
+        return !isRemoved();
     }
 
     public boolean isDead() {
@@ -405,7 +404,7 @@ public final class PuppetEntity extends LivingEntity implements IAnimatable, IAn
             final ItemStack stack = player.getMainHandItem();
             if (stack.getItem() instanceof CuratorsCaneItem) {
                 if (!level.isClientSide) {
-                    this.remove();
+                    this.remove(RemovalReason.KILLED);
                 }
                 level.playSound(
                         null,

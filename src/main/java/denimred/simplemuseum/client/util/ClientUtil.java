@@ -22,8 +22,8 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.DatagenModLoader;
 
+import net.minecraftforge.data.loading.DatagenModLoader;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;

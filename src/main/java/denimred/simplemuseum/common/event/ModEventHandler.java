@@ -6,13 +6,13 @@ import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.client.datagen.MuseumItemModelProvider;
 import denimred.simplemuseum.client.datagen.MuseumLanguageProvider;
 import denimred.simplemuseum.client.datagen.MuseumTextureProvider;
 import denimred.simplemuseum.common.init.MuseumEntities;
+import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
 
 @Mod.EventBusSubscriber(modid = SimpleMuseum.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public final class ModEventHandler {

@@ -4,12 +4,12 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.Optional;
 
 import denimred.simplemuseum.client.util.ClientUtil;
 import denimred.simplemuseum.common.entity.puppet.PuppetEntity;
+import net.minecraftforge.network.NetworkEvent;
 
 public final class NetworkUtil {
     @SuppressWarnings("deprecation") // Mojang >:I

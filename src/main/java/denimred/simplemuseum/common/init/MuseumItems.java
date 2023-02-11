@@ -3,12 +3,12 @@ package denimred.simplemuseum.common.init;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
-import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import denimred.simplemuseum.SimpleMuseum;
 import denimred.simplemuseum.common.item.CuratorsCaneItem;
+import net.minecraftforge.registries.RegistryObject;
 
 public final class MuseumItems {
     public static final DeferredRegister<Item> REGISTRY =

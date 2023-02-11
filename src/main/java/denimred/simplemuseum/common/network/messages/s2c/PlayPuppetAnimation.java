@@ -1,14 +1,14 @@
 package denimred.simplemuseum.common.network.messages.s2c;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkEvent;
-import net.minecraftforge.fml.network.simple.SimpleChannel;
 
 import java.util.Optional;
 import java.util.function.Supplier;
 
 import denimred.simplemuseum.common.network.NetworkUtil;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.network.simple.SimpleChannel;
 
 public final class PlayPuppetAnimation {
     private final int puppetId;
