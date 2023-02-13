@@ -230,7 +230,7 @@ public class ConfirmPopupWidget extends AbstractWidget {
     @SuppressWarnings("deprecation")
     @Override
     public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
-        RenderSystem.color4f(1.0F, 1.0F, 1.0F, alpha);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha);
         RenderSystem.enableDepthTest();
         RenderSystem.enableBlend();
         fillGradient(poseStack, x, y, x + width, y + height, 0x66FFFFFF, 0x66FFFFFF);

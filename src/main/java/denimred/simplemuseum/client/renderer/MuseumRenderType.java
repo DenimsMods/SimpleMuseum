@@ -19,21 +19,21 @@ public final class MuseumRenderType extends RenderType {
         throw new UnsupportedOperationException("Utility class instantiation");
     }
 
-    public static RenderType getErrorBanners(final ResourceLocation texture) {
-        final RenderType.CompositeState state =
-                RenderType.CompositeState.builder()
-                        .setAlphaState(DEFAULT_ALPHA)
-                        .setTextureState(
-                                new RenderStateShard.TextureStateShard(texture, false, false))
-                        .setTransparencyState(ADDITIVE_TRANSPARENCY)
-                        .createCompositeState(false);
-        return RenderType.create(
-                SimpleMuseum.MOD_ID + ":error_banners",
-                DefaultVertexFormat.POSITION_COLOR_TEX,
-                GL11.GL_QUAD_STRIP,
-                256,
-                false,
-                false,
-                state);
-    }
+//    public static RenderType getErrorBanners(final ResourceLocation texture) {
+//        final RenderType.CompositeState state =
+//                RenderType.CompositeState.builder()
+//                        .setAlphaState(DEFAULT_ALPHA)
+//                        .setTextureState(
+//                                new RenderStateShard.TextureStateShard(texture, false, false))
+//                        .setTransparencyState(ADDITIVE_TRANSPARENCY)
+//                        .createCompositeState(false);
+//        return RenderType.create(
+//                SimpleMuseum.MOD_ID + ":error_banners",
+//                DefaultVertexFormat.POSITION_COLOR_TEX,
+//                GL11.GL_QUAD_STRIP,
+//                256,
+//                false,
+//                false,
+//                state);
+//    }
 }

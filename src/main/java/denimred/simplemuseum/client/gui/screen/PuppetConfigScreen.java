@@ -216,7 +216,7 @@ public class PuppetConfigScreen extends Screen {
             int mouseX,
             int mouseY) {
         ScissorUtil.push();
-        renderComponentTooltip(poseStack, (List<? extends FormattedText>) lines, mouseX, mouseY, font);
+        super.renderTooltipInternal(poseStack, lines, mouseX, mouseY);
         ScissorUtil.pop();
     }
 

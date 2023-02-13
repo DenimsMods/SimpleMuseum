@@ -93,7 +93,13 @@ public class PuppetBannersLayerRenderer extends GeoLayerRenderer<PuppetEntity> {
             float ageInTicks,
             float netHeadYaw,
             float headPitch) {
-        final RenderType type = MuseumRenderType.getErrorBanners(TEXTURE);
+
+
+        // ugh
+        if (true) return;
+
+
+        final RenderType type = null;//MuseumRenderType.getErrorBanners(TEXTURE);
         final float time = (float) (ageInTicks * 0.04D);
         final float yPos = (puppet.getBbHeight() / 2.0F) + 0.25F;
         final boolean doError = puppet.easterEggs.isActive(ERROR);

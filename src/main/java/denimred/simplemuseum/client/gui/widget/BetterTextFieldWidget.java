@@ -71,7 +71,7 @@ public class BetterTextFieldWidget extends EditBox implements ITickingWidget {
     @Override
     public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
         if (this.isVisible()) {
-            RenderSystem.color4f(1.0F, 1.0F, 1.0F, alpha);
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha);
             RenderSystem.enableDepthTest();
             RenderSystem.enableBlend();
             final int colorLight = this.isEditable ? this.textColor : this.textColorUneditable;

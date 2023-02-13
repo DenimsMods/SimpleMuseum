@@ -3,6 +3,7 @@ package denimred.simplemuseum.client.gui.widget;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Matrix4f;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3f;
 
@@ -278,23 +279,25 @@ public class PuppetPreviewWidget extends AbstractWidget {
         fillGradient(poseStack, x, y, x + width, y + height, 0x66000000, 0xCC000000);
 
         // We reset the projection matrix here in order to change the clip plane distances
-        RenderSystem.pushMatrix();
-        RenderSystem.matrixMode(GL11.GL_PROJECTION);
-        RenderSystem.loadIdentity();
-        RenderSystem.ortho(
-                0.0D,
-                (double) window.getWidth() / guiScale,
-                (double) window.getHeight() / guiScale,
-                0.0D,
-                10.0D,
-                300000.0D);
-        RenderSystem.matrixMode(GL11.GL_MODELVIEW);
-        RenderSystem.loadIdentity();
-        RenderSystem.translatef(0.0F, 0.0F, -2000.0F);
+        PoseStack mvs = RenderSystem.getModelViewStack();
+//        RenderSystem.pushMatrix();
+//        RenderSystem.matrixMode(GL11.GL_PROJECTION);
+//        RenderSystem.loadIdentity();
+//        RenderSystem.ortho(
+//                0.0D,
+//                (double) window.getWidth() / guiScale,
+//                (double) window.getHeight() / guiScale,
+//                0.0D,
+//                10.0D,
+//                300000.0D);
+//        RenderSystem.matrixMode(GL11.GL_MODELVIEW);
+//        RenderSystem.loadIdentity();
+        mvs.pushPose();
+        mvs.translate(0.0F, 0.0F, -2000.0F);
 
-        RenderSystem.translatef(
+        mvs.translate(
                 x + (width / 2.0F) + previewX, y + (height / 2.0F) + previewY, 0.0F);
-        RenderSystem.scalef(1.0F, 1.0F, -1.0F);
+        mvs.scale(1.0F, 1.0F, -1.0F);
         final PoseStack entityPS = new PoseStack();
         entityPS.translate(0.0D, 0.0D, -400.0D);
         // This is me trying to make some scale to fit thing... poorly
@@ -386,7 +389,8 @@ public class PuppetPreviewWidget extends AbstractWidget {
         dispatcher.setRenderShadow(true);
 
         buffers.endBatch();
-        RenderSystem.popMatrix();
+        mvs.popPose();
+        RenderSystem.applyModelViewMatrix();
         ScissorUtil.stop();
 
         poseStack.pushPose();
