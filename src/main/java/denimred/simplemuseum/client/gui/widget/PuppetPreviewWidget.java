@@ -11,6 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -280,23 +281,13 @@ public class PuppetPreviewWidget extends AbstractWidget {
 
         // We reset the projection matrix here in order to change the clip plane distances
         PoseStack mvs = RenderSystem.getModelViewStack();
-//        RenderSystem.pushMatrix();
-//        RenderSystem.matrixMode(GL11.GL_PROJECTION);
-//        RenderSystem.loadIdentity();
-//        RenderSystem.ortho(
-//                0.0D,
-//                (double) window.getWidth() / guiScale,
-//                (double) window.getHeight() / guiScale,
-//                0.0D,
-//                10.0D,
-//                300000.0D);
-//        RenderSystem.matrixMode(GL11.GL_MODELVIEW);
-//        RenderSystem.loadIdentity();
+        RenderSystem.backupProjectionMatrix();
+        Matrix4f ortho = Matrix4f.orthographic(0.0F, (float) (window.getWidth() / guiScale), 0.0F, (float) (window.getHeight() / guiScale), 10.0F, 300000.0F);
+        RenderSystem.setProjectionMatrix(ortho);
         mvs.pushPose();
+        mvs.setIdentity();
         mvs.translate(0.0F, 0.0F, -2000.0F);
-
-        mvs.translate(
-                x + (width / 2.0F) + previewX, y + (height / 2.0F) + previewY, 0.0F);
+        mvs.translate(x + (width / 2.0F) + previewX, y + (height / 2.0F) + previewY, 0.0F);
         mvs.scale(1.0F, 1.0F, -1.0F);
         final PoseStack entityPS = new PoseStack();
         entityPS.translate(0.0D, 0.0D, -400.0D);
@@ -391,6 +382,7 @@ public class PuppetPreviewWidget extends AbstractWidget {
         buffers.endBatch();
         mvs.popPose();
         RenderSystem.applyModelViewMatrix();
+        RenderSystem.restoreProjectionMatrix();
         ScissorUtil.stop();
 
         poseStack.pushPose();
