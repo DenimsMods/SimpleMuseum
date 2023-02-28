@@ -99,8 +99,6 @@ dependencies {
     modImplementation "curse.maven:cryptmaster-441431:${cryptmaster_file}"
     modRuntimeOnly "curse.maven:architectury-419699:${architectury_file}"
     modRuntimeOnly "curse.maven:kotlinforforge-351264:${kotlinforforge_file}"
-    // http://www.jhlabs.com/ip/filters/index.html (For wacky texture datagen)
-    implementation "libs:Filters:"
 
     // Maps everything in the mods directory as a runtime dep
     fileTree("mods").visit { FileVisitDetails details ->
