@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "simplemuseum",
+  "version": "${version}",
+  "name": "Simple Museum",
+  "authors": [
+    "DenimRed"
+  ],
+  "license": "MIT",
+  "icon": "assets/simplemuseum/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.denimred.simplemuseum.SimpleMuseum"
+    ],
+    "client": [
+      "dev.denimred.simplemuseum.SimpleMuseumClient"
+    ]
+  },
+  "mixins": [
+    {
+      "config": "simplemuseum.mixins.json",
+      "environment": "*"
+    },
+    {
+      "config": "simplemuseum.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.15.11",
+    "minecraft": "~1.20.1",
+    "java": ">=17",
+    "fabric-api": "*"
+  }
+}

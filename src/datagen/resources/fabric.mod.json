@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "simplemuseum-datagen",
+  "version": "0.1.0",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-datagen": ["dev.denimred.simplemuseum.SimpleMuseumDataGenerator"]
+  },
+  "depends": {
+    "fabricloader": ">=0.15.11",
+    "minecraft": "~1.20.1",
+    "java": ">=17",
+    "fabric-api": "*"
+  }
+}
