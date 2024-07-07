@@ -1,0 +1,8 @@
+{
+  "commands.simplemuseum.puppet.facet.set.multi": "Set %s to %s for %d puppets",
+  "commands.simplemuseum.puppet.facet.set.single": "Set %s to %s for %d puppet",
+  "commands.simplemuseum.selector.puppet": "Nearest puppet",
+  "commands.simplemuseum.selector.puppets": "All puppets",
+  "entity.simplemuseum.puppet": "Puppet",
+  "item.simplemuseum.curators_cane": "Curator's Cane"
+}

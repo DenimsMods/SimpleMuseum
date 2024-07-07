@@ -1,17 +1,32 @@
 [versions]
+# Minecraft
 minecraft = { strictly = "1.20.1" }
 parchment = "2023.09.03"
-
+# Fabric
+fabric-loom = "1.7-SNAPSHOT"
 fabric-loader = "0.15.11"
 fabric-api = "0.92.2+1.20.1"
-fabric-loom = "1.7-SNAPSHOT"
+# GeckoLib
+geckolib = "4.4.7"
+mclib = "20"
+# Misc
+jsr305 = "3.0.2"
+modmenu = "7.2.2"
 
 [libraries]
+# Minecraft
 minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
 parchment = { module = "org.parchmentmc.data:parchment-1.20.1", version.ref = "parchment" }
-
+# Fabric
 fabric-api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric-api" }
 fabric-loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric-loader" }
+# GeckoLib
+geckolib = { module = "software.bernie.geckolib:geckolib-fabric-1.20.1", version.ref = "geckolib"}
+mclib = { module = "com.eliotlash.mclib:mclib", version.ref = "mclib"}
+# Misc
+jsr305 = { module = "com.google.code.findbugs:jsr305", version.ref = "jsr305"}
+modmenu = { module = "com.terraformersmc:modmenu", version.ref = "modmenu"}
 
 [plugins]
+# Fabric
 fabric-loom = { id = "fabric-loom", version.ref = "fabric-loom" }

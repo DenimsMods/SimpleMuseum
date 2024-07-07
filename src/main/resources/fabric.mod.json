@@ -3,12 +3,22 @@
   "id": "simplemuseum",
   "version": "${version}",
   "name": "Simple Museum",
+  "description": "Adds configurable puppet entities to display custom models and act as custom NPCs, among other purposes.",
   "authors": [
-    "DenimRed"
+    {
+      "name": "DenimRed",
+      "contact": {
+        "homepage": "https://github.com/DenimRed"
+      }
+    }
   ],
   "license": "MIT",
+  "contact": {
+    "homepage": "https://github.com/DenimsMods/SimpleMuseum",
+    "sources": "https://github.com/DenimsMods/SimpleMuseum/tree/1.20.1",
+    "issues": "https://github.com/DenimsMods/SimpleMuseum/issues"
+  },
   "icon": "assets/simplemuseum/icon.png",
-  "environment": "*",
   "entrypoints": {
     "main": [
       "dev.denimred.simplemuseum.SimpleMuseum"
@@ -27,10 +37,12 @@
       "environment": "client"
     }
   ],
+  "accessWidener": "simplemuseum.accesswidener",
   "depends": {
     "fabricloader": ">=0.15.11",
     "minecraft": "~1.20.1",
     "java": ">=17",
-    "fabric-api": "*"
+    "fabric-api": "*",
+    "geckolib": ">=4.4.7"
   }
 }

@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "environment": "*",
   "entrypoints": {
-    "fabric-datagen": ["dev.denimred.simplemuseum.SimpleMuseumDataGenerator"]
+    "fabric-datagen": ["dev.denimred.simplemuseum.datagen.SimpleMuseumDataGenerator"]
   },
   "depends": {
     "fabricloader": ">=0.15.11",
