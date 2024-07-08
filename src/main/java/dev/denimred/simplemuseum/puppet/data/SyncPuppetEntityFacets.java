@@ -1,7 +1,7 @@
 package dev.denimred.simplemuseum.puppet.data;
 
 import dev.denimred.simplemuseum.init.SMPuppetFacets;
-import dev.denimred.simplemuseum.puppet.Puppet;
+import dev.denimred.simplemuseum.puppet.entity.Puppet;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.handler.codec.DecoderException;
@@ -24,19 +24,19 @@ import static dev.denimred.simplemuseum.SimpleMuseum.LOGGER;
 import static dev.denimred.simplemuseum.SimpleMuseum.id;
 import static net.minecraft.network.FriendlyByteBuf.DEFAULT_NBT_QUOTA;
 
-public final class SyncPuppetFacets implements FabricPacket {
-    public static final PacketType<SyncPuppetFacets> TYPE = PacketType.create(id("sync_puppet_facets"), SyncPuppetFacets::new);
+public final class SyncPuppetEntityFacets implements FabricPacket {
+    public static final PacketType<SyncPuppetEntityFacets> TYPE = PacketType.create(id("sync_puppet_entity_facets"), SyncPuppetEntityFacets::new);
     private final int puppetId;
     private final List<FacetSnapshot<?>> snapshots;
 
-    private SyncPuppetFacets(FriendlyByteBuf buf) {
+    private SyncPuppetEntityFacets(FriendlyByteBuf buf) {
         puppetId = buf.readVarInt();
         var count = buf.readVarInt();
         snapshots = new ArrayList<>(count);
         for (int i = 0; i < count; i++) snapshots.add(FacetSnapshot.read(buf));
     }
 
-    public SyncPuppetFacets(Puppet puppet, Collection<PuppetFacetInstance<?>> facets) {
+    public SyncPuppetEntityFacets(Puppet puppet, Collection<PuppetFacetInstance<?>> facets) {
         puppetId = puppet.getId();
         snapshots = new ArrayList<>();
         for (var instance : facets) snapshots.add(new FacetSnapshot<>(instance));
@@ -59,7 +59,7 @@ public final class SyncPuppetFacets implements FabricPacket {
     }
 
     @Override
-    public PacketType<SyncPuppetFacets> getType() {
+    public PacketType<SyncPuppetEntityFacets> getType() {
         return TYPE;
     }
 

@@ -1,6 +1,7 @@
 package dev.denimred.simplemuseum.puppet;
 
 import dev.denimred.simplemuseum.init.SMPuppetFacets;
+import dev.denimred.simplemuseum.puppet.entity.Puppet;
 import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib.model.GeoModel;
 

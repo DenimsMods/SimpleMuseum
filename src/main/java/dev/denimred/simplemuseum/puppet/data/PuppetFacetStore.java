@@ -38,7 +38,7 @@ public final class PuppetFacetStore {
     public CompoundTag save() {
         var root = new CompoundTag();
         for (var instance : instances) {
-            var key = instance.getFacet().getKey();
+            var key = instance.getFacet().getId();
             var namespaceRoot = root.getCompound(key.getNamespace());
             instance.save(namespaceRoot);
             if (!namespaceRoot.isEmpty()) root.put(key.getNamespace(), namespaceRoot);

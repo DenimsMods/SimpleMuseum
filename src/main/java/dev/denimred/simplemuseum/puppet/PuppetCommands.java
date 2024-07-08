@@ -7,6 +7,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import dev.denimred.simplemuseum.init.SMEntityTypes;
 import dev.denimred.simplemuseum.init.SMPuppetFacets;
 import dev.denimred.simplemuseum.puppet.data.PuppetFacet;
+import dev.denimred.simplemuseum.puppet.entity.Puppet;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;

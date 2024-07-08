@@ -1,7 +1,11 @@
-package dev.denimred.simplemuseum.puppet;
+package dev.denimred.simplemuseum.puppet.entity;
 
+import dev.denimred.simplemuseum.puppet.PuppetContext;
 import dev.denimred.simplemuseum.puppet.data.PuppetFacetStore;
-import dev.denimred.simplemuseum.puppet.data.SyncPuppetFacets;
+import dev.denimred.simplemuseum.puppet.data.SyncPuppetEntityFacets;
+import dev.denimred.simplemuseum.puppet.edit.OpenPuppetFacetEditScreen;
+import dev.denimred.simplemuseum.puppet.edit.PuppetFacetEditMenu;
+import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,7 +20,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 import static dev.denimred.simplemuseum.SimpleMuseum.LOGGER;
 
-public class Puppet extends PathfinderMob implements GeoEntity {
+public class Puppet extends PathfinderMob implements GeoEntity, PuppetContext {
     public static final String FACETS_TAG = "facets";
     private final AnimatableInstanceCache animCache = GeckoLibUtil.createInstanceCache(this);
     private final PuppetFacetStore facets = new PuppetFacetStore();
@@ -31,6 +35,16 @@ public class Puppet extends PathfinderMob implements GeoEntity {
 
     public PuppetFacetStore facets() {
         return facets;
+    }
+
+    @Override
+    public boolean isValid() {
+        return !isRemoved();
+    }
+
+    @Override
+    public FabricPacket createOpenMenuPacket(PuppetFacetEditMenu menu) {
+        return new OpenPuppetFacetEditScreen(menu, this);
     }
 
     @Override
@@ -66,7 +80,7 @@ public class Puppet extends PathfinderMob implements GeoEntity {
     @Override
     public void startSeenByPlayer(ServerPlayer player) {
         LOGGER.trace("Syncing puppet #{} facets to {} ({})", getId(), player.getGameProfile().getName(), player.getStringUUID());
-        ServerPlayNetworking.send(player, new SyncPuppetFacets(this, facets.getAllInstances()));
+        ServerPlayNetworking.send(player, new SyncPuppetEntityFacets(this, facets.getAllInstances()));
     }
 
     @Override

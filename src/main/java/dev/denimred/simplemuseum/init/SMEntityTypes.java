@@ -1,6 +1,6 @@
 package dev.denimred.simplemuseum.init;
 
-import dev.denimred.simplemuseum.puppet.Puppet;
+import dev.denimred.simplemuseum.puppet.entity.Puppet;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;

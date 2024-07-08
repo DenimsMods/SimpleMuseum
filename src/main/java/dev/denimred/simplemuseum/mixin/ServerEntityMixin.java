@@ -1,7 +1,7 @@
 package dev.denimred.simplemuseum.mixin;
 
-import dev.denimred.simplemuseum.puppet.Puppet;
-import dev.denimred.simplemuseum.puppet.data.SyncPuppetFacets;
+import dev.denimred.simplemuseum.puppet.entity.Puppet;
+import dev.denimred.simplemuseum.puppet.data.SyncPuppetEntityFacets;
 import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -33,7 +33,7 @@ public abstract class ServerEntityMixin {
             var instances = puppet.facets().getDirtyInstances();
             if (!instances.isEmpty()) {
                 LOGGER.trace("Syncing puppet #{} dirty facets to clients", puppet.getId());
-                broadcastFabricPacket(new SyncPuppetFacets(puppet, instances));
+                broadcastFabricPacket(new SyncPuppetEntityFacets(puppet, instances));
             }
             instances.clear();
         }

@@ -4,5 +4,8 @@
   "commands.simplemuseum.selector.puppet": "Nearest puppet",
   "commands.simplemuseum.selector.puppets": "All puppets",
   "entity.simplemuseum.puppet": "Puppet",
-  "item.simplemuseum.curators_cane": "Curator's Cane"
+  "item.simplemuseum.curators_cane": "Curator's Cane",
+  "puppet_facet.simplemuseum.animations": "Animations",
+  "puppet_facet.simplemuseum.model": "Model",
+  "puppet_facet.simplemuseum.texture": "Texture"
 }
