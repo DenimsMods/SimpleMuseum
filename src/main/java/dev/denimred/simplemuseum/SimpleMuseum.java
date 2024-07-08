@@ -2,6 +2,7 @@ package dev.denimred.simplemuseum;
 
 import dev.denimred.simplemuseum.init.SMEntityTypes;
 import dev.denimred.simplemuseum.init.SMItems;
+import dev.denimred.simplemuseum.init.SMPuppetFacetGroups;
 import dev.denimred.simplemuseum.init.SMPuppetFacets;
 import dev.denimred.simplemuseum.puppet.PuppetCommands;
 import net.fabricmc.api.ModInitializer;
@@ -24,6 +25,7 @@ public final class SimpleMuseum implements ModInitializer {
         SMEntityTypes.register();
         SMItems.register();
         SMPuppetFacets.register();
+        SMPuppetFacetGroups.register();
         CommandRegistrationCallback.EVENT.register(PuppetCommands::register);
     }
 }

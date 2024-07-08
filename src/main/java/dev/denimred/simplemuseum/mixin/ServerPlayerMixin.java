@@ -20,15 +20,18 @@ import java.util.OptionalInt;
 
 @Mixin(ServerPlayer.class)
 public abstract class ServerPlayerMixin extends Player {
-    @Shadow protected abstract void nextContainerCounter();
-
-    @Shadow private int containerCounter;
-
-    @Shadow protected abstract void initMenu(AbstractContainerMenu menu);
+    @Shadow
+    private int containerCounter;
 
     private ServerPlayerMixin(Level level, BlockPos pos, float yRot, GameProfile gameProfile) {
         super(level, pos, yRot, gameProfile);
     }
+
+    @Shadow
+    protected abstract void nextContainerCounter();
+
+    @Shadow
+    protected abstract void initMenu(AbstractContainerMenu menu);
 
     @Inject(method = "openMenu", at = @At("HEAD"), cancellable = true)
     private void handlePuppetFacetEditMenu(MenuProvider provider, CallbackInfoReturnable<OptionalInt> cir) {

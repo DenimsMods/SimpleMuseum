@@ -3,7 +3,7 @@ package dev.denimred.simplemuseum.puppet.data;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import dev.denimred.simplemuseum.init.SMPuppetFacets;
-import net.minecraft.Util;
+import dev.denimred.simplemuseum.util.Descriptive;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 
 import static dev.denimred.simplemuseum.SimpleMuseum.LOGGER;
 
-public class PuppetFacet<T> {
+public class PuppetFacet<T> implements Descriptive {
     protected final T defaultValue;
     protected final Codec<T> codec;
     protected @Nullable String descriptionId = null;
@@ -26,9 +26,9 @@ public class PuppetFacet<T> {
         this.codec = codec.orElse(defaultValue);
     }
 
+    @Override
     public String getDescriptionId() {
-        if (descriptionId == null) descriptionId = Util.makeDescriptionId("puppet_facet", getId());
-        return descriptionId;
+        return descriptionId != null ? descriptionId : (descriptionId = createDescriptionId(SMPuppetFacets.REGISTRY, this));
     }
 
     public final Codec<T> getCodec() {

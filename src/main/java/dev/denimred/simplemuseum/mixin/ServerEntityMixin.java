@@ -1,7 +1,7 @@
 package dev.denimred.simplemuseum.mixin;
 
-import dev.denimred.simplemuseum.puppet.entity.Puppet;
 import dev.denimred.simplemuseum.puppet.data.SyncPuppetEntityFacets;
+import dev.denimred.simplemuseum.puppet.entity.Puppet;
 import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;

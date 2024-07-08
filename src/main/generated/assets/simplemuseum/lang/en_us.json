@@ -7,5 +7,7 @@
   "item.simplemuseum.curators_cane": "Curator's Cane",
   "puppet_facet.simplemuseum.animations": "Animations",
   "puppet_facet.simplemuseum.model": "Model",
-  "puppet_facet.simplemuseum.texture": "Texture"
+  "puppet_facet.simplemuseum.texture": "Texture",
+  "puppet_facet_group.simplemuseum.rendering": "Rendering",
+  "puppet_facet_group.simplemuseum.rendering.general": "General"
 }
