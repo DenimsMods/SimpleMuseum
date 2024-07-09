@@ -3,8 +3,9 @@ package dev.denimred.simplemuseum.puppet.entity;
 import dev.denimred.simplemuseum.puppet.PuppetContext;
 import dev.denimred.simplemuseum.puppet.data.PuppetFacetStore;
 import dev.denimred.simplemuseum.puppet.data.SyncPuppetEntityFacets;
-import dev.denimred.simplemuseum.puppet.edit.OpenPuppetFacetEditScreen;
-import dev.denimred.simplemuseum.puppet.edit.PuppetFacetEditMenu;
+import dev.denimred.simplemuseum.puppet.edit.OpenPuppetFacetsEditScreen;
+import dev.denimred.simplemuseum.puppet.edit.PuppetFacetsEditMenu;
+import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.nbt.CompoundTag;
@@ -33,6 +34,14 @@ public class Puppet extends PathfinderMob implements GeoEntity, PuppetContext {
         return createMobAttributes();
     }
 
+    public static Puppet getPuppet(Level level, int id, String context, EnvType env) {
+        var entity = level.getEntity(id);
+        if (entity instanceof Puppet puppet) return puppet;
+        var envName = env == EnvType.CLIENT ? "Client" : "Server";
+        if (entity == null) throw new NullPointerException(envName + "tried to " + context + " for null entity");
+        throw new IllegalArgumentException(envName + " tried to " + context + " for non-puppet entity");
+    }
+
     public PuppetFacetStore facets() {
         return facets;
     }
@@ -43,8 +52,8 @@ public class Puppet extends PathfinderMob implements GeoEntity, PuppetContext {
     }
 
     @Override
-    public FabricPacket createOpenMenuPacket(PuppetFacetEditMenu menu) {
-        return new OpenPuppetFacetEditScreen(menu, this);
+    public FabricPacket createOpenMenuPacket(PuppetFacetsEditMenu menu) {
+        return new OpenPuppetFacetsEditScreen(menu, this);
     }
 
     @Override

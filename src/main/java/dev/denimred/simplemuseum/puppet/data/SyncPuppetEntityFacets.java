@@ -6,6 +6,7 @@ import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.EncoderException;
+import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.nbt.NbtAccounter;
@@ -43,10 +44,7 @@ public final class SyncPuppetEntityFacets implements FabricPacket {
     }
 
     public void handle(Level level) {
-        var entity = level.getEntity(puppetId);
-        if (entity == null) throw new NullPointerException("Server tried to sync puppet data to non-existent entity");
-        if (!(entity instanceof Puppet puppet))
-            throw new IllegalArgumentException("Server tried to sync puppet data to non-puppet entity");
+        var puppet = Puppet.getPuppet(level, puppetId, "sync puppet entity facets", EnvType.SERVER);
         LOGGER.trace("Syncing puppet #{} facets from server", puppetId);
         for (var snapshot : snapshots) snapshot.apply(puppet.facets());
     }

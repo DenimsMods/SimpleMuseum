@@ -1,2 +1,6 @@
 accessWidener	v2	named
+# Common
 accessible	method	net/minecraft/nbt/NbtIo	readUnnamedTag	(Ljava/io/DataInput;ILnet/minecraft/nbt/NbtAccounter;)Lnet/minecraft/nbt/Tag;
+# Client
+accessible	method	net/minecraft/client/gui/GuiGraphics	flushIfUnmanaged	()V
+extendable	method	net/minecraft/client/gui/components/AbstractScrollWidget	getContentHeight	()I

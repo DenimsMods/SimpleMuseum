@@ -2,6 +2,7 @@ package dev.denimred.simplemuseum.init;
 
 import dev.denimred.simplemuseum.puppet.data.PuppetFacetGroup;
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
+import net.minecraft.core.DefaultedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Items;
@@ -12,7 +13,9 @@ import static dev.denimred.simplemuseum.SimpleMuseum.id;
 
 public final class SMPuppetFacetGroups {
     public static final ResourceKey<Registry<PuppetFacetGroup>> REGISTRY_KEY = ResourceKey.createRegistryKey(id("puppet_facet_group"));
-    public static final Registry<PuppetFacetGroup> REGISTRY = FabricRegistryBuilder.createSimple(REGISTRY_KEY).buildAndRegister();
+    public static final DefaultedRegistry<PuppetFacetGroup> REGISTRY = FabricRegistryBuilder.createDefaulted(REGISTRY_KEY, id("blank")).buildAndRegister();
+
+    public static final PuppetFacetGroup BLANK = PuppetFacetGroup.builder(Integer.MIN_VALUE).register(REGISTRY.getDefaultKey());
 
     //@formatter:off
     public static final PuppetFacetGroup RENDERING = PuppetFacetGroup.builder(100)

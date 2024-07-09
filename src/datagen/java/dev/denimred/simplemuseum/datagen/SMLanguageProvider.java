@@ -19,6 +19,8 @@ final class SMLanguageProvider extends FabricLanguageProvider {
         gen.add(SMItems.CURATORS_CANE, "Curator's Cane");
         gen.add(SMEntityTypes.PUPPET, "Puppet");
 
+        add(gen, SMPuppetFacetGroups.BLANK, "<BLANK>");
+
         add(gen, SMPuppetFacetGroups.RENDERING, "Rendering");
         add(gen, SMPuppetFacetGroups.RENDERING, "general", "General");
         add(gen, SMPuppetFacets.MODEL, "Model");

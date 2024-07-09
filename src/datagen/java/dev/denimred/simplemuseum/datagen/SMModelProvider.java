@@ -14,10 +14,10 @@ class SMModelProvider extends FabricModelProvider {
     }
 
     @Override
+    public void generateBlockStateModels(BlockModelGenerators gen) {}
+
+    @Override
     public void generateItemModels(ItemModelGenerators gen) {
         gen.generateFlatItem(CURATORS_CANE, FLAT_HANDHELD_ITEM);
     }
-
-    @Override
-    public void generateBlockStateModels(BlockModelGenerators gen) {}
 }

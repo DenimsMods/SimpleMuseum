@@ -1,33 +1,32 @@
 package dev.denimred.simplemuseum.puppet.data;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.*;
 import dev.denimred.simplemuseum.init.SMPuppetFacetGroups;
 import dev.denimred.simplemuseum.util.Descriptive;
-import it.unimi.dsi.fastutil.objects.Object2ReferenceOpenHashMap;
 import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static dev.denimred.simplemuseum.SimpleMuseum.id;
 
 public final class PuppetFacetGroup implements Comparable<PuppetFacetGroup>, Descriptive {
     public static final String ROOT_SECTION = "root";
-    private final ImmutableMap<String, List<PuppetFacet<?>>> sections;
+    public static final Predicate<PuppetFacetGroup> NOT_BLANK = group -> !group.equals(SMPuppetFacetGroups.BLANK);
+    private final ImmutableListMultimap<String, PuppetFacet<?>> sections;
     private final Supplier<ItemStack> iconFactory;
     private final int priority;
     private @Nullable ItemStack icon;
     private @Nullable String descriptionId = null;
 
     private PuppetFacetGroup(Builder builder) {
-        sections = ImmutableMap.copyOf(builder.sections);
+        sections = ImmutableListMultimap.copyOf(builder.sections);
         iconFactory = builder.iconFactory;
         priority = builder.priority;
     }
@@ -45,8 +44,28 @@ public final class PuppetFacetGroup implements Comparable<PuppetFacetGroup>, Des
         return icon;
     }
 
-    public ImmutableMap<String, List<PuppetFacet<?>>> getSections() {
+    public boolean hasSections() {
+        return !sections.isEmpty() && (sections.size() > 1 || !hasSection(ROOT_SECTION));
+    }
+
+    public boolean hasSection(String sectionId) {
+        return sections.containsKey(sectionId);
+    }
+
+    public boolean hasRootFacets() {
+        return !sections.get(ROOT_SECTION).isEmpty();
+    }
+
+    public ImmutableMultimap<String, PuppetFacet<?>> getSections() {
         return sections;
+    }
+
+    public ImmutableList<PuppetFacet<?>> getSectionFacets(String sectionId) {
+        return sections.get(sectionId);
+    }
+
+    public String getFirstSectionId() {
+        return !hasSections() || hasRootFacets() ? ROOT_SECTION : sections.keys().iterator().next();
     }
 
     @Override
@@ -59,13 +78,11 @@ public final class PuppetFacetGroup implements Comparable<PuppetFacetGroup>, Des
         if (priority != o.priority) return Integer.compare(priority, o.priority);
         var id = SMPuppetFacetGroups.REGISTRY.getKey(this);
         var otherId = SMPuppetFacetGroups.REGISTRY.getKey(o);
-        if (id == null) return otherId == null ? 0 : -1;
-        if (otherId == null) return 1;
         return id.compareTo(otherId);
     }
 
     public static final class Builder {
-        private final Map<String, List<PuppetFacet<?>>> sections = new Object2ReferenceOpenHashMap<>();
+        private final ListMultimap<String, PuppetFacet<?>> sections = MultimapBuilder.hashKeys().arrayListValues().build();
         private final int priority;
         private String currentSection = ROOT_SECTION;
         private Supplier<ItemStack> iconFactory = () -> ItemStack.EMPTY;
@@ -74,17 +91,13 @@ public final class PuppetFacetGroup implements Comparable<PuppetFacetGroup>, Des
             this.priority = priority;
         }
 
-        private List<PuppetFacet<?>> getOrCreateSection(String sectionId) {
-            return sections.computeIfAbsent(sectionId, ignored -> new ArrayList<>());
-        }
-
         public Builder section(String sectionId) {
-            getOrCreateSection(currentSection = sectionId);
+            currentSection = sectionId;
             return this;
         }
 
         public Builder facet(PuppetFacet<?> facet) {
-            getOrCreateSection(currentSection).add(facet);
+            sections.get(currentSection).add(facet);
             return this;
         }
 
@@ -107,6 +120,10 @@ public final class PuppetFacetGroup implements Comparable<PuppetFacetGroup>, Des
 
         public PuppetFacetGroup build() {
             return new PuppetFacetGroup(this);
+        }
+
+        public PuppetFacetGroup register(ResourceLocation id) {
+            return Registry.register(SMPuppetFacetGroups.REGISTRY, id, build());
         }
 
         @ApiStatus.Internal

@@ -1,7 +1,7 @@
 package dev.denimred.simplemuseum.puppet;
 
 import dev.denimred.simplemuseum.puppet.data.PuppetFacetStore;
-import dev.denimred.simplemuseum.puppet.edit.PuppetFacetEditMenu;
+import dev.denimred.simplemuseum.puppet.edit.PuppetFacetsEditMenu;
 import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -14,10 +14,10 @@ public interface PuppetContext extends MenuProvider {
     boolean isValid();
 
     @Override
-    default @Nullable PuppetFacetEditMenu createMenu(int counter, Inventory inventory, Player player) {
+    default @Nullable PuppetFacetsEditMenu createMenu(int counter, Inventory inventory, Player player) {
         if (!player.canUseGameMasterBlocks() || !isValid()) return null;
-        return new PuppetFacetEditMenu(counter, this);
+        return new PuppetFacetsEditMenu(counter, this);
     }
 
-    FabricPacket createOpenMenuPacket(PuppetFacetEditMenu menu);
+    FabricPacket createOpenMenuPacket(PuppetFacetsEditMenu menu);
 }
