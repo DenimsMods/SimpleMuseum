@@ -13,14 +13,14 @@ import java.util.function.BiConsumer;
 import static dev.denimred.simplemuseum.puppet.gui.PuppetGuiUtils.hLineGradient;
 import static dev.denimred.simplemuseum.puppet.gui.PuppetGuiUtils.vLineGradient;
 
-public final class PuppetFacetGroupsSidebar extends CleanScrollWidget {
+public final class GroupsSidebar extends CleanScrollWidget {
     private final ImmutableList<PuppetFacetGroup> groups;
     private final Font font;
     private final BiConsumer<PuppetFacetGroup, String> selectionCallback;
     private PuppetFacetGroup selectedGroup = SMPuppetFacetGroups.BLANK;
     private String selectedSection = PuppetFacetGroup.ROOT_SECTION;
 
-    public PuppetFacetGroupsSidebar(int x, int y, int width, int height, Font font, BiConsumer<PuppetFacetGroup, String> selectionCallback) {
+    public GroupsSidebar(int x, int y, int width, int height, Font font, BiConsumer<PuppetFacetGroup, String> selectionCallback) {
         super(x, y, width, height, Component.empty());
         this.font = font;
         this.selectionCallback = selectionCallback;
@@ -52,6 +52,11 @@ public final class PuppetFacetGroupsSidebar extends CleanScrollWidget {
 
     @Override
     protected void updateWidgetNarration(NarrationElementOutput output) {} // This is too low of a priority unfortunately
+
+    @Override
+    protected boolean scrollbarVisible() {
+        return false;
+    }
 
     @Override
     protected int getInnerHeight() {

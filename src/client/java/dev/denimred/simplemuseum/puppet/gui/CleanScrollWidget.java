@@ -41,11 +41,6 @@ public abstract class CleanScrollWidget extends AbstractScrollWidget {
     protected void renderBorder(GuiGraphics guiGraphics, int x, int y, int width, int height) {}
 
     @Override
-    protected boolean scrollbarVisible() {
-        return false;
-    }
-
-    @Override
     protected double scrollRate() {
         return 10;
     }

@@ -3,8 +3,8 @@ package dev.denimred.simplemuseum.puppet.entity;
 import dev.denimred.simplemuseum.puppet.PuppetContext;
 import dev.denimred.simplemuseum.puppet.data.PuppetFacetStore;
 import dev.denimred.simplemuseum.puppet.data.SyncPuppetEntityFacets;
-import dev.denimred.simplemuseum.puppet.edit.OpenPuppetFacetsEditScreen;
-import dev.denimred.simplemuseum.puppet.edit.PuppetFacetsEditMenu;
+import dev.denimred.simplemuseum.puppet.edit.OpenPuppetEditScreen;
+import dev.denimred.simplemuseum.puppet.edit.PuppetEditMenu;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -52,8 +52,8 @@ public class Puppet extends PathfinderMob implements GeoEntity, PuppetContext {
     }
 
     @Override
-    public FabricPacket createOpenMenuPacket(PuppetFacetsEditMenu menu) {
-        return new OpenPuppetFacetsEditScreen(menu, this);
+    public FabricPacket createOpenMenuPacket(PuppetEditMenu menu) {
+        return new OpenPuppetEditScreen(menu, this);
     }
 
     @Override

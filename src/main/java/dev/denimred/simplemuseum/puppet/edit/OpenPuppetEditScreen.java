@@ -7,20 +7,20 @@ import net.minecraft.network.FriendlyByteBuf;
 
 import static dev.denimred.simplemuseum.SimpleMuseum.id;
 
-public final class OpenPuppetFacetsEditScreen implements FabricPacket {
-    public static final PacketType<OpenPuppetFacetsEditScreen> TYPE = PacketType.create(id("open_puppet_facets_edit_screen"), OpenPuppetFacetsEditScreen::new);
+public final class OpenPuppetEditScreen implements FabricPacket {
+    public static final PacketType<OpenPuppetEditScreen> TYPE = PacketType.create(id("open_puppet_edit_screen"), OpenPuppetEditScreen::new);
     public final int containerId;
     public final int puppetId;
 
-    public OpenPuppetFacetsEditScreen(PuppetFacetsEditMenu menu, Puppet puppet) {
+    public OpenPuppetEditScreen(PuppetEditMenu menu, Puppet puppet) {
         this(menu.containerId, puppet.getId());
     }
 
-    private OpenPuppetFacetsEditScreen(FriendlyByteBuf buf) {
+    private OpenPuppetEditScreen(FriendlyByteBuf buf) {
         this(buf.readVarInt(), buf.readVarInt());
     }
 
-    private OpenPuppetFacetsEditScreen(int containerId, int puppetId) {
+    private OpenPuppetEditScreen(int containerId, int puppetId) {
         this.containerId = containerId;
         this.puppetId = puppetId;
     }

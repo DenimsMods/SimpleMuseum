@@ -5,10 +5,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 
-public final class PuppetFacetsEditMenu extends AbstractContainerMenu {
+public final class PuppetEditMenu extends AbstractContainerMenu {
     public final PuppetContext ctx;
 
-    public PuppetFacetsEditMenu(int containerId, PuppetContext ctx) {
+    public PuppetEditMenu(int containerId, PuppetContext ctx) {
         super(null, containerId);
         this.ctx = ctx;
     }

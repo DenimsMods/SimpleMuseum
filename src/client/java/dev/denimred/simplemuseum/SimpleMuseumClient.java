@@ -6,8 +6,8 @@ import dev.denimred.simplemuseum.init.SMEntityTypes;
 import dev.denimred.simplemuseum.puppet.PuppetRenderer;
 import dev.denimred.simplemuseum.puppet.data.PuppetFacetGroup;
 import dev.denimred.simplemuseum.puppet.data.SyncPuppetEntityFacets;
-import dev.denimred.simplemuseum.puppet.edit.OpenPuppetFacetsEditScreen;
-import dev.denimred.simplemuseum.puppet.gui.PuppetFacetsEditScreen;
+import dev.denimred.simplemuseum.puppet.edit.OpenPuppetEditScreen;
+import dev.denimred.simplemuseum.puppet.gui.PuppetEditScreen;
 import dev.denimred.simplemuseum.puppet.gui.subscreen.DefaultSubscreen;
 import dev.denimred.simplemuseum.puppet.gui.subscreen.SubscreenFactory;
 import net.fabricmc.api.ClientModInitializer;
@@ -42,6 +42,6 @@ public final class SimpleMuseumClient implements ClientModInitializer {
         LOGGER.debug("Simple Museum - Client Init");
         EntityRendererRegistry.register(SMEntityTypes.PUPPET, PuppetRenderer::new);
         ClientPlayNetworking.registerGlobalReceiver(SyncPuppetEntityFacets.TYPE, (packet, player, responder) -> packet.handle(player.clientLevel));
-        ClientPlayNetworking.registerGlobalReceiver(OpenPuppetFacetsEditScreen.TYPE, (packet, player, responder) -> PuppetFacetsEditScreen.open(packet, player));
+        ClientPlayNetworking.registerGlobalReceiver(OpenPuppetEditScreen.TYPE, (packet, player, responder) -> PuppetEditScreen.open(packet, player));
     }
 }
